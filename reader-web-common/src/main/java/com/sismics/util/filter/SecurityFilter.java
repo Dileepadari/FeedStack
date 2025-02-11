@@ -1,6 +1,6 @@
 package com.sismics.util.filter;
 
-import com.sismics.reader.core.constant.Constants;
+import com.sismics.reader.core.constant.DefaultConfig;
 import com.sismics.reader.core.dao.jpa.RoleBaseFunctionDao;
 import com.sismics.reader.core.model.jpa.User;
 import com.sismics.security.AnonymousPrincipal;
@@ -89,7 +89,7 @@ public abstract class SecurityFilter implements Filter {
     private static void injectAnonymousUser(HttpServletRequest request) {
         AnonymousPrincipal anonymousPrincipal = new AnonymousPrincipal();
         anonymousPrincipal.setLocale(request.getLocale());
-        anonymousPrincipal.setDateTimeZone(DateTimeZone.forID(Constants.DEFAULT_TIMEZONE_ID));
+        anonymousPrincipal.setDateTimeZone(DateTimeZone.forID(DefaultConfig.DEFAULT_TIMEZONE_ID));
 
         request.setAttribute(PRINCIPAL_ATTRIBUTE, anonymousPrincipal);
     }

@@ -1,6 +1,6 @@
 package com.sismics.util.filter;
 
-import com.sismics.reader.core.constant.Constants;
+import com.sismics.reader.core.constant.DefaultConfig;
 import com.sismics.reader.core.model.context.AppContext;
 import com.sismics.reader.core.util.DirectoryUtil;
 import com.sismics.reader.core.util.TransactionUtil;
@@ -36,7 +36,7 @@ public class RequestContextFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         // Force the locale in order to not depend on the execution environment
-        Locale.setDefault(new Locale(Constants.DEFAULT_LOCALE_ID));
+        Locale.setDefault(new Locale(DefaultConfig.DEFAULT_LOCALE_ID));
 
         // Check if we are running from unit tests
         if (!filterConfig.getServletContext().getServerInfo().startsWith("Grizzly")) {
