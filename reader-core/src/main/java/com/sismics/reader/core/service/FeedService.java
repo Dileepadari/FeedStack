@@ -19,7 +19,7 @@ import com.sismics.reader.core.event.ArticleCreatedAsyncEvent;
 import com.sismics.reader.core.event.ArticleDeletedAsyncEvent;
 import com.sismics.reader.core.event.ArticleUpdatedAsyncEvent;
 import com.sismics.reader.core.event.FaviconUpdateRequestedEvent;
-import com.sismics.reader.core.model.context.AppContext;
+import com.sismics.reader.core.mediator.Mediator;
 import com.sismics.reader.core.model.jpa.*;
 import com.sismics.reader.core.util.EntityManagerUtil;
 import com.sismics.reader.core.util.TransactionUtil;
@@ -57,6 +57,13 @@ public class FeedService extends AbstractScheduledService {
      * Logger.
      */
     private static final Logger log = LoggerFactory.getLogger(FeedService.class);
+
+    private Mediator mediator;
+
+    public FeedService(Mediator mediator) {
+        this.mediator = mediator;
+    }
+
 
     @Override
     protected void startUp() throws Exception {
@@ -179,7 +186,7 @@ public class FeedService extends AbstractScheduledService {
             // Removed articles from index
             ArticleDeletedAsyncEvent articleDeletedAsyncEvent = new ArticleDeletedAsyncEvent();
             articleDeletedAsyncEvent.setArticleList(articleToRemove);
-            AppContext.getInstance().getAsyncEventBus().post(articleDeletedAsyncEvent);
+            mediator.notify(this, articleDeletedAsyncEvent);
         }
 
         // Create the feed if necessary (not created and currently in use by another
@@ -204,7 +211,7 @@ public class FeedService extends AbstractScheduledService {
             // Try to download the feed's favicon
             FaviconUpdateRequestedEvent faviconUpdateRequestedEvent = new FaviconUpdateRequestedEvent();
             faviconUpdateRequestedEvent.setFeed(feed);
-            AppContext.getInstance().getAsyncEventBus().post(faviconUpdateRequestedEvent);
+            mediator.notify(this, faviconUpdateRequestedEvent);
         } else {
             // Try to update the feed's favicon every week
             boolean updateFavicon = isFaviconUpdated(feed);
@@ -224,7 +231,7 @@ public class FeedService extends AbstractScheduledService {
             if (updateFavicon) {
                 FaviconUpdateRequestedEvent faviconUpdateRequestedEvent = new FaviconUpdateRequestedEvent();
                 faviconUpdateRequestedEvent.setFeed(feed);
-                AppContext.getInstance().getAsyncEventBus().post(faviconUpdateRequestedEvent);
+                mediator.notify(this, faviconUpdateRequestedEvent);
             }
         }
 
@@ -277,7 +284,7 @@ public class FeedService extends AbstractScheduledService {
             if (!articleUpdatedList.isEmpty()) {
                 ArticleUpdatedAsyncEvent articleUpdatedAsyncEvent = new ArticleUpdatedAsyncEvent();
                 articleUpdatedAsyncEvent.setArticleList(articleUpdatedList);
-                AppContext.getInstance().getAsyncEventBus().post(articleUpdatedAsyncEvent);
+                mediator.notify(this, articleUpdatedAsyncEvent);
             }
         }
 
@@ -317,7 +324,7 @@ public class FeedService extends AbstractScheduledService {
             // Add new articles to the index
             ArticleCreatedAsyncEvent articleCreatedAsyncEvent = new ArticleCreatedAsyncEvent();
             articleCreatedAsyncEvent.setArticleList(Lists.newArrayList(articleMap.values()));
-            AppContext.getInstance().getAsyncEventBus().post(articleCreatedAsyncEvent);
+            mediator.notify(this, articleCreatedAsyncEvent);
         }
 
         long endTime = System.currentTimeMillis();

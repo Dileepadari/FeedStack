@@ -1,6 +1,7 @@
 package com.sismics.reader.rest.resource;
 
-import com.sismics.reader.core.constant.Constants;
+import com.sismics.reader.core.constant.SecurityConfig;
+import com.sismics.reader.core.constant.ImportJobEvents;
 import com.sismics.reader.core.dao.jpa.*;
 import com.sismics.reader.core.dao.jpa.criteria.JobCriteria;
 import com.sismics.reader.core.dao.jpa.criteria.JobEventCriteria;
@@ -79,7 +80,7 @@ public class UserResource extends BaseResource {
         
         // Create the user
         User user = new User();
-        user.setRoleId(Constants.DEFAULT_USER_ROLE);
+        user.setRoleId(SecurityConfig.DEFAULT_USER_ROLE);
         user.setUsername(username);
         user.setPassword(password);
         user.setEmail(email);
@@ -510,7 +511,7 @@ public class UserResource extends BaseResource {
             UserDao userDao = new UserDao();
             User adminUser = userDao.getById("admin");
             if (adminUser != null && adminUser.getDeleteDate() == null) {
-                response.put("is_default_password", Constants.DEFAULT_ADMIN_PASSWORD.equals(adminUser.getPassword()));
+                response.put("is_default_password", SecurityConfig.DEFAULT_ADMIN_PASSWORD.equals(adminUser.getPassword()));
             }
         } else {
             response.put("anonymous", false);
@@ -528,7 +529,7 @@ public class UserResource extends BaseResource {
             response.put("first_connection", user.isFirstConnection());
             JSONArray baseFunctions = new JSONArray(((UserPrincipal) principal).getBaseFunctionSet());
             response.put("base_functions", baseFunctions);
-            response.put("is_default_password", hasBaseFunction(BaseFunction.ADMIN) && Constants.DEFAULT_ADMIN_PASSWORD.equals(user.getPassword()));
+            response.put("is_default_password", hasBaseFunction(BaseFunction.ADMIN) && SecurityConfig.DEFAULT_ADMIN_PASSWORD.equals(user.getPassword()));
             
             JobDao jobDao = new JobDao();
             JobEventDao jobEventDao = new JobEventDao();
@@ -552,17 +553,17 @@ public class UserResource extends BaseResource {
                 int starredFailure = 0;
                 for (JobEventDto jobEvent : jobEventList) {
                     String name = jobEvent.getName();
-                    if (Constants.JOB_EVENT_FEED_COUNT.equals(name)) {
+                    if (ImportJobEvents.JOB_EVENT_FEED_COUNT.equals(name)) {
                         jobJson.put("feed_total", Integer.valueOf(jobEvent.getValue()));
-                    } else if (Constants.JOB_EVENT_STARRED_ARTICLED_COUNT.equals(name)) {
+                    } else if (ImportJobEvents.JOB_EVENT_STARRED_ARTICLED_COUNT.equals(name)) {
                         jobJson.put("starred_total", Integer.valueOf(jobEvent.getValue()));
-                    } else if (Constants.JOB_EVENT_FEED_IMPORT_SUCCESS.equals(name)) {
+                    } else if (ImportJobEvents.JOB_EVENT_FEED_IMPORT_SUCCESS.equals(name)) {
                         feedSuccess++;
-                    } else if (Constants.JOB_EVENT_FEED_IMPORT_FAILURE.equals(name)) {
+                    } else if (ImportJobEvents.JOB_EVENT_FEED_IMPORT_FAILURE.equals(name)) {
                         feedFailure++;
-                    } else if (Constants.JOB_EVENT_STARRED_ARTICLE_IMPORT_SUCCESS.equals(name)) {
+                    } else if (ImportJobEvents.JOB_EVENT_STARRED_ARTICLE_IMPORT_SUCCESS.equals(name)) {
                         starredSuccess++;
-                    } else if (Constants.JOB_EVENT_STARRED_ARTICLE_IMPORT_FAILURE.equals(name)) {
+                    } else if (ImportJobEvents.JOB_EVENT_STARRED_ARTICLE_IMPORT_FAILURE.equals(name)) {
                         starredFailure++;
                     }
                 }

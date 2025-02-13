@@ -4,7 +4,7 @@ import java.util.Locale;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.sismics.reader.core.constant.Constants;
+import com.sismics.reader.core.constant.DefaultConfig;
 import com.sismics.reader.core.dao.jpa.LocaleDao;
 
 /**
@@ -52,11 +52,11 @@ public class LocaleUtil {
                 localeId = locale.getId();
             } else {
                 // The client provided an unknown locale
-                localeId = Constants.DEFAULT_LOCALE_ID;
+                localeId = DefaultConfig.DEFAULT_LOCALE_ID;
             }
         }
         if (StringUtils.isBlank(localeId)) {
-            localeId = Constants.DEFAULT_LOCALE_ID;
+            localeId = DefaultConfig.DEFAULT_LOCALE_ID;
         }
         return localeId;
     }

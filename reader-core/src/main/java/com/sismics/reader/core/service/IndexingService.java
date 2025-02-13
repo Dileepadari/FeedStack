@@ -2,13 +2,14 @@ package com.sismics.reader.core.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractScheduledService;
-import com.sismics.reader.core.constant.Constants;
+
+import com.sismics.reader.core.constant.LuceneConfig;
 import com.sismics.reader.core.dao.jpa.UserArticleDao;
 import com.sismics.reader.core.dao.jpa.criteria.UserArticleCriteria;
 import com.sismics.reader.core.dao.jpa.dto.UserArticleDto;
 import com.sismics.reader.core.dao.lucene.ArticleDao;
 import com.sismics.reader.core.event.RebuildIndexAsyncEvent;
-import com.sismics.reader.core.model.context.AppContext;
+import com.sismics.reader.core.mediator.Mediator;
 import com.sismics.reader.core.model.jpa.Article;
 import com.sismics.reader.core.model.jpa.UserArticle;
 import com.sismics.reader.core.util.DirectoryUtil;
@@ -52,21 +53,27 @@ public class IndexingService extends AbstractScheduledService {
     private DirectoryReader directoryReader;
 
     /**
+     * Mediator.
+     */
+    private Mediator mediator;
+    
+    /**
      * Lucene storage config.
      */
     private String luceneStorageConfig;
 
-    public IndexingService(String luceneStorageConfig) {
+    public IndexingService(String luceneStorageConfig, Mediator mediator) {
         this.luceneStorageConfig = luceneStorageConfig;
+        this.mediator = mediator;
     }
 
     @Override
     protected void startUp() {
         // RAM directory storage by default
-        if (luceneStorageConfig == null || luceneStorageConfig.equals(Constants.LUCENE_DIRECTORY_STORAGE_RAM)) {
+        if (luceneStorageConfig == null || luceneStorageConfig.equals(LuceneConfig.LUCENE_DIRECTORY_STORAGE_RAM)) {
             directory = new RAMDirectory();
             log.info("Using RAM Lucene storage");
-        } else if (luceneStorageConfig.equals(Constants.LUCENE_DIRECTORY_STORAGE_FILE)) {
+        } else if (luceneStorageConfig.equals(LuceneConfig.LUCENE_DIRECTORY_STORAGE_FILE)) {
             File luceneDirectory = DirectoryUtil.getLuceneDirectory();
             log.info("Using file Lucene storage: {}", luceneDirectory);
             try {
@@ -169,7 +176,7 @@ public class IndexingService extends AbstractScheduledService {
      */
     public void rebuildIndex() throws Exception {
         RebuildIndexAsyncEvent rebuildIndexAsyncEvent = new RebuildIndexAsyncEvent();
-        AppContext.getInstance().getAsyncEventBus().post(rebuildIndexAsyncEvent);
+        mediator.notify(this, rebuildIndexAsyncEvent);
     }
 
     /**
