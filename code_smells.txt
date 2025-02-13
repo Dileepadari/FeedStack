@@ -9,49 +9,52 @@ File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/Use
 Smells Found:
 [
   {
-    "type": "Long Class",
+    "type": "Data Class",
     "category": "design",
-    "description": "The class has more than 200 lines of code.",
+    "description": "`User` and `AuthenticationToken` are simple data classes with no behaviors.",
     "files": [
-      "User.java"
+      "both"
     ],
-    "fix": "Split the class into multiple smaller classes."
+    "fix": "Consider making them immutable and using a builder pattern for creating instances."
   },
   {
-    "type": "Large Method",
+    "type": "Lazy Initialization",
     "category": "code",
-    "description": "The method has more than 100 lines of code.",
+    "description": "The `authenticationTokens` field in `User` is lazily initialized, which can lead to unexpected behavior.",
     "files": [
       "User.java"
     ],
-    "fix": "Split the method into multiple smaller methods."
+    "fix": "Consider making the field eager-initialized."
   },
   {
-    "type": "Duplicated Code",
+    "type": "Magic Numbers",
     "category": "code",
-    "description": "The code is duplicated in multiple places.",
+    "description": "The `@Column(length = 50)` and `@Column(length = 256)` annotations use magic numbers for the column lengths.",
     "files": [
-      "User.java"
+      "User.java",
+      "AuthenticationToken.java"
     ],
-    "fix": "Extract the duplicated code into a separate method or class."
+    "fix": "Replace the magic numbers with meaningful constants."
   },
   {
-    "type": "God Class",
+    "type": "Long Method",
+    "category": "code",
+    "description": "The `equals` and `hashCode` methods in both `User` and `AuthenticationToken` are too long and complex.",
+    "files": [
+      "User.java",
+      "AuthenticationToken.java"
+    ],
+    "fix": "Extract the common code into helper methods or use a library for generating equals and hashCode methods."
+  },
+  {
+    "type": "Nested Builder Class",
     "category": "design",
-    "description": "The class has too many responsibilities.",
+    "description": "The `Builder` classes in both `User` and `AuthenticationToken` are nested within the main class, which makes the code harder to read and maintain.",
     "files": [
-      "User.java"
+      "User.java",
+      "AuthenticationToken.java"
     ],
-    "fix": "Split the class into multiple smaller classes."
-  },
-  {
-    "type": "Switch Statement",
-    "category": "code",
-    "description": "The code uses a switch statement with more than 5 cases.",
-    "files": [
-      "User.java"
-    ],
-    "fix": "Replace the switch statement with a more appropriate data structure, such as a map or a lookup table."
+    "fix": "Move the `Builder` classes to separate files."
   }
 ]
 

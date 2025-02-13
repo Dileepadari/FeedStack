@@ -1,28 +1,40 @@
 ```java
 package com.sismics.reader.core.model.jpa;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+
 @Entity
 @Table(name = "users")
 public class User implements Serializable {
+
+    private static final int MAX_USERNAME_LENGTH = 50;
+    private static final int MAX_PASSWORD_LENGTH = 256;
+    private static final int MAX_EMAIL_LENGTH = 50;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "user_id", nullable = false)
     private String id;
 
-    @Column(name = "username", nullable = false, length = 50, unique = true)
+    @Column(name = "username", nullable = false, length = MAX_USERNAME_LENGTH, unique = true)
     private String username;
 
-    @Column(name = "password", nullable = false, length = 256)
+    @Column(name = "password", nullable = false, length = MAX_PASSWORD_LENGTH)
     private String password;
 
-    @Column(name = "email", nullable = false, length = 50, unique = true)
+    @Column(name = "email", nullable = false, length = MAX_EMAIL_LENGTH, unique = true)
     private String email;
 
     @Column(name = "create_date", nullable = false)
@@ -37,8 +49,79 @@ public class User implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     private Set<AuthenticationToken> authenticationTokens = new HashSet<>();
 
-    // Getters and Setters (omitted)
+    public User() {
+    }
 
+    private User(String id, String username, String password, String email, Date createDate, Date modifiedDate, boolean firstConnection, Set<AuthenticationToken> authenticationTokens) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.createDate = createDate;
+        this.modifiedDate = modifiedDate;
+        this.firstConnection = firstConnection;
+        this.authenticationTokens = authenticationTokens;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+    public Date getModifiedDate() {
+        return modifiedDate;
+    }
+
+    public void setModifiedDate(Date modifiedDate) {
+        this.modifiedDate = modifiedDate;
+    }
+
+    public boolean isFirstConnection() {
+        return firstConnection;
+    }
+
+    public void setFirstConnection(boolean firstConnection) {
+        this.firstConnection = firstConnection;
+    }
+
+    public Set<AuthenticationToken> getAuthenticationTokens() {
+        return authenticationTokens;
+    }
+
+    public void setAuthenticationTokens(Set<AuthenticationToken> authenticationTokens) {
+        this.authenticationTokens = authenticationTokens;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -148,19 +231,31 @@ public class User implements Serializable {
 ```java
 package com.sismics.reader.core.model.jpa;
 
-import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 
 @Entity
 @Table(name = "authentication_tokens")
 public class AuthenticationToken implements Serializable {
+
+    private static final int MAX_TOKEN_LENGTH = 256;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "token_id", nullable = false)
     private String id;
 
-    @Column(name = "token", nullable = false, length = 256)
+    @Column(name = "token", nullable = false, length = MAX_TOKEN_LENGTH)
     private String token;
 
     @Column(name = "create_date", nullable = false)
@@ -170,73 +265,14 @@ public class AuthenticationToken implements Serializable {
     @JoinColumn(name = "user_id")
     private User user;
 
-    // Getters and Setters (omitted)
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        AuthenticationToken that = (AuthenticationToken) o;
-
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (token != null ? !token.equals(that.token) : that.token != null) return false;
-        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
-        return user != null ? user.equals(that.user) : that.user == null;
+    public AuthenticationToken() {
     }
 
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (token != null ? token.hashCode() : 0);
-        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
-        result = 31 * result + (user != null ? user.hashCode() : 0);
-        return result;
+    private AuthenticationToken(String id, String token, Date createDate, User user) {
+        this.id = id;
+        this.token = token;
+        this.createDate = createDate;
+        this.user = user;
     }
 
-    @Override
-    public String toString() {
-        return "AuthenticationToken{" +
-                "id='" + id + '\'' +
-                ", token='" + token + '\'' +
-                ", createDate=" + createDate +
-                ", user=" + user +
-                '}';
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private String id;
-        private String token;
-        private Date createDate;
-        private User user;
-
-        public Builder id(String id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder token(String token) {
-            this.token = token;
-            return this;
-        }
-
-        public Builder createDate(Date createDate) {
-            this.createDate = createDate;
-            return this;
-        }
-
-        public Builder user(User user) {
-            this.user = user;
-            return this;
-        }
-
-        public AuthenticationToken build() {
-            return new AuthenticationToken(id, token, createDate, user);
-        }
-    }
-}
-```
+    public String getId
