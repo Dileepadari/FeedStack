@@ -11,20 +11,47 @@ Smells Found:
   {
     "type": "LongParameterList",
     "category": "code",
-    "description": "The constructor User has 8 parameters.",
+    "description": "The constructor `User` has 8 parameters. This makes the code difficult to read and maintain, and increases the chances of errors.",
     "files": [
       "file1"
     ],
-    "fix": "Extract a class to encapsulate some of the parameters."
+    "fix": "Consider using the builder pattern or a more concise constructor with default values for some parameters."
+  },
+  {
+    "type": "MutableState",
+    "category": "design",
+    "description": "The `User` class has mutable state, which can lead to unexpected behavior and bugs. For example, the `authenticationTokens` field can be modified after the object is created, which could lead to inconsistencies in the system.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Consider making the `User` class immutable or using a more appropriate data structure for managing the `authenticationTokens` field."
   },
   {
     "type": "LongMethod",
     "category": "code",
-    "description": "The method toString has more than 15 lines.",
+    "description": "The `toString` method in the `User` class is too long (22 lines). This makes the code difficult to read and maintain.",
     "files": [
       "file1"
     ],
-    "fix": "Extract some of the logic from the method into smaller helper methods."
+    "fix": "Consider refactoring the `toString` method to make it more concise and readable."
+  },
+  {
+    "type": "NestedClass",
+    "category": "design",
+    "description": "The `Builder` class is nested within the `User` class. This makes the code more difficult to read and navigate, and it can lead to confusion about the relationship between the two classes.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Consider moving the `Builder` class to a separate file or package."
+  },
+  {
+    "type": "UnnecessaryNullChecks",
+    "category": "code",
+    "description": "The `equals` and `hashCode` methods in the `User` class contain unnecessary null checks. These checks can be removed without affecting the correctness of the methods.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Remove the unnecessary null checks from the `equals` and `hashCode` methods."
   }
 ]
 
