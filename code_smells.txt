@@ -11,49 +11,40 @@ Files:
 Smells Found:
 [
   {
-    "type": "God Class",
-    "category": "design",
-    "description": "The `AllResource` class has too many responsibilities, including getting articles, marking articles as read, and returning information about the application.",
+    "type": "Excessive cyclomatic complexity",
+    "category": "code",
+    "description": "The `get()` method in `AllResource` has a cyclomatic complexity of 14, which is above the recommended threshold of 10.",
     "files": [
-      "file1"
+      "File 1"
     ],
-    "fix": "Extract the different responsibilities into separate classes."
+    "fix": "The method should be refactored to reduce its complexity, such as by extracting some of its functionality into separate methods."
+  },
+  {
+    "type": "Excessive nesting",
+    "category": "code",
+    "description": "The `get()` method in `AllResource` has a nesting level of 5, which can make the code difficult to read and understand.",
+    "files": [
+      "File 1"
+    ],
+    "fix": "The method should be refactored to reduce its nesting level, such as by using more descriptive variable names and breaking up complex expressions into multiple lines."
+  },
+  {
+    "type": "God class",
+    "category": "design",
+    "description": "The `AppResource` class has a high number of methods and responsibilities, which can make it difficult to maintain and evolve.",
+    "files": [
+      "File 2"
+    ],
+    "fix": "The class should be refactored to split its responsibilities into multiple smaller classes."
   },
   {
     "type": "Shotgun Surgery",
     "category": "design",
-    "description": "The `read()` method is responsible for both marking all articles as read and updating the unread count for each feed subscription.",
+    "description": "The `batchReindex()` method in `AppResource` is responsible for both rebuilding the articles index and handling errors that may occur during the process.",
     "files": [
-      "file1"
+      "File 2"
     ],
-    "fix": "Extract the updating of the unread count for each feed subscription into a separate method."
-  },
-  {
-    "type": "Long Parameter List",
-    "category": "code",
-    "description": "The `get()` method has a long parameter list, making it difficult to read and understand.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Use a request object to encapsulate the parameters."
-  },
-  {
-    "type": "Deeply Nested Code",
-    "category": "code",
-    "description": "The `log()` method contains deeply nested code, making it difficult to follow the logic.",
-    "files": [
-      "file2"
-    ],
-    "fix": "Extract the nested code into separate methods."
-  },
-  {
-    "type": "Unhandled Exception",
-    "category": "code",
-    "description": "The `version()` method does not handle the `JSONException` that can be thrown when creating the response.",
-    "files": [
-      "file2"
-    ],
-    "fix": "Add exception handling to the `version()` method."
+    "fix": "The method should be refactored to separate its responsibilities into two distinct methods, one for rebuilding the index and one for handling errors."
   }
 ]
 
