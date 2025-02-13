@@ -53,37 +53,8 @@ public class User implements Serializable {
      */
     @Column(name = "locale_id", length = 5)
     private String localeId;
-
-    /**
-     * Display title for the web version.
-     */
-    @Column(name = "display_title_web", nullable = false)
-    private boolean displayTitleWeb;
-
-    /**
-     * Display title for the mobile version.
-     */
-    @Column(name = "display_title_mobile", nullable = false)
-    private boolean displayTitleMobile;
-
-    /**
-     * Display number of unread feeds for the web version.
-     */
-    @Column(name = "display_unread_web", nullable = false)
-    private boolean displayUnreadWeb;
-
-    /**
-     * Display number of unread feeds for the mobile version.
-     */
-    @Column(name = "display_unread_mobile", nullable = false)
-    private boolean displayUnreadMobile;
-
-    /**
-     * Narrow article.
-     */
-    @Column(name = "narrow_article", nullable = false)
-    private boolean narrowArticle;
-
+    
+    
     /**
      * Creation date.
      */
@@ -229,96 +200,6 @@ public class User implements Serializable {
     }
 
     /**
-     * Is display title for the web version enabled?
-     *
-     * @return True if display title for the web version is enabled.
-     */
-    public boolean isDisplayTitleWeb() {
-        return displayTitleWeb;
-    }
-
-    /**
-     * Enable/disable display title for the web version.
-     *
-     * @param displayTitleWeb True to enable display title for the web version.
-     */
-    public void setDisplayTitleWeb(boolean displayTitleWeb) {
-        this.displayTitleWeb = displayTitleWeb;
-    }
-
-    /**
-     * Is display title for the mobile version enabled?
-     *
-     * @return True if display title for the mobile version is enabled.
-     */
-    public boolean isDisplayTitleMobile() {
-        return displayTitleMobile;
-    }
-
-    /**
-     * Enable/disable display title for the mobile version.
-     *
-     * @param displayTitleMobile True to enable display title for the mobile version.
-     */
-    public void setDisplayTitleMobile(boolean displayTitleMobile) {
-        this.displayTitleMobile = displayTitleMobile;
-    }
-
-    /**
-     * Is display number of unread feeds for the web version enabled?
-     *
-     * @return True if display number of unread feeds for the web version is enabled.
-     */
-    public boolean isDisplayUnreadWeb() {
-        return displayUnreadWeb;
-    }
-
-    /**
-     * Enable/disable display number of unread feeds for the web version.
-     *
-     * @param displayUnreadWeb True to enable display number of unread feeds for the web version.
-     */
-    public void setDisplayUnreadWeb(boolean displayUnreadWeb) {
-        this.displayUnreadWeb = displayUnreadWeb;
-    }
-
-    /**
-     * Is display number of unread feeds for the mobile version enabled?
-     *
-     * @return True if display number of unread feeds for the mobile version is enabled.
-     */
-    public boolean isDisplayUnreadMobile() {
-        return displayUnreadMobile;
-    }
-
-    /**
-     * Enable/disable display number of unread feeds for the mobile version.
-     *
-     * @param displayUnreadMobile True to enable display number of unread feeds for the mobile version.
-     */
-    public void setDisplayUnreadMobile(boolean displayUnreadMobile) {
-        this.displayUnreadMobile = displayUnreadMobile;
-    }
-
-    /**
-     * Is narrow article enabled?
-     *
-     * @return True if narrow article is enabled.
-     */
-    public boolean isNarrowArticle() {
-        return narrowArticle;
-    }
-
-    /**
-     * Enable/disable narrow article.
-     *
-     * @param narrowArticle True to enable narrow article.
-     */
-    public void setNarrowArticle(boolean narrowArticle) {
-        this.narrowArticle = narrowArticle;
-    }
-
-    /**
      * Get the creation date.
      *
      * @return The creation date.
@@ -344,3 +225,152 @@ public class User implements Serializable {
     public Date getModifiedDate() {
         return modifiedDate;
     }
+
+    /**
+     * Set the modified date.
+     *
+     * @param modifiedDate The modified date.
+     */
+    public void setModifiedDate(Date modifiedDate) {
+        this.modifiedDate = modifiedDate;
+    }
+
+    /**
+     * Is first connection.
+     *
+     * @return True if first connection.
+     */
+    public boolean isFirstConnection() {
+        return firstConnection;
+    }
+
+    /**
+     * Set first connection.
+     *
+     * @param firstConnection True if first connection.
+     */
+    public void setFirstConnection(boolean firstConnection) {
+        this.firstConnection = firstConnection;
+    }
+
+    /**
+     * Get the theme.
+     *
+     * @return The theme.
+     */
+    public String getTheme() {
+        return theme;
+    }
+
+    /**
+     * Set the theme.
+     *
+     * @param theme The theme.
+     */
+    public void setTheme(String theme) {
+        this.theme = theme;
+    }
+
+    /**
+     * Get the last login date.
+     *
+     * @return The last login date.
+     */
+    public Date getLastLoginDate() {
+        return lastLoginDate;
+    }
+
+    /**
+     * Set the last login date.
+     *
+     * @param lastLoginDate The last login date.
+     */
+    public void setLastLoginDate(Date lastLoginDate) {
+        this.lastLoginDate = lastLoginDate;
+    }
+
+    /**
+     * Get the authentication tokens.
+     *
+     * @return The authentication tokens.
+     */
+    public Set<AuthenticationToken> getAuthenticationTokens() {
+        return authenticationTokens;
+    }
+
+    /**
+     * Set the authentication tokens.
+     *
+     * @param authenticationTokens The authentication tokens.
+     */
+    public void setAuthenticationTokens(Set<AuthenticationToken> authenticationTokens) {
+        this.authenticationTokens = authenticationTokens;
+    }
+
+
+    public static class Builder {
+        private String userId;
+        private String roleId;
+        private String username;
+        private String password;
+        private String email;
+        private String localeId;
+        private Date createDate;
+        private Date modifiedDate;
+        private boolean firstConnection;
+        private String theme;
+        private Date lastLoginDate;
+
+        public Builder setUserId(String userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public Builder setRoleId(String roleId) {
+            this.roleId = roleId;
+            return this;
+        }
+
+        public Builder setUsername(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public Builder setPassword(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public Builder setEmail(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public Builder setLocaleId(String localeId) {
+            this.localeId = localeId;
+            return this;
+        }
+
+        public Builder setCreateDate(Date createDate) {
+            this.createDate = createDate;
+            return this;
+        }
+
+        public Builder setModifiedDate(Date modifiedDate) {
+            this.modifiedDate = modifiedDate;
+            return this;
+        }
+
+        public Builder setFirstConnection(boolean firstConnection) {
+            this.firstConnection = firstConnection;
+            return this;
+        }
+
+        public Builder setTheme(String theme) {
+            this.theme = theme;
+            return this;
+        }
+
+        public Builder setLastLoginDate(Date lastLoginDate) {
+            this.lastLoginDate = lastLoginDate;
+            return this;
