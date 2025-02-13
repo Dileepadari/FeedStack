@@ -1,3 +1,4 @@
+
 package com.sismics.reader.rest.resource;
 
 import com.sismics.reader.core.dao.jpa.ArticleDao;
@@ -22,14 +23,15 @@ import java.util.List;
 
 /**
  * Article REST resources.
- * 
+ *
  * @author jtremeaux
  */
 @Path("/article")
 public class ArticleResource extends BaseResource {
+
     /**
      * Marks an article as read.
-     * 
+     *
      * @param id Article ID
      * @return Response
      */
@@ -41,31 +43,10 @@ public class ArticleResource extends BaseResource {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
-        
-        // Get the article
-        UserArticleDao userArticleDao = new UserArticleDao();
-        UserArticle userArticle = userArticleDao.getUserArticle(id, principal.getId());
-        if (userArticle == null) {
-            throw new ClientException("ArticleNotFound", MessageFormat.format("Article not found: {0}", id));
-        }
-        
-        if (userArticle.getReadDate() == null) {
-            // Update the article
-            userArticle.setReadDate(new Date());
-            userArticleDao.update(userArticle);
-    
-            // Update the subscriptions
-            ArticleDto article = new ArticleDao().findFirstByCriteria(
-                    new ArticleCriteria().setId(userArticle.getArticleId()));
-    
-            FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
-            for (FeedSubscriptionDto feedSubscription : feedSubscriptionDao.findByCriteria(new FeedSubscriptionCriteria()
-                    .setFeedId(article.getFeedId())
-                    .setUserId(principal.getId()))) {
-                feedSubscriptionDao.updateUnreadCount(feedSubscription.getId(), feedSubscription.getUnreadUserArticleCount() - 1);
-            }
-        }
-        
+
+        // Update article
+        ArticleResourceHelper.updateArticleReadStatus(id, principal.getId(), true);
+
         // Always return ok
         JSONObject response = new JSONObject();
         response.put("status", "ok");
@@ -74,7 +55,7 @@ public class ArticleResource extends BaseResource {
 
     /**
      * Marks multiple articles as read.
-     * 
+     *
      * @param idList List of article ID
      * @return Response
      */
@@ -86,42 +67,21 @@ public class ArticleResource extends BaseResource {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
-        
+
         for (String id : idList) {
-            // Get the article
-            UserArticleDao userArticleDao = new UserArticleDao();
-            UserArticle userArticle = userArticleDao.getUserArticle(id, principal.getId());
-            if (userArticle == null) {
-                throw new ClientException("ArticleNotFound", MessageFormat.format("Article not found: {0}", id));
-            }
-            
-            if (userArticle.getReadDate() == null) {
-                // Update the article
-                userArticle.setReadDate(new Date());
-                userArticleDao.update(userArticle);
-    
-                // Update the subscriptions
-                ArticleDto article = new ArticleDao().findFirstByCriteria(
-                        new ArticleCriteria().setId(userArticle.getArticleId()));
-    
-                FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
-                for (FeedSubscriptionDto feedSubscription : feedSubscriptionDao.findByCriteria(new FeedSubscriptionCriteria()
-                        .setFeedId(article.getFeedId())
-                        .setUserId(principal.getId()))) {
-                    feedSubscriptionDao.updateUnreadCount(feedSubscription.getId(), feedSubscription.getUnreadUserArticleCount() - 1);
-                }
-            }
+            // Update article
+            ArticleResourceHelper.updateArticleReadStatus(id, principal.getId(), true);
         }
-        
+
         // Always return ok
         JSONObject response = new JSONObject();
         response.put("status", "ok");
         return Response.ok().entity(response).build();
     }
-    
+
     /**
      * Marks an article as unread.
-     * 
+     *
      * @param id Article ID
      * @return Response
      */
@@ -133,40 +93,19 @@ public class ArticleResource extends BaseResource {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
-        
-        // Get the article
-        UserArticleDao userArticleDao = new UserArticleDao();
-        UserArticle userArticle = userArticleDao.getUserArticle(id, principal.getId());
-        if (userArticle == null) {
-            throw new ClientException("ArticleNotFound", MessageFormat.format("Article not found: {0}", id));
-        }
-        
-        if (userArticle.getReadDate() != null) {
-            // Update the article
-            userArticle.setReadDate(null);
-            userArticleDao.update(userArticle);
-    
-            // Update the subscriptions
-            ArticleDto article = new ArticleDao().findFirstByCriteria(
-                    new ArticleCriteria().setId(userArticle.getArticleId()));
-    
-            FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
-            for (FeedSubscriptionDto feedSubscription : feedSubscriptionDao.findByCriteria(new FeedSubscriptionCriteria()
-                    .setFeedId(article.getFeedId())
-                    .setUserId(principal.getId()))) {
-                feedSubscriptionDao.updateUnreadCount(feedSubscription.getId(), feedSubscription.getUnreadUserArticleCount() + 1);
-            }
-        }
-        
+
+        // Update article
+        ArticleResourceHelper.updateArticleReadStatus(id, principal.getId(), false);
+
         // Always return ok
         JSONObject response = new JSONObject();
         response.put("status", "ok");
         return Response.ok().entity(response).build();
     }
-    
+
     /**
      * Marks multiple articles as unread.
-     * 
+     *
      * @param idList List of article ID
      * @return Response
      */
@@ -178,36 +117,45 @@ public class ArticleResource extends BaseResource {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
-        
+
         for (String id : idList) {
-            // Get the article
-            UserArticleDao userArticleDao = new UserArticleDao();
-            UserArticle userArticle = userArticleDao.getUserArticle(id, principal.getId());
-            if (userArticle == null) {
-                throw new ClientException("ArticleNotFound", MessageFormat.format("Article not found: {0}", id));
-            }
-            
-            if (userArticle.getReadDate() != null) {
-                // Update the article
-                userArticle.setReadDate(null);
-                userArticleDao.update(userArticle);
-    
-                // Update the subscriptions
-                ArticleDto article = new ArticleDao().findFirstByCriteria(
-                        new ArticleCriteria().setId(userArticle.getArticleId()));
-    
-                FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
-                for (FeedSubscriptionDto feedSubscription : feedSubscriptionDao.findByCriteria(new FeedSubscriptionCriteria()
-                        .setFeedId(article.getFeedId())
-                        .setUserId(principal.getId()))) {
-                    feedSubscriptionDao.updateUnreadCount(feedSubscription.getId(), feedSubscription.getUnreadUserArticleCount() + 1);
-                }
-            }
+            // Update article
+            ArticleResourceHelper.updateArticleReadStatus(id, principal.getId(), false);
         }
-        
+
         // Always return ok
         JSONObject response = new JSONObject();
         response.put("status", "ok");
         return Response.ok().entity(response).build();
+    }
+
+    private static class ArticleResourceHelper {
+
+        public static void updateArticleReadStatus(String articleId, String userId, boolean read) throws JSONException {
+            // Get the article
+            UserArticleDao userArticleDao = new UserArticleDao();
+            UserArticle userArticle = userArticleDao.getUserArticle(articleId, userId);
+            if (userArticle == null) {
+                throw new ClientException("ArticleNotFound", MessageFormat.format("Article not found: {0}", articleId));
+            }
+
+            // Update the article
+            if (userArticle.getReadDate() != (read ? null : new Date())) {
+                userArticle.setReadDate(read ? new Date() : null);
+                userArticleDao.update(userArticle);
+
+                // Update the subscriptions
+                ArticleDto article = new ArticleDao().findFirstByCriteria(
+                        new ArticleCriteria().setId(userArticle.getArticleId()));
+
+                FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
+                for (FeedSubscriptionDto feedSubscription : feedSubscriptionDao.findByCriteria(new FeedSubscriptionCriteria()
+                        .setFeedId(article.getFeedId())
+                        .setUserId(userId))) {
+                    feedSubscriptionDao.updateUnreadCount(feedSubscription.getId(),
+                            feedSubscription.getUnreadUserArticleCount() + (read ? -1 : 1));
+                }
+            }
+        }
     }
 }

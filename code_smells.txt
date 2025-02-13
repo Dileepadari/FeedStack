@@ -1,0 +1,143 @@
+File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/SubscriptionResource.java
+Smells Found:
+[
+  {
+    "type": "Spaghetti Code",
+    "category": "code",
+    "description": "Method list is more than 30 lines.",
+    "fix": "Consider refactoring into multiple smaller methods."
+  },
+  {
+    "type": "Excessive Complexity",
+    "category": "code",
+    "description": "Cyclomatic complexity of the method is too high.",
+    "fix": "Extract logic into helper methods to reduce complexity."
+  }
+]
+
+File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/StarredResource.java
+Smells Found:
+[
+  {
+    "type": "Duplicated code",
+    "category": "code",
+    "description": "The code to get the user article and update the article is duplicated in the star and unstar methods.",
+    "fix": "Extract this code to a separate method."
+  },
+  {
+    "type": "Exception catching",
+    "category": "code",
+    "description": "The method `get` catches all exceptions and treats them as ClientExceptions. This makes it hard to debug the real cause of the exception.",
+    "fix": "Catch only the exceptions that are relevant to the method's functionality and rethrow the rest."
+  },
+  {
+    "type": "Lack of separation of concerns",
+    "category": "design",
+    "description": "The resource class is responsible for both getting and modifying user articles. This makes the class hard to understand and maintain.",
+    "fix": "Move the methods for modifying user articles to a separate class."
+  }
+]
+
+File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/AppResource.java
+Smells Found:
+[
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "The `AppResource` class has too many responsibilities, including versioning, logging, indexing, and port mapping.",
+    "fix": "Refactor the class into smaller, more cohesive units."
+  },
+  {
+    "type": "Long Method",
+    "category": "code",
+    "description": "The `log` method is over 50 lines long and performs multiple distinct tasks.",
+    "fix": "Break the method into smaller, more manageable pieces."
+  },
+  {
+    "type": "Error Handling",
+    "category": "code",
+    "description": "The `log` method uses a broad `catch` block to handle all exceptions, which can make it difficult to determine the cause of an error.",
+    "fix": "Use more specific `catch` blocks to handle different types of exceptions."
+  }
+]
+
+File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/AllResource.java
+Smells Found:
+[
+  {
+    "type": "UnhandledException",
+    "category": "code",
+    "description": "The `get` method can throw a `JSONException` exception which is not handled",
+    "fix": "Add a `try-catch` block to handle the exception and return an appropriate error response."
+  },
+  {
+    "type": "UnnecessaryInstantiation",
+    "category": "code",
+    "description": "The `UserArticleDao` and `FeedSubscriptionDao` instances are created in every request",
+    "fix": "Move the instantiation of these DAOs to a singleton or a request scope to avoid unnecessary object creation."
+  }
+]
+
+File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/ArticleResource.java
+Smells Found:
+[
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "This class has too many responsibilities and knows too much about the system.",
+    "fix": "Split the class into smaller, more focused classes."
+  },
+  {
+    "type": "Duplicated Code",
+    "category": "code",
+    "description": "The code to update the subscriptions is duplicated in the `read` and `unread` methods.",
+    "fix": "Extract the code to update the subscriptions into a separate method."
+  }
+]
+
+File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/UserResource.java
+Smells Found:
+[
+  {
+    "type": "Long Method",
+    "category": "code",
+    "description": "The `register` method is too long (100+ lines)",
+    "fix": "Split the method into smaller, more manageable functions."
+  },
+  {
+    "type": "Excessive Parameters",
+    "category": "code",
+    "description": "The `register` method has too many parameters (10+)",
+    "fix": "Consider using a data transfer object (DTO) to group the parameters."
+  },
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "The `UserResource` class is responsible for too many different tasks",
+    "fix": "Split the class into smaller, more focused classes."
+  }
+]
+
+File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/CategoryResource.java
+Smells Found:
+[
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "CategoryResource has too many responsibilities.",
+    "fix": "Extract responsibilities into separate classes."
+  },
+  {
+    "type": "Long Method",
+    "category": "code",
+    "description": "The `get` method has over 50 lines of code.",
+    "fix": "Refactor the method into smaller, more manageable methods."
+  },
+  {
+    "type": "Repeated Code",
+    "category": "code",
+    "description": "The `update` method has a lot of repeated code for updating the category.",
+    "fix": "Extract the repeated code into a separate method."
+  }
+]
+

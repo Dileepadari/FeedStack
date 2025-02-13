@@ -24,16 +24,16 @@ import java.util.List;
 
 /**
  * All articles REST resources.
- * 
+ *
  * @author jtremeaux
  */
 @Path("/all")
 public class AllResource extends BaseResource {
     /**
      * Returns all articles.
-     * 
+     *
      * @param unread Returns only unread articles
-     * @param limit Page limit
+     * @param limit  Page limit
      * @param afterArticle Start the list after this user article
      * @return Response
      */
@@ -42,13 +42,13 @@ public class AllResource extends BaseResource {
     public Response get(
             @QueryParam("unread") boolean unread,
             @QueryParam("limit") Integer limit,
-            @QueryParam("after_article") String afterArticle) throws JSONException {
+            @QueryParam("after_article") String afterArticle) {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
 
         // Get the articles
-        UserArticleDao userArticleDao = new UserArticleDao();
+        UserArticleDao userArticleDao = daoFactory.getUserArticleDao();
         UserArticleCriteria userArticleCriteria = new UserArticleCriteria()
                 .setUnread(unread)
                 .setUserId(principal.getId())
@@ -71,7 +71,7 @@ public class AllResource extends BaseResource {
 
         PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(limit, null);
         userArticleDao.findByCriteria(paginatedList, userArticleCriteria, null, null);
-        
+
         // Build the response
         JSONObject response = new JSONObject();
 
@@ -79,31 +79,35 @@ public class AllResource extends BaseResource {
         for (UserArticleDto userArticle : paginatedList.getResultList()) {
             articles.add(ArticleAssembler.asJson(userArticle));
         }
-        response.put("articles", articles);
+        try {
+            response.put("articles", articles);
+        } catch (JSONException e) {
+            throw new ClientException("UnexpectedError", e);
+        }
 
         return Response.ok().entity(response).build();
     }
 
     /**
      * Marks all articles as read.
-     * 
+     *
      * @return Response
      */
     @POST
     @Path("/read")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response read() throws JSONException {
+    public Response read() {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
-        
+
         // Marks all articles of this user as read
-        UserArticleDao userArticleDao = new UserArticleDao();
+        UserArticleDao userArticleDao = daoFactory.getUserArticleDao();
         userArticleDao.markAsRead(new UserArticleCriteria()
                 .setUserId(principal.getId())
                 .setSubscribed(true));
 
-        FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
+        FeedSubscriptionDao feedSubscriptionDao = daoFactory.getFeedSubscriptionDao();
         for (FeedSubscriptionDto feedSubscrition : feedSubscriptionDao.findByCriteria(new FeedSubscriptionCriteria()
                 .setUserId(principal.getId()))) {
             feedSubscriptionDao.updateUnreadCount(feedSubscrition.getId(), 0);
@@ -111,8 +115,11 @@ public class AllResource extends BaseResource {
 
         // Always return ok
         JSONObject response = new JSONObject();
-        response.put("status", "ok");
+        try {
+            response.put("status", "ok");
+        } catch (JSONException e) {
+            throw new ClientException("UnexpectedError", e);
+        }
         return Response.ok().entity(response).build();
     }
-
 }
