@@ -1,32 +1,18 @@
 ```java
 package com.sismics.reader.core.model.jpa;
 
-import com.sismics.reader.core.model.UserAuthenticationToken;
-
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Optional;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "authentication_tokens")
-public class AuthenticationToken implements Serializable, UserAuthenticationToken {
+public class AuthenticationToken {
 
     private static final int MAX_TOKEN_LENGTH = 256;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "authentication_tokens_token_id_seq")
-    @SequenceGenerator(name = "authentication_tokens_token_id_seq", sequenceName = "authentication_tokens_token_id_seq", allocationSize = 1)
     @Column(name = "token_id", nullable = false)
     private String id;
 
@@ -34,23 +20,21 @@ public class AuthenticationToken implements Serializable, UserAuthenticationToke
     private String token;
 
     @Column(name = "create_date", nullable = false)
-    private Date createDate;
+    private java.sql.Date createDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(name = "user_id")
+    private String userId;
 
     public AuthenticationToken() {
     }
 
-    public AuthenticationToken(String id, String token, Date createDate, User user) {
+    public AuthenticationToken(String id, String token, java.sql.Date createDate, String userId) {
         this.id = id;
         this.token = token;
         this.createDate = createDate;
-        this.user = user;
+        this.userId = userId;
     }
 
-    @Override
     public String getId() {
         return id;
     }
@@ -59,7 +43,6 @@ public class AuthenticationToken implements Serializable, UserAuthenticationToke
         this.id = id;
     }
 
-    @Override
     public String getToken() {
         return token;
     }
@@ -68,26 +51,20 @@ public class AuthenticationToken implements Serializable, UserAuthenticationToke
         this.token = token;
     }
 
-    @Override
-    public Date getCreateDate() {
+    public java.sql.Date getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(Date createDate) {
+    public void setCreateDate(java.sql.Date createDate) {
         this.createDate = createDate;
     }
 
-    public User getUser() {
-        return user;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    @Override
-    public Optional<String> getUserId() {
-        return Optional.ofNullable(user).map(User::getId);
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     @Override
@@ -110,7 +87,7 @@ public class AuthenticationToken implements Serializable, UserAuthenticationToke
         if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) {
             return false;
         }
-        return user != null ? user.equals(that.user) : that.user == null;
+        return userId != null ? userId.equals(that.userId) : that.userId == null;
     }
 
     @Override
@@ -118,7 +95,7 @@ public class AuthenticationToken implements Serializable, UserAuthenticationToke
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (token != null ? token.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
-        result = 31 * result + (user != null ? user.hashCode() : 0);
+        result = 31 * result + (userId != null ? userId.hashCode() : 0);
         return result;
     }
 
@@ -128,18 +105,15 @@ public class AuthenticationToken implements Serializable, UserAuthenticationToke
                 "id='" + id + '\'' +
                 ", token='" + token + '\'' +
                 ", createDate=" + createDate +
-                ", user=" + user +
+                ", userId='" + userId + '\'' +
                 '}';
     }
 }
-```====FILE_DELIMITER====
+====FILE_DELIMITER====
 ```java
 package com.sismics.reader.core.model.jpa;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "users")
@@ -263,4 +237,22 @@ public class User {
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
-        result = 31 * result + (modifiedDate != null ? modifiedDate.hashCode
+        result = 31 * result + (modifiedDate != null ? modifiedDate.hashCode() : 0);
+        result = 31 * result + (firstConnection ? 1 : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", createDate=" + createDate +
+                ", modifiedDate=" + modifiedDate +
+                ", firstConnection=" + firstConnection +
+                '}';
+    }
+}
+```
