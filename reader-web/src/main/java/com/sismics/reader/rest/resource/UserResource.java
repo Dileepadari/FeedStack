@@ -52,7 +52,7 @@ public class User implements Serializable {
     public User() {
     }
 
-    public User(String id, String username, String password, String email, String roleId, String localeId, Date createDate, Date modifiedDate, boolean firstConnection, String theme, Date lastLoginDate, Set<AuthenticationToken> authenticationTokens) {
+    private User(String id, String username, String password, String email, String roleId, String localeId, Date createDate, Date modifiedDate, boolean firstConnection, String theme, Date lastLoginDate, Set<AuthenticationToken> authenticationTokens) {
         this.id = id;
         this.username = username;
         this.password = password;

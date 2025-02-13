@@ -11,58 +11,41 @@ Files:
 Smells Found:
 [
   {
-    "type": "Complex Filter",
+    "type": "Cyclic dependency",
     "category": "design",
-    "description": "The filter is responsible for authentication and injecting users into the request. It also has to deal with anonymous users and language.",
+    "description": "The two files depend on each other.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Extract common functionality into a separate module or library."
+  },
+  {
+    "type": "God class",
+    "category": "code",
+    "description": "The SecurityFilter class has too many responsibilities.",
     "files": [
       "file1"
     ],
-    "fix": "Extract the user authentication into a separate filter if possible."
+    "fix": "Break the class into smaller, more focused classes."
   },
   {
-    "type": "Switch Statement",
+    "type": "Long method",
     "category": "code",
-    "description": "The `injectUser` method uses a switch statement to inject different types of users.",
+    "description": "The doFilter method is too long.",
     "files": [
       "file1"
     ],
-    "fix": "Replace the switch statement with a conditional statement or a factory method."
+    "fix": "Extract the parts of the method that are not directly related to the core functionality into separate methods."
   },
   {
-    "type": "God Class",
-    "category": "design",
-    "description": "The `SecurityFilter` class is responsible for too many different tasks, including authentication, user injection, and request handling.",
+    "type": "Duplicated code",
+    "category": "code",
+    "description": "The injectAuthenticatedUser and injectAnonymousUser methods are very similar.",
     "files": [
       "file1"
     ],
-    "fix": "Split the class into smaller, more manageable classes."
-  },
-  {
-    "type": "Long Method",
-    "category": "code",
-    "description": "The `authenticate` method in `TokenBasedSecurityFilter` is too long and complex.",
-    "files": [
-      "file2"
-    ],
-    "fix": "Break the method down into smaller, more manageable methods."
-  },
-  {
-    "type": "Magic Number",
-    "category": "code",
-    "description": "The `TOKEN_LONG_LIFETIME` and `TOKEN_SESSION_LIFETIME` constants use magic numbers to represent time spans.",
-    "files": [
-      "file2"
-    ],
-    "fix": "Replace the magic numbers with named constants or use a configuration file to manage these values."
-  },
-  {
-    "type": "Duplicate Code",
-    "category": "code",
-    "description": "The `handleExpiredToken` method in `TokenBasedSecurityFilter` is duplicated in the `AuthenticationTokenDao` class.",
-    "files": [
-      "file2"
-    ],
-    "fix": "Move the code to a shared utility class or introduce an interface to abstract the behavior."
+    "fix": "Extract the common functionality into a separate method."
   }
 ]
 
@@ -71,49 +54,31 @@ File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/Use
 Smells Found:
 [
   {
-    "type": "LongParameterList",
+    "type": "Long Parameter List",
     "category": "code",
-    "description": "The `Builder` class in both files has a long parameter list that can make the code difficult to read and maintain.",
+    "description": "The constructor of the `User` class has 14 parameters, which is considered excessive and difficult to maintain.",
     "files": [
-      "both"
+      "file1"
     ],
-    "fix": "Consider using a builder pattern with a more concise and readable syntax."
+    "fix": "Use the builder pattern to create instances of the `User` class, or split the constructor into multiple methods with smaller parameter lists."
   },
   {
-    "type": "NestedBuilder",
+    "type": "Lazy Initialization",
     "category": "code",
-    "description": "The `Builder` class in both files is nested within the `User` and `AuthenticationToken` classes, which can make the code less organized and more difficult to understand.",
+    "description": "The `authenticationTokens` field is initialized to a new `HashSet` instance in the constructor, but this initialization is unnecessary and can be removed.",
     "files": [
-      "both"
+      "file1"
     ],
-    "fix": "Consider moving the `Builder` class to a separate file or package to improve the code organization."
+    "fix": "Remove the initialization of the `authenticationTokens` field in the constructor."
   },
   {
-    "type": "DataClumps",
+    "type": "Complex Data Structure",
     "category": "design",
-    "description": "The `User` class in both files contains a number of related data fields that could be grouped into smaller, more cohesive units.",
+    "description": "The `User` class has a complex data structure, with multiple fields and a one-to-many relationship with the `AuthenticationToken` class.",
     "files": [
-      "both"
+      "file1"
     ],
-    "fix": "Consider refactoring the `User` class to organize the data fields into more logical and maintainable groups."
-  },
-  {
-    "type": "TooManyInstanceVariables",
-    "category": "design",
-    "description": "The `User` class in both files has a large number of instance variables, which can make the class difficult to understand and maintain.",
-    "files": [
-      "both"
-    ],
-    "fix": "Consider refactoring the `User` class to reduce the number of instance variables and improve the class cohesion."
-  },
-  {
-    "type": "LongMethod",
-    "category": "code",
-    "description": "The `Builder.build()` method in both files is quite long and complex, which can make it difficult to understand and maintain.",
-    "files": [
-      "both"
-    ],
-    "fix": "Consider refactoring the `Builder.build()` method to make it more concise and readable."
+    "fix": "Consider refactoring the `User` class to make it more cohesive and easier to maintain, perhaps by creating separate classes for different aspects of the user's data."
   }
 ]
 
