@@ -61,6 +61,17 @@ After:
 
 Each of these classes are responsible for a single concern and are not mixed with other concerns. This makes the code more maintainable and easier to understand. It is also easier to add new constants without affecting other classes.
 
+**LLM Suggestions:**
+
+Prompt:
+`
+I will provide code, type of design smell. Justify the reason why that happens, also indicate where exactly in the code it happens. Explain the quality attributes affected by that smell, and also indicate the steps to refactor it.
+`
+
+- ChatGPT:
+![ChatGPT](llm_responses/smell-1/gpt.png)
+
+Here the change suggested by ChatGPT is correct, the actual change made is the same. This is a relatively simple refactoring, so the LLM was able to suggest the correct solution.
 
 ### 2. Cyclic Dependency
 **Location:** 
