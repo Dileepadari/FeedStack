@@ -11,40 +11,40 @@ Files:
 Smells Found:
 [
   {
-    "type": "Excessive cyclomatic complexity",
+    "type": "Long Method",
     "category": "code",
-    "description": "The `get()` method in `AllResource` has a cyclomatic complexity of 14, which is above the recommended threshold of 10.",
+    "description": "The `get` method in file 1 has more than 50 lines of code. It should be broken down into smaller methods to improve readability and maintainability.",
     "files": [
-      "File 1"
+      "file1"
     ],
-    "fix": "The method should be refactored to reduce its complexity, such as by extracting some of its functionality into separate methods."
+    "fix": "Extract the functionality of the `get` method into separate methods, such as one for fetching the articles and another for building the response."
   },
   {
-    "type": "Excessive nesting",
+    "type": "Repeated Code",
     "category": "code",
-    "description": "The `get()` method in `AllResource` has a nesting level of 5, which can make the code difficult to read and understand.",
+    "description": "The code for updating unread counts in the `read` method in file 1 is repeated. It should be refactored to avoid duplication.",
     "files": [
-      "File 1"
+      "file1"
     ],
-    "fix": "The method should be refactored to reduce its nesting level, such as by using more descriptive variable names and breaking up complex expressions into multiple lines."
+    "fix": "Create a helper method to update unread counts and call it from both places."
   },
   {
-    "type": "God class",
+    "type": "God Class",
     "category": "design",
-    "description": "The `AppResource` class has a high number of methods and responsibilities, which can make it difficult to maintain and evolve.",
+    "description": "The `AppResource` class in file 2 has too many responsibilities. It should be split into smaller classes to improve modularity and maintainability.",
     "files": [
-      "File 2"
+      "file2"
     ],
-    "fix": "The class should be refactored to split its responsibilities into multiple smaller classes."
+    "fix": "Create separate classes for each of the functionalities of the `AppResource` class, such as one for handling application information, another for logging, and a third for batch operations."
   },
   {
-    "type": "Shotgun Surgery",
+    "type": "Large Class",
     "category": "design",
-    "description": "The `batchReindex()` method in `AppResource` is responsible for both rebuilding the articles index and handling errors that may occur during the process.",
+    "description": "The `AppResource` class in file 2 has more than 200 lines of code. It should be broken down into smaller classes to improve readability and maintainability.",
     "files": [
-      "File 2"
+      "file2"
     ],
-    "fix": "The method should be refactored to separate its responsibilities into two distinct methods, one for rebuilding the index and one for handling errors."
+    "fix": "Extract the functionality of the `AppResource` class into separate classes, as suggested in the fix for the `God Class` smell."
   }
 ]
 
