@@ -1,211 +1,122 @@
-# Subscription and Content Subsystem
- This is where new feed is added to the reader. The feed can be fetched from a URL or imported via a Google Takeout ZIP or OPML format file. You can also export your subscriptions to an xml. The system also displays the 10 most recent articles when you add a new feed.
-
-## Class Diagram
-![Class Diagram](SubscriptionContentSubsystem.png)
-
-### BaseResource
-BaseResource is an abstract class, which serves as a foundational class for RESTful resources in the application. It provides common functionality and properties that are likely to be shared across different REST resource classes.BaseResource is designed to streamline the development of RESTful services by providing essential security and request-handling features that can be reused across different resource classes.
-
-
-### SubscriptionResource
-Subscription Resource handles HTTP requests related to feed subscriptions.Manages operations related to feed subscriptions, such as listing, adding, updating, deleting, and importing/exporting subscriptions.
-
-- Public add() : Adds a new subscription to a feed using a URL and optional title.
-
-- Public importFile() :  Imports data into the user's account from an OPML file or a ZIP containing OPML and Google Takeout data.
-
-- Public export() : exports all the user's feeds to an OPML file.
-
-
-### Appcontext
-The AppContext class is a central component in the application, designed to manage and provide access to core services and event buses. It follows the Singleton design pattern to ensure that only one instance of the application context exists throughout the application's lifecycle. This class is responsible for initializing and managing event buses for synchronous and asynchronous events, as well as providing access to key services like 'FeedService' and 'IndexingService'.
-
-- Contructor : initializes the application context by setting up event buses and starting core services.
-- resetEventBus() : Reinitializes all event buses and registers necessary event listeners. This method is called during initialization and when resetting the context.
-- newAsyncEventBus() : Creates a new asynchronous event bus using a single-thread executor. This method is used to create event buses for handling asynchronous events.
-- Remaing are getters for FeedService, IndexingService, and EventBus.
-
-### SubscriptionImportedEvent
-Event raised on request to import an subscriptions (OPML, Google Takeout) file.
-
-- Contains the User object, File object.
-- Set and Get methods for User, File.
-
-### SubscriptionImportAsyncListener
-SubscriptionImportAsyncListener is responsible for handling subscription import events. It listens for `SubscriptionImportedEvent` events and processes them to import user subscriptions. This class is part of the event-driven architecture, allowing asynchronous handling of import requests. It interacts with various services and DAOs to perform the import operations.
-
-- Public onSubscriptionImport(SubscriptionImportedEvent subscriptionImportedEvent) : This method is triggered when a SubscriptionImportedEvent is posted to the event bus. It processes the import file associated with the event, creating jobs and handling the import logic
-
-- Private createJob(User user, File importFile) : Reads the import file to determine the number of feeds and starred articles, then creates a new job to track the import process.
-
-- Private processImportFile(User user, File importFile, Job job) : Processes the import file, extracting and importing feeds and starred articles. It handles both ZIP archives and OPML files.
-
-- Private importOutline(User user, List<Outline> outlineList, Job job) : Imports categories and feeds from a list of outlines, creating new subscriptions and updating the user's feed list.
-
-- Private importFeedFromStarred(User user, Feed feed, Article article) : Imports feeds referenced from starred articles, creating records even if the feed cannot be downloaded.
-
-- Private getFeedCount() : Number of feeds in a Outline list.
-
-### OpmlReader
-OpmlReader is responsible for parsing OPML (Outline Processor Markup Language) files. It reads the XML structure of an OPML document and constructs a tree of Outline objects, representing the hierarchical structure of the document.
-
-- Constructor : Constructor that initializes the reader, setting up necessary data structures like stacks for elements and outlines.
-
-- Public read(InputStream is) : Reads and parses an OPML file from the provided input stream. It uses a SAX parser to process the XML content.
-
-- Public getOutlineList() : Returns the list of outlines from the root outline, providing access to the parsed structure.
-
-### OpmlFlattener
-OpmlFlattener is a utility class designed to flatten a hierarchical list of Outline objects into a map. This map organizes outlines by category, simplifying further processing.
-
-- Public flatten(List<Outline> outlineList) : Converts a hierarchical list of outlines into a map where the key is the category name and the value is a list of outlines under that category.
-
-### Outline
-Outline represents an individual outline in an OPML document. It contains properties such as text, title, URLs, and type, and can also contain a list of sub-outlines.
-
-- It Just contains the properties and getter and setter methods.
-
-### StarredReader, StarredArticleImportedEvent, StarredArticleImportAsyncListener
-These classes are resposible for reading the content in Json file(Present in Google Takeout ZIP file). These Json are called Starred articles. StarredReader reads the Json file and creates the StarredArticleImportedEvent. StarredArticleImportAsyncListener listens to the StarredArticleImportedEvent and processes the Starred articles.
-
-- setStarredArticleListener(StarredArticleImportedListener listener) : Registers a listener that will be notified whenever a starred article is imported. This allows for asynchronous handling of starred articles by external components.
-
-- read(InputStream inputStream) : Reads starred articles from the provided input stream, processes each article, and triggers an event for each one. This method is the main entry point for processing starred articles.
-
-
-### FeedService
-FeedService is responsible for managing the synchronization and processing of RSS/Atom feeds. It handles the fetching, parsing, and updating of feed data, ensuring that the local database is kept up-to-date with the latest articles. The service also manages user subscriptions and provides utilities for handling feed-related events and transactions. This class extends AbstractScheduledService, allowing it to run scheduled tasks for periodic feed synchronization.
-
-- Public synchronize(String url) : Synchronizes a specific feed from the given RSS URL. It fetches and parses the feed, updates the feed and articles in the database, and handles any changes since the last synchronization.
-
-- Public createInitialUserArticle(String userId, FeedSubscription feedSubscription) : Creates the initial batch of user-specific articles when subscribing to a feed, ensuring the user has unread articles available.
-
-- Private completeArticleList(List<Article> articleList) : Ensures that all articles in the list have necessary data, such as publication dates. It updates articles with missing or future publication dates.
-
-- Private getArticleToRemove(List<Article> articleList) : Identifies articles that have been removed from the feed since the last synchronization. It returns a list of articles to be deleted from the database.
-
-- Private parseFeedOrPage(String url, boolean parsePage) : Parses a page containing an RSS or Atom feed, or an HTML page linking to a feed. It attempts to recover from certain errors by parsing the page as HTML.
-
-### RssReader
- RssReader is an XML parser specifically designed to handle RSS and Atom feeds. It extends the SAX DefaultHandler to process XML elements and attributes, building a structured representation of the feed and its articles. The class supports multiple feed formats and handles various date formats commonly used in feeds. RssReader is used to extract feed metadata and articles, which can then be stored or processed further by other components in the application.
-
-- Constructor : Constructor that initializes the RssReader instance, setting up necessary data structures like stacks for elements.
-
-- Public readRssFeed(InputStream is) : Reads and parses an RSS or Atom feed from the provided input stream. It uses a SAX parser to process the XML content, extracting feed metadata and articles.
-
-- Private initFeed() : Initializes a new Feed object and associated lists for articles and links. This method is called when a new feed element is encountered.
-
-### XmlReader
-Starts reading the Xml file and finds the type of encoding and reads the file.
-
-### RssExtractor
-RssExtractor is an HTML parser used to identify and extract RSS and Atom feed URLs from a given HTML page. It extends the SAX DefaultHandler to process HTML elements and attributes, specifically looking for <link> tags that indicate alternate feeds. The class is useful for applications that need to discover feeds from web pages automatically. The class maintains a list of extracted feed URLs and provides functionality to read and parse HTML content using a SAX parser.
-
-- Constructor : Constructor that initializes the RssExtractor with the URL of the HTML page to be parsed. It sets up the necessary data structures, including the list to store extracted feed URLs.
-
-- Public readPage(InputStream is) : Reads and parses an HTML page from the provided input stream. It uses a SAX parser to process the HTML content, looking for <link> tags that specify RSS or Atom feeds.
-
-- Public getFeedList() : Returns the list of extracted feed URLs. This list contains the URLs of RSS and Atom feeds discovered during the parsing of the HTML page.
-
-
-### ArticleCreatedAsyncEvent, ArticleUpdatedAsyncEvent, ArticleDeletedAsyncEvent
-Event raised when an article is created, updated, or deleted, respectively. These events are used to notify other components of changes to the article database, allowing for real-time updates and processing. When this event is raised, the corresponding listener can handle the event and perform any necessary actions, such as updating search indexes or notifying users of new content.
-
-- Contains the List of Articles.
-- Set and Get methods for List of Articles.
-
-### Dao's
-1. The DAO pattern is used to abstract and encapsulate all access to the data source. The DAO manages the connection with the data source to obtain and store data.
-
-2. Provide CRUD (Create, Read, Update, Delete) operations for entities.
-
-3. Handle database interactions, such as executing queries and managing transactions.
-
-4. Isolate the application/business layer from the persistence layer.
-
-### Criteria
-1. Criteria classes are used to define search criteria for querying the database. They encapsulate the parameters needed to filter and sort data.
-
-2. Provide a flexible way to construct database queries based on various conditions.
-
-3. Allow dynamic query construction without the need for hardcoded SQL.
-
-### Dto's
-1. DTOs are used to transfer data between software application subsystems. They are often used to encapsulate data and send it over the network or between layers in an application.
-
-2. Hold data that needs to be transferred between layers or systems.
-
-3. Reduce the number of method calls by aggregating data into a single object.
-
-### Entity's
-1. Entities represent the core data objects in a system. In JPA, an entity is a lightweight, persistent domain object that is typically mapped to a database table.
-
-2. Define the structure of the data, including fields and relationships.
-
-3. Serve as the primary objects that are persisted in the database.
-
-
-### PaginatedList, PaginatedLists
-PaginatedLists provides utility methods for creating and managing paginated lists of data. It is particularly useful for handling database queries that return large datasets, allowing for efficient retrieval and display of data in pages. The class includes methods for creating paginated lists, executing queries with pagination, and counting the total number of results. This class helps manage pagination parameters such as page size and offset, ensuring that queries are executed efficiently and results are returned in a manageable format.
-
-- Public create(Integer pageSize, Integer offset) : Constructs a paginated list with the specified page size and offset. It applies default and maximum size constraints to ensure valid pagination parameters.
-
-- Public executeQuery(QueryParam queryParam) : Executes a non-paginated query based on the provided query parameters. It constructs the query string, applies sorting if specified, and executes the query to retrieve results.
-
-- Private executeCountQuery(PaginatedList<E> paginatedList, QueryParam queryParam) : Executes a native count query to determine the total number of results for the given query parameters. It updates the paginated list with the result count.
-
-- Private executeResultQuery(PaginatedList<E> paginatedList, QueryParam queryParam) : Executes a query to retrieve the data for the current page, based on the pagination parameters in the paginated list. It applies sorting and retrieves the specified range of results.
-
-- Public executePaginatedQuery(PaginatedList<E> paginatedList, QueryParam queryParam, SortCriteria sortCriteria) : Executes a paginated query using two native queries: one to count the total number of results and another to retrieve the current page of data. It applies sorting criteria if specified.
-
-- Private getOrderByClause(SortCriteria sortCriteria) : Constructs the SQL "ORDER BY" clause based on the provided sort criteria. It determines the column and order (ascending or descending) for sorting.
-
-
-## Flow of Control
-The flow of control in the Subscription and Content Subsystem is as follows:
-
-### For Importing and Presenting Articles
-
-1. During its initialization, **AppContext** registers the **SubscriptionImportAsyncListener** with the importEventBus.
-2. Once registered, this listener waits for **SubscriptionImportedEvent** events to be posted to the importEventBus.
-3. When an event is received, it triggers the onSubscriptionImport method, which contains the logic to process the subscription import.
-4. calling onSubscriptionImport finally leads to creating new articles, feeds, and categories in the system.
-5. In onSubscriptionImport, we first checks if the file is a ZIP archive or an OPML file.
-    - If it is a ZIP archive, we extract the contents and process the import file. This ZIP file contains a OPML file and JSON file.
-        - We read the JSON file to get the feeds and starred articles using **Starred Reader**.
-            - **Starred Reader** reads Json and creates the **StarredArticleImportedEvent** which intilizes the **StarredArticleImportAsyncListener**.
-            - Then Feed, Article and UserArticle are created if they are new articles. 
-            - If Feed, Article and UserArticle are already present, then we update the UserArticle and synchronize all feeds.
-        - We read the OPML file using **OPML Reader** to get the **Outline**(i.e feeds).
-
-    - If it is an OPML file, we directly process the import file using **OPML Reader** which finally gives **Outline**(i.e feeds).
-        - Creates the categories and outline maps.
-        - Iterates through the category wise feeds and creates categories if they are new. Iterates through Outline of each category
-        finds the feedUrl. Creates the **FeedService** Object that takes feedUrl and synchronize(creating, updating, deleting feed/articles) the feed.
-
-6. Further **FeedService** contains methods like synchronize()(which reads the feedUrl Using **RssReader**,**RssExtractor** and get info about feed, articles and update,deletes,creates using **ArticleCreatedAsyncEvent**, **ArticleUpdatedAsyncEvent**, **ArticleDeletedAsyncEvent**.)
-7. Also **FeedService** contains methods like createInitialUserArticle() that creates UserArticle and also creates **PaginatedLists**,**PaginatedList**.
-
-### For Exporting Feed
-1. When Http request of export is made, **SubscriptionResource** calls export() method.
-
-2. When export() method is called, We get the feedsubscription data from **FeedSubscription** Entity uisng **FeedSubscriptionDao**, **FeedSubscriptionCriteria**, **FeedSubscriptionDto**.
-
-3. We build OPML file using **DocumentBuilderFactory** and **DocumentBuilder**.
-
-
-## Assumptions
-1. About Dao's, Dto's, Criteria and Entity's
-    - For the sake of clear visbility and clear representation. We have not represented the relation of main classes like **FeedService**, **RssReader**, **RssExtractor**, **ArticleCreatedAsyncEvent**, **ArticleUpdatedAsyncEvent** and **ArticleDeletedAsyncEvent** etc... with Dao's, Dto's, criteria and Entity's.
-
-    - But in actual implementation, these classes are related to each other and are used to perform operations like creating, updating, deleting and reading the data from the database.
-
-    - But we represented relations among Dao's, Dto's, criteria and Entity's.
-
-2. Many of the external packages like **EntityManager**, **TransactionUtil**, **DocumentBuilderFcatory** etc... are not shown in UML diagram. But they are used in the actual implementation.
-
-## **Observations & Comments**  
+#  CS6.401 Software Engineering - Rudra’s Subscription Service (RSS) Reader
+
+There are three subsystem which are under the project, The relevant class diagrams of the following three subsystems are provided in the separate uml files and the details of them are as are as follows:        
+
+## Subscription and Content Subsystem:        
+**Description:** This is where new feed is added to the reader. The feed can be fetched from a URL or imported via a Google Takeout ZIP or OPML format file. You can also export your subscriptions to an xml. The system also displays the 10 most recent articles when you add a new feed. Now that you’ve added a feed, you can read the articles from it or follow the link to the original site. The system only supports RSS feed formats.        
+
+**Class Diagram:**
+![Subscription and Content Subsystem](SubscriptionContentSubsystem.png)
+
+These are class that we feel are the main classes from the Subscription and Content Subsystem and we provided the detailed explanation of the classes and the system:
+
+#### **Core Classes**  
+
+##### **AppContext**  
+- **Role**: The AppContext class is a central component in the application, designed to manage and provide access to core services and event buses. It follows the Singleton design pattern to ensure that only one instance of the application context exists throughout the application's lifecycle. This class is responsible for initializing and managing event buses for synchronous and asynchronous events, as well as providing access to key services like 'FeedService' and 'IndexingService'.
+- **Key Functionality**:  
+  - `Constructor` initializes the application context by setting up event buses and starting core services.
+  - Initializes synchronous/asynchronous event buses (`eventBus`, `asyncEventBus`).  
+  - Provides access to critical services (`FeedService`, `IndexingService`).  
+  - Centralizes event listener registration (e.g., `SubscriptionImportAsyncListener`).  
+- **Behavior**:  
+  - Uses `resetEventBus()` during initialization to register listeners. This method is called during initialization and when resetting the context.
+  - `newAsyncEventBus()` creates thread-safe executors for async operations.  
+
+##### **SubscriptionImportedEvent**  
+- **Role**: Event raised when a subscription file (OPML/Google Takeout ZIP) is imported.  
+- **Data**: Contains `User` (importer) and `File` (import file). It contains Setters and Getters for User and File.  
+- **Flow**: Triggered by user upload, processed asynchronously by `SubscriptionImportAsyncListener`.
+
+---
+
+#### **Import Processing**  
+
+##### **SubscriptionImportAsyncListener**  
+- **Role**: Handles `SubscriptionImportedEvent` to process OPML/Starred articles. This class is part of the event-driven architecture, allowing asynchronous handling of import requests. It interacts with various services and DAOs to perform the import operations. 
+- **Key Methods**:  
+  - `onSubscriptionImport()`:  
+    1. Checks if the file is a ZIP (Google Takeout) or OPML.  
+    2. Extracts ZIP contents (OPML + Starred JSON) or processes OPML directly.  
+    3. Uses `OpmlReader`/`StarredReader` to parse data.  
+    4. Creates `Job` to track import progress.
+  - `createJob()`: Determines the number of feeds and starred articles in the import file and creates a new tracking job.
+  - `processImportFile()`: Extracts and imports feeds and starred articles from ZIP archives and OPML files
+  - `importOutline()`: Flattens OPML categories via `OpmlFlattener`, creates feeds via `FeedService.synchronize()`.  
+  - `importFeedFromStarred()`: Imports feeds from starred articles (e.g., Google Takeout JSON).  
+  - `getFeedCount()`: Gets the number of feeds in a Outline list.
+
+
+##### **OPML Processing Components**  
+- **OpmlReader**: Parses OPML XML into a tree of `Outline` objects (hierarchy of feeds/categories).  
+- **OpmlFlattener**: Converts (Flattens) the tree (hierarchical list of Outline objects) into a `Map<String, List<Outline>>` (category → feeds).  
+- **Outline**: Represents an individual outline in an OPML document, containing properties like text, title, URLs, type, and sub-outlines.
+
+##### **StarredReader & StarredArticleImportedEvent**  
+- **StarredReader**: Parses JSON files (from Google Takeout ZIP), emits `StarredArticleImportedEvent` per article.  
+- **StarredArticleImportedEvent**: Event raised when a starred article is imported.
+- **StarredArticleImportAsyncListener**: Listens to events, creates/updates `Feed`, `Article`, and `UserArticle` records.  
+- The `setStarredArticleListener()` registers a listener for starred articles and `read()` method reads and processes the starred articles, triggering events accordingly.      
+
+---
+
+#### **Feed & Article Management**  
+
+##### **FeedService**  
+- **Role**: Manages feed synchronization and processing of RSS/Atom feeds, handling fetching, parsing, updating, and synchronization of feeds. 
+- **Key Methods**:  
+  - `synchronize(url)`:  
+    1. Fetches feed via `RssReader` (RSS/Atom) or `RssExtractor` (HTML links).  
+    2. Compares new articles with existing DB entries.  
+    3. Emits `ArticleCreated/Updated/DeletedAsyncEvent` for changes.  
+  - `createInitialUserArticle()`: Generates initial unread articles for new subscriptions.  
+  - `completeArticleList()`: Ensures all articles have necessary metadata.
+  - `getArticleToRemove()`: Identifies articles removed from the feed since the last synchronization.
+  - `parseFeedOrPage()`: Parses RSS/Atom feeds or extracts feeds from HTML pages.
+- **Dependencies**: Uses `RssReader` and `XmlReader` (XML parsing) and `RssExtractor` (HTML link discovery).  
+
+##### **RssReader & RssExtractor**  
+- **RssReader**: SAX parser for RSS/Atom feeds. Extracts `Feed` metadata and `Article` list.  
+- **RssExtractor**: Parses HTML pages to discover RSS/Atom feed URLs.  
+
+---
+
+#### **Pagination & Data Retrieval**  
+
+##### **PaginatedLists & PaginatedList**  
+- **Role**: Provides utilities for managing paginated lists of database query results, ensuring efficient retrieval and display.
+- **Key Features**:  
+  - `create()`: Constructs a paginated list with defined constraints.   
+  - `executePaginatedQuery()`: Runs two queries (count + data retrieval).  
+  - `getOrderByClause()`: Constructs ORDER BY clauses.
+  - Supports sorting (`SortCriteria`) and filtering (`FilterCriteria`).  
+- **Usage**: Used by `SubscriptionResource` to paginate subscription lists.  
+
+---
+
+### Flow of Control
+
+1. **Initialization**: `AppContext` registers `SubscriptionImportAsyncListener` with the event bus.
+2. **Event Handling**: `SubscriptionImportAsyncListener` listens for `SubscriptionImportedEvent`.
+3. **Processing**: Upon event reception, `onSubscriptionImport` processes the import file.
+4. **File Handling**:
+   - If the file is a ZIP archive:
+     - Extract and process JSON (for starred articles) using `StarredReader`.
+     - Create `StarredArticleImportedEvent`, triggering `StarredArticleImportAsyncListener`.
+     - Extract and process OPML to retrieve `Outline` (feeds).
+   - If the file is an OPML file, process it directly using `OpmlReader`.
+5. **Feed and Article Creation**:
+   - `Outline` maps feeds to categories.
+   - New categories are created as needed.
+   - Feeds are extracted, and `FeedService` synchronizes them using `RssReader` and `RssExtractor`.
+6. **Synchronization**: `FeedService` ensures all articles are updated or removed accordingly.
+7. **Pagination**: User articles are created and handled using `PaginatedList` and `PaginatedLists`.
+
+This subsystem enables seamless subscription management, efficient feed processing, and real-time content updates through event-driven mechanisms.
+
+---
+
+### **Observations & Comments**  
 **Strengths**:  
 - **Event-Driven Architecture**: Decouples import processing (`SubscriptionImportAsyncListener`), feed synchronization (`FeedService`), and indexing (`IndexingService`).  
 - **Modular Parsing**: `OpmlReader`/`StarredReader` handle diverse file formats cleanly.  
@@ -215,3 +126,374 @@ The flow of control in the Subscription and Content Subsystem is as follows:
 - **Singleton Overuse**: `AppContext` as a global singleton may hinder testability.  
 - **Thread Safety**: `asyncEventBus` uses a single-thread executor; bottlenecks possible for large imports.  
 - **Error Handling**: Limited logging in `RssReader`/`OpmlReader` could obscure parsing failures.  
+
+---
+
+### **Assumptions**  
+- **DAO, DTOImplementations**: DAO and DTO are assumed to be common classes for many classes, so ignored them in the class diagram. 
+
+---
+
+      
+## Feed Organization Subsystem:           
+**Description:** Now that you have a lot of feeds and articles to comb through, you want some way to order them. Rudra has provided you with the ability to star articles, mark them as read and organize them into folders. You can also share these articles through Facebook, Twitter and Email. You can also search for articles based on their name/content (its quite primitive though). 
+
+**Class Diagram:**
+![Feed Organization Subsystem](FeedOrganizationSubsystem.png)
+
+These are class that we feel are the main classes from the Feed Organization Subsystem and we provided the detailed explanation of the classes and the system:
+
+#### **Core Classes**
+
+##### **Article**
+- **Role**: Represents an individual article fetched from a feed. Stores metadata and content of the article.
+- **Key Functionality**:  
+  - Stores article metadata such as title, URL, publication date, and content.
+  - Provides methods to retrieve and update article information.
+- **Behavior**:  
+  - Interacts with `Feed` to associate articles with their respective feeds.
+  - Can be marked as read or starred by users.
+
+##### **Feed**
+- **Role**: Represents a feed that contains multiple articles. Stores metadata about the feed.
+- **Key Functionality**:  
+  - Stores feed metadata such as title, URL, and description.
+  - Provides methods to retrieve and update feed information.
+- **Behavior**:  
+  - Contains a list of `Article` objects.
+  - Can be organized into folders and shared via social media.
+
+##### **Category**
+- **Role**: Represents a category that can contain multiple feeds. Allows users to organize their feeds.
+- **Key Functionality**:  
+  - Stores category metadata such as name and description.
+  - Provides methods to add, remove, and retrieve feeds within the category.
+- **Behavior**:  
+  - Interacts with `Feed` to manage the organization of feeds.
+  - Supports hierarchical organization of feeds.
+
+##### **IndexingService**
+- **Role**: Provides functionality to search for articles based on their name or content.
+- **Key Functionality**:  
+  - Provides methods to search for articles using keywords.
+  - Supports basic search functionality.
+- **Behavior**:  
+  - Interacts with `Article` to retrieve search results.
+  - Can be used to filter articles based on user preferences.
+
+##### **UserArticle**
+- **Role**: Represents the relationship between a user and an article.
+- **Key Functionality**:  
+  - Stores user-specific information about an article, such as read status and starred status.
+  - Provides methods to manage the user's interaction with the article.
+- **Behavior**:  
+  - Interacts with `Article` and `User` to manage the user's interaction with the article.
+
+##### **FeedSubscriptionDao**
+- **Role**: Data access object for `FeedSubscription`.
+- **Key Functionality**:  
+  - Provides methods to create, update, and delete feed subscriptions.
+  - Provides methods to retrieve feed subscriptions based on various criteria.
+- **Behavior**:  
+  - Interacts with the database to manage feed subscriptions.
+
+##### **UserArticleDao**
+- **Role**: Data access object for `UserArticle`.
+- **Key Functionality**:  
+  - Provides methods to create, update, and delete user articles.
+  - Provides methods to retrieve user articles based on various criteria.
+- **Behavior**:  
+  - Interacts with the database to manage user articles.
+
+##### **CategoryDao**
+- **Role**: Data access object for `Category`.
+- **Key Functionality**:  
+  - Provides methods to create, update, and delete categories.
+  - Provides methods to retrieve categories based on various criteria.
+- **Behavior**:  
+  - Interacts with the database to manage categories.
+
+##### **FeedDao**
+- **Role**: Data access object for `Feed`.
+- **Key Functionality**:  
+  - Provides methods to create, update, and delete feeds.
+  - Provides methods to retrieve feeds based on various criteria.
+- **Behavior**:  
+  - Interacts with the database to manage feeds.
+
+##### **ArticleDao**
+- **Role**: Data access object for `Article`.
+- **Key Functionality**:  
+  - Provides methods to create, update, and delete articles.
+  - Provides methods to retrieve articles based on various criteria.
+- **Behavior**:  
+  - Interacts with the database to manage articles.
+
+##### **ArticleResource**
+- **Role**: REST API endpoint for managing articles.
+- **Key Functionality**:
+  - Provides endpoints for creating, updating, and deleting articles.
+  - Provides endpoints for retrieving articles based on various criteria.
+- **Behavior**:
+  - Interacts with `ArticleDao` to manage articles.
+  - Provides RESTful endpoints for article management.
+
+##### **StarredResource**
+- **Role**: REST API endpoint for managing starred articles.
+- **Key Functionality**:
+  - Provides endpoints for marking articles as starred.
+  - Provides endpoints for retrieving starred articles.
+- **Behavior**:
+  - Interacts with `UserArticleDao` to manage user articles.
+  - Provides RESTful endpoints for managing starred articles.
+
+##### **SearchResource**
+- **Role**: REST API endpoint for searching articles.
+- **Key Functionality**:
+  - Provides endpoints for searching articles based on keywords.
+  - Provides endpoints for filtering search results.
+- **Behavior**:
+  - Interacts with `IndexingService` to perform searches.
+  - Provides RESTful endpoints for searching articles.
+
+---
+
+### Flow of Control
+#### **1. Initialization**
+- **User logs into the RSS reader application**.
+- The system loads user-specific settings, categories, and subscribed feeds.
+- Unread and starred articles are fetched and displayed based on user preferences.
+
+#### **2. Feed Organization**
+- Users can create, update, and delete **Categories**.
+- Feeds are added to **Categories**, allowing hierarchical organization.
+- **Category interacts with Feed** to manage groupings.
+- Users can reorder and nest categories for better management.
+
+#### **3. Feed Management**
+- Feeds store metadata such as name, URL, and description.
+- **FeedService synchronizes feeds**:
+  - Calls `synchronize(url)`, using **RssReader** (for RSS/Atom feeds) or **RssExtractor** (for discovering RSS links in HTML pages).
+  - Updates feed metadata and refreshes the associated articles.
+  - Removes articles that no longer exist in the feed.
+- **FeedDao handles database interactions** (CRUD operations for feeds).
+
+#### **4. Article Processing**
+- Articles are fetched and stored under their respective **Feed**.
+- **Article contains metadata** (title, URL, content, publication date).
+- Articles can be marked **read/starred**, modifying **UserArticle** records.
+- **ArticleDao interacts with the database** to manage articles.
+
+#### **5. User Interactions with Articles**
+- Users can mark articles as:
+  - **Read:** Updates `UserArticle.read_status`.
+  - **Starred:** Marks articles as important for later reference.
+- Articles can be **shared on social media** via external APIs.
+- **UserArticleDAO manages user-specific actions** (read/star status retrieval and modification).
+
+#### **6. Search & Indexing**
+- **IndexingService** provides keyword-based search for articles.
+- Uses **Article metadata and content** to filter search results.
+- **Basic search functionality** (title, content search; lacks advanced queries like full-text ranking).
+
+#### **7. Database Layer**
+- Data Access Objects (DAOs) handle storage and retrieval:
+  - **ArticleDao**: Manages articles.
+  - **FeedDao**: Manages feeds.
+  - **CategoryDao**: Manages categories.
+  - **UserArticleDao**: Manages user-article relationships.
+
+--- 
+
+## **Advantages**
+1. **Modular Design:** DAOs separate business logic from data storage.
+2. **Scalability:** Can accommodate a growing number of feeds/articles.
+
+---
+
+## **Disadvantages**
+1. **No Advanced Filtering:** No support for filters like date range or tag-based search.
+2. **High Synchronization Load:** Frequent updates may cause performance issues.
+
+---
+
+## User Management Subsystem:       
+**Description:** Self-explanatory. The Rudra (the admin) can add, delete and update users. Users can also change their password.
+
+**Class Diagram:**
+![User Management Subsystem](UserManagementSubsystem.png)
+
+These are class that we feel are the main classes from the User Management Subsystem and we provided the detailed explanation of the classes and the system:
+
+#### **Core Classes**
+##### **User**
+- **Role**: Primary entity representing system users. Stores essential user information including credentials, preferences, and profile data. Manages user state through creation and deletion dates. Contains display preferences for web and mobile interfaces.
+- **Key Functionality**:  
+  - Manages user credentials and profile information.
+  - Stores user preferences (e.g., theme and display settings).
+  - Tracks the lifecycle of the account by recording creation and deletion dates.
+  - Provides a method (`isFirstConnection()`) to trigger initial setup workflows.
+  - Offers a method (`setTheme()`) to update UI preferences across different platforms.
+- **Behavior**:  
+  - Interacts with other classes to record user interactions (e.g., through UserArticle).
+  - Establishes relationships with Role (for access control) and UserDto (for secure data transfer).
+  
+##### **UserDto**
+- **Role**:  
+  - Acts as a secure Data Transfer Object for user data.
+  - Provides a secure way to transfer user data between layers by excluding sensitive information like passwords. Contains only essential user information needed for client communication.
+- **Key Functionality**:  
+  - Transmits public user details such as username (`getUsername()`), email (`getEmail()`), and creation timestamp (`getCreateTimestamp()`).
+- **Behavior**:  
+  - Maps one-to-one from the User entity, providing a read-only view for client communications.
+  
+##### **UserArticle**
+- **Role**:
+  - Represents the relationship between users and articles. 
+  - Tracks user interactions with articles including read status, starred status, and deletion state. Essential for managing user-specific article preferences and history
+- **Key Functionality**:  
+  - Records whether an article has been read or marked as starred.
+  - Logs timestamps for these key actions.
+- **Behavior**:  
+  - Maintains a connection back to the User who performed the action, enabling personalized content management.
+
+##### **Role**
+- **Role**:  
+  - Defines the various roles that users can have in the application.
+  - Essential for implementing Role-Based Access Control (RBAC) and permission management.
+- **Key Functionality**:  
+  - Provides the `getName()` method to retrieve the role identifier.
+  - Supports soft deletion, allowing roles to be deactivated without losing historical data.
+- **Behavior**:  
+  - Connects with `BaseFunction` via `RoleBaseFunction` to manage permissions dynamically.
+
+##### **BaseFunction**
+- **Role**:  
+  - Represents atomic permissions in the system. 
+  - Defines individual capabilities that can be assigned to roles. 
+  - Forms the foundation of the permission system
+-  **Key Functionality**:  
+  - Serves as the building blocks for role permissions.
+- **Behavior**:  
+  - Works in combination with the Role class (via `RoleBaseFunction`) to define what actions are allowed for a given role.
+  
+##### **RoleBaseFunction**
+- **Role**:  
+  - Junction entity connecting `Roles` and `BaseFunctions`. 
+  - Implements many-to-many relationship between roles and permissions. 
+  - Tracks creation and deletion of permission assignments.
+- **Key Functionality**:  
+  - Manages the assignment and removal of permissions (BaseFunctions) to roles.
+- **Behavior**:  
+  - Operates as a junction table that connects the Role and BaseFunction classes.
+  
+##### **RoleBaseFunctionDao**
+- **Role**:  
+  - Manages role-permission relationships. 
+  - Provides methods to query and modify role permissions. 
+  - Essential for role-based access control.
+- **Key Functionality**:  
+  - `findByRoleId()`: Retrieves role permissions
+
+--- 
+
+#### **Data Access & Security Classes**
+##### **UserDao**
+- **Role**:  
+  - Manages User entity persistence and authentication.
+  - Handles user CRUD operations, password management, and user queries. 
+  - Implements soft deletion and password hashing
+- **Key Functionality**:  
+  - Provides the `authenticate()` method to validate user credentials.
+  - Uses `hashPassword()` to secure users' passwords before storage.
+- **Behavior**:  
+  - Integrates with the User entity and employs a thread-bound context (via `ThreadLocalContext`) to ensure transaction integrity during database operations.
+
+
+##### **AuthenticationTokenDao**
+- **Role**:  
+  - Manages authentication tokens for user sessions. 
+  - Handles token lifecycle including creation, deletion, and updates. 
+  - Supports both session-based and persistent tokens.
+- **Key Functionality**:  
+  - Creates and validates authentication tokens.
+  - Uses `updateLastConnectionDate()` to refresh session activity timestamps.
+- **Behavior**:  
+  - Ensures that tokens are properly expired and renewed, thereby maintaining secure user sessions.
+
+##### **UserResource**
+- **Role**:  
+  - REST API endpoint handling user-related operations. 
+  - Coordinates between various DAOs and services for user management
+- **Key Functionality**:  
+  - Facilitates actions such as user registration, login, and profile updates.
+  - Leverages AuthenticationTokenDao to generate and manage tokens during login.
+  - Utilizes ValidationUtil to sanitize and validate user inputs.
+- **Behavior**:  
+  - Extends a base resource class to integrate with the overall application infrastructure.
+  - Coordinates between various DAOs and utility classes to maintain consistent user management.
+
+##### **UserPrincipal**
+- **Role**:  
+  - Security context holder for authenticated users. 
+  - Stores user identity and permissions. 
+  - Provides methods for permission checking and user information access.
+- **Key Functionality**:  
+  - Retrieves the set of permissions for a user using the `getBaseFunctionSet()` method.
+- **Behavior**:  
+  - Implements a standardized security interface (IPrincipal) to ensure consistent access control across the system.
+  - Encapsulates the User data to streamline permission checks and access decisions.
+
+---
+
+#### **Infrastructure & Utility Classes**
+##### **AppContext**
+- **Role**:  
+  - Application-wide singleton managing system services. 
+  - Handles email notifications and other system-wide services. 
+  - Provides access to core system functionality
+- **Key Functionality**:  
+  - Initializes key components, such as email notifications and event buses.
+  - Provides the `getMailEventBus()` method to facilitate coordinated event handling.
+- **Behavior**:  
+  - Ensures that essential services are consistently available across the application.
+
+
+##### **Constants**
+- **Role**:  
+  - Stores system-wide configuration constants. 
+  - Defines defaults for locale, timezone, themes, and other system settings. 
+  - Contains security-related constants and configuration values.
+- **Behavior**:  
+  - Provides a single point of reference for configuration values, supporting consistency and ease of maintenance across different components.
+  
+##### **ThreadLocalContext**
+- **Role**:  
+  - Manages thread-bound `EntityManager` instances. 
+  - Ensures proper transaction management and resource cleanup. 
+  - Essential for database operations.
+- **Key Functionality**:  
+  - Provides a dedicated `EntityManager` for each thread to ensure safe, isolated transactions.
+- **Behavior**:  
+  - Prevents cross-thread interference, ensuring that each database session remains consistent and secure.
+
+### Flow of Control
+
+- **UserResource** is the gateway that receives client requests and, based on the operation, interacts with the **UserDao** (for user data) and **AuthenticationTokenDao** (for session management).  
+- The **UserDao** works with the **User** entity, and any outgoing data is packaged as a **UserDto** to avoid exposing sensitive information.  
+- When authorization is needed, **UserPrincipal** provides the current user’s identity and roles. The system then consults **RoleBaseFunctionDao** to verify that the necessary **BaseFunction** permissions (as defined by **Role** and **RoleBaseFunction**) are in place.  
+- Throughout these operations, **ThreadLocalContext** ensures that database interactions via the EntityManager are managed per thread, while **AppContext** and **Constants** supply global configurations and services like email notifications.
+
+
+---
+
+### **Advantages**
+1. **Role-Based Access Control (RBAC):** Enables fine-grained access control.
+2. **Secure Data Transfer:** UserDto ensures sensitive data is not exposed.
+3. **Thread-Safe Database Operations:** ThreadLocalContext ensures transaction integrity.
+
+---
+
+### **Disadvantages**
+1. **Complexity:** RBAC setup may require additional configuration.
+2. **Performance Overhead:** ThreadLocalContext may introduce overhead in multi-threaded environments.
