@@ -211,9 +211,17 @@ Multiple circular dependencies:
 **LLM Suggestions:**
 
 Prompt:
-`
+```bash
 I will provide code, type of design smell. Justify the reason why that happens, also indicate where exactly in the code it happens. Explain the quality attributes affected by that smell, and also indicate the steps to refactor it.
-`
+```
+
+- ChatGPT:
+![ChatGPT](llm_responses/smell-4/gpt-input.png)
+
+- Response:
+![ChatGPT](llm_responses/smell-4/gpt-output1.png)
+![ChatGPT](llm_responses/smell-4/gpt-output2.png)
+![ChatGPT](llm_responses/smell-4/gpt-output3.png)
 
 
 #### Conclusion
