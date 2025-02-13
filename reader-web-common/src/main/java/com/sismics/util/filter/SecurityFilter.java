@@ -2,7 +2,10 @@
 package com.sismics.util.filter;
 
 import com.sismics.reader.core.constant.DefaultConfig;
+import com.sismics.reader.core.dao.jpa.AuthenticationTokenDao;
 import com.sismics.reader.core.dao.jpa.RoleBaseFunctionDao;
+import com.sismics.reader.core.dao.jpa.UserDao;
+import com.sismics.reader.core.model.jpa.AuthenticationToken;
 import com.sismics.reader.core.model.jpa.User;
 import com.sismics.security.AnonymousPrincipal;
 import com.sismics.security.UserPrincipal;
@@ -15,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 
@@ -37,6 +42,32 @@ public abstract class SecurityFilter implements Filter {
      * Logger.
      */
     public static final Logger LOG = LoggerFactory.getLogger(SecurityFilter.class);
+
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // Do nothing
+    }
+
+
+    @Override
+    public void destroy() {
+        // Do nothing
+    }
+
+
+    @Override
+    public void doFilter(ServletRequest req, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+
+        HttpServletRequest request = (HttpServletRequest) req;
+
+        if (!hasIdentifiedUser(request)) {
+            User user = this.authenticate(request);
+            injectUser(request, user);
+        }
+
+        filterChain.doFilter(request, response);
+    }
 
 
     /**
@@ -108,32 +139,6 @@ public abstract class SecurityFilter implements Filter {
     }
 
 
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // Do nothing
-    }
-
-
-    @Override
-    public void destroy() {
-        // Do nothing
-    }
-
-
-    @Override
-    public void doFilter(ServletRequest req, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
-
-        HttpServletRequest request = (HttpServletRequest) req;
-
-        if (!hasIdentifiedUser(request)) {
-            User user = this.authenticate(request);
-            injectUser(request, user);
-        }
-
-        filterChain.doFilter(request, response);
-    }
-
-
     /**
      * Authenticates an user from the given request parameters.
      *
@@ -143,4 +148,5 @@ public abstract class SecurityFilter implements Filter {
     protected abstract User authenticate(HttpServletRequest request);
 
 }
+
 ```

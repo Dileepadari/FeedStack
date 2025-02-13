@@ -106,9 +106,4 @@ public class TokenBasedSecurityFilter extends SecurityFilter {
             authenticationTokenDao.delete(authTokenId);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error(MessageFormat.format("Error deleting authentication token {0} ", authTokenId), e);
-            }
-        }
-    }
-}
-```
+                LOG.error(MessageFormat.format("Error deleting authentication token

@@ -11,43 +11,58 @@ Files:
 Smells Found:
 [
   {
-    "type": "InconsistentIndentation",
-    "category": "code",
-    "description": "Some lines are not indented consistently",
-    "files": [
-      "file1",
-      "file2"
-    ],
-    "fix": "Use an auto-formatter to ensure consistent indentation"
-  },
-  {
-    "type": "MissingJavadoc",
-    "category": "code",
-    "description": "Some methods are missing JavaDoc comments",
-    "files": [
-      "file1",
-      "file2"
-    ],
-    "fix": "Add JavaDoc comments to all methods"
-  },
-  {
-    "type": "GodClass",
+    "type": "Complex Filter",
     "category": "design",
-    "description": "The class is too large and has too many responsibilities",
+    "description": "The filter is responsible for authentication and injecting users into the request. It also has to deal with anonymous users and language.",
     "files": [
       "file1"
     ],
-    "fix": "Split the class into smaller, more manageable classes"
+    "fix": "Extract the user authentication into a separate filter if possible."
   },
   {
-    "type": "CyclicDependency",
-    "category": "design",
-    "description": "The classes have a cyclic dependency, which can lead to problems when the classes are loaded",
+    "type": "Switch Statement",
+    "category": "code",
+    "description": "The `injectUser` method uses a switch statement to inject different types of users.",
     "files": [
-      "file1",
+      "file1"
+    ],
+    "fix": "Replace the switch statement with a conditional statement or a factory method."
+  },
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "The `SecurityFilter` class is responsible for too many different tasks, including authentication, user injection, and request handling.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Split the class into smaller, more manageable classes."
+  },
+  {
+    "type": "Long Method",
+    "category": "code",
+    "description": "The `authenticate` method in `TokenBasedSecurityFilter` is too long and complex.",
+    "files": [
       "file2"
     ],
-    "fix": "Refactor the classes to remove the cyclic dependency"
+    "fix": "Break the method down into smaller, more manageable methods."
+  },
+  {
+    "type": "Magic Number",
+    "category": "code",
+    "description": "The `TOKEN_LONG_LIFETIME` and `TOKEN_SESSION_LIFETIME` constants use magic numbers to represent time spans.",
+    "files": [
+      "file2"
+    ],
+    "fix": "Replace the magic numbers with named constants or use a configuration file to manage these values."
+  },
+  {
+    "type": "Duplicate Code",
+    "category": "code",
+    "description": "The `handleExpiredToken` method in `TokenBasedSecurityFilter` is duplicated in the `AuthenticationTokenDao` class.",
+    "files": [
+      "file2"
+    ],
+    "fix": "Move the code to a shared utility class or introduce an interface to abstract the behavior."
   }
 ]
 
@@ -56,40 +71,49 @@ File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/Use
 Smells Found:
 [
   {
-    "type": "Large Class",
+    "type": "LongParameterList",
     "category": "code",
-    "description": "The User class has 22 instance variables and 22 methods, which is more than the recommended limit of 10.",
+    "description": "The `Builder` class in both files has a long parameter list that can make the code difficult to read and maintain.",
     "files": [
       "both"
     ],
-    "fix": "Consider refactoring the class into multiple smaller classes."
+    "fix": "Consider using a builder pattern with a more concise and readable syntax."
   },
   {
-    "type": "God Class",
-    "category": "design",
-    "description": "The User class has a high number of responsibilities, including managing authentication tokens, setting user preferences, and handling login and logout functionality. This makes the class difficult to understand and maintain.",
-    "files": [
-      "both"
-    ],
-    "fix": "Consider refactoring the class into multiple smaller classes, each with a more focused set of responsibilities."
-  },
-  {
-    "type": "Cyclic Dependency",
-    "category": "design",
-    "description": "The User class has a circular dependency with the AuthenticationToken class. This means that changes to one class can have unintended consequences for the other class.",
-    "files": [
-      "both"
-    ],
-    "fix": "Consider refactoring the classes to remove the circular dependency."
-  },
-  {
-    "type": "Data Class",
+    "type": "NestedBuilder",
     "category": "code",
-    "description": "The User class is a data class, which means that it contains only data and no behavior. This makes the class difficult to reuse and extend.",
+    "description": "The `Builder` class in both files is nested within the `User` and `AuthenticationToken` classes, which can make the code less organized and more difficult to understand.",
     "files": [
       "both"
     ],
-    "fix": "Consider refactoring the class to include some behavior, such as methods for managing authentication tokens or setting user preferences."
+    "fix": "Consider moving the `Builder` class to a separate file or package to improve the code organization."
+  },
+  {
+    "type": "DataClumps",
+    "category": "design",
+    "description": "The `User` class in both files contains a number of related data fields that could be grouped into smaller, more cohesive units.",
+    "files": [
+      "both"
+    ],
+    "fix": "Consider refactoring the `User` class to organize the data fields into more logical and maintainable groups."
+  },
+  {
+    "type": "TooManyInstanceVariables",
+    "category": "design",
+    "description": "The `User` class in both files has a large number of instance variables, which can make the class difficult to understand and maintain.",
+    "files": [
+      "both"
+    ],
+    "fix": "Consider refactoring the `User` class to reduce the number of instance variables and improve the class cohesion."
+  },
+  {
+    "type": "LongMethod",
+    "category": "code",
+    "description": "The `Builder.build()` method in both files is quite long and complex, which can make it difficult to understand and maintain.",
+    "files": [
+      "both"
+    ],
+    "fix": "Consider refactoring the `Builder.build()` method to make it more concise and readable."
   }
 ]
 
