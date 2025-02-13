@@ -7,6 +7,7 @@ import com.sismics.reader.core.event.StarredArticleImportedListener;
 import com.sismics.reader.core.model.jpa.Article;
 import com.sismics.reader.core.model.jpa.Feed;
 import com.sismics.util.JsonUtil;
+import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -24,32 +25,49 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-class StarredReader {
+@SuppressWarnings("PMD.BeanMembersShouldSerialize")
+class StarredReader implements StarredReaderApi {
     private static final Logger log = LoggerFactory.getLogger(StarredReader.class);
-    private static final List<String> MANDATORY_FIELDS = ImmutableList.of("origin", "items", "feed.title", "published");
-    private StarredArticleImportedListener starredArticleImportedListener;
+    private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
-    public void read(InputStream is) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
-        JsonNode rootNode = mapper.readTree(is);
-
-        JsonUtil.validateJsonRequiredFields(rootNode, MANDATORY_FIELDS);
-        ArrayNode itemsNode = (ArrayNode) rootNode.get("items");
-
-        for (JsonNode itemNode : itemsNode) {
-            try {
-                StarredNode feedNode = new StarredNode(itemNode, mapper);
-
-                starredArticleImportedListener.onStarredArticleImported(new StarredArticleImportedEvent(feedNode.toFeed(), feedNode.toArticle()));
-            } catch (Exception e) {
-                log.error(MessageFormat.format("Failed to parse {0} node: {1}", itemNode.toString(), e.getMessage()));
-            }
+    private JsonParser createJsonParser(InputStream in) {
+        try {
+            return JSON_FACTORY.createJsonParser(in);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public void setStarredArticleListener(StarredArticleImportedListener starredArticleListener) {
-        this.starredArticleImportedListener = starredArticleListener;
+    @Override
+    public void read(InputStream is, StarredArticleImportedListener starredArticleImportedListener) {
+        try (JsonParser parser = createJsonParser(is)) {
+            this.starredArticleImportedListener = starredArticleImportedListener;
+            parse(parser);
+        } catch (IOException e) {
+            log.error("Unable to parse JSON file {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void parse(JsonParser parser) throws IOException {
+        if (parser.nextToken() != JsonToken.START_OBJECT) {
+            throw new RuntimeException("Root of JSON must be an object");
+        }
+        JsonUtil.validateJsonRequiredFields(parser, MANDATORY_FIELDS);
+        parser.nextToken(); // Move to "items" array
+
+        if (parser.getCurrentToken() != JsonToken.START_ARRAY) {
+            throw new RuntimeException("Items should be an array");
+        }
+        while (parser.nextToken() != JsonToken.END_ARRAY) {
+            readStarredItem(parser);
+        }
+    }
+
+    private void readStarredItem(final JsonParser parser) throws IOException {
+        ObjectNode node = parser.readValueAsTree();
+        StarredNode starredNode = new StarredNode(node);
+        starredArticleImportedListener.onStarredArticleImported(new StarredArticleImportedEvent(starredNode.toFeed(), starredNode.toArticle()));
     }
 
     private static class StarredNode {
@@ -59,20 +77,20 @@ class StarredReader {
         private final Optional<String> description;
         private final Feed feed;
 
-        public StarredNode(JsonNode itemNode, ObjectMapper mapper) throws IOException {
-            this.title = JsonUtil.validateJsonAndGetTextValue(itemNode, "title");
-            this.publishedTimestamp = Long.parseLong(JsonUtil.validateJsonAndGetTextValue(itemNode, "published")) * 1000;
-            this.url = extractUrl(itemNode);
-            this.description = extractDescription(itemNode, mapper);
-            this.feed = extractFeed(itemNode, mapper);
+        public StarredNode(ObjectNode node) throws IOException {
+            this.title = JsonUtil.validateJsonAndGetTextValue(node, "title");
+            this.publishedTimestamp = Long.parseLong(JsonUtil.validateJsonAndGetTextValue(node, "published")) * 1000;
+            this.url = extractUrl(node);
+            this.description = extractDescription(node);
+            this.feed = extractFeed(node);
         }
 
-        private Optional<String> extractUrl(JsonNode itemNode) {
+        private Optional<String> extractUrl(ObjectNode node) {
             String result = null;
-            if (itemNode.has("alternate")) {
-                ArrayNode alternates = (ArrayNode) itemNode.get("alternate");
+            if (node.has("alternate")) {
+                ArrayNode alternates = (ArrayNode) node.get("alternate");
                 if (!alternates.isEmpty()) {
-                    JsonNode firstAlternate = alternates.get(0);
+                    ObjectNode firstAlternate = (ObjectNode) alternates.get(0);
                     if (firstAlternate.has("href")) {
                         result = firstAlternate.get("href").getTextValue();
                     }
@@ -81,10 +99,10 @@ class StarredReader {
             return Optional.ofNullable(result);
         }
 
-        private Optional<String> extractDescription(JsonNode itemNode, ObjectMapper mapper) throws IOException {
+        private Optional<String> extractDescription(ObjectNode node) throws IOException {
             String result = null;
-            if (itemNode.has("summary")) {
-                JsonNode summaryNode = itemNode.get("summary");
+            if (node.has("summary")) {
+                ObjectNode summaryNode = (ObjectNode) node.get("summary");
                 if (summaryNode.has("content")) {
                     result = JsonUtil.validateJsonAndGetTextValue(summaryNode, "content");
                 }
@@ -92,8 +110,8 @@ class StarredReader {
             return Optional.ofNullable(result);
         }
 
-        private Feed extractFeed(JsonNode itemNode, ObjectMapper mapper) throws IOException {
-            JsonNode originNode = itemNode.get("origin");
+        private Feed extractFeed(ObjectNode node) throws IOException {
+            ObjectNode originNode = (ObjectNode) node.get("origin");
             Feed feed = new Feed();
             feed.setRssUrl(extractFeedUrl(originNode));
             feed.setTitle(extractFeedTitle(originNode));
@@ -101,11 +119,11 @@ class StarredReader {
             return feed;
         }
 
-        private String extractFeedTitle(JsonNode originNode) throws IOException {
+        private String extractFeedTitle(ObjectNode originNode) throws IOException {
             return JsonUtil.extractFieldFromNode(originNode, "title");
         }
 
-        private String extractFeedUrl(JsonNode originNode) throws IOException {
+        private String extractFeedUrl(ObjectNode originNode) throws IOException {
             return JsonUtil.extractFieldFromNode(originNode, "htmlUrl");
         }
 
@@ -143,8 +161,9 @@ class StarredReader {
         }
     }
 }
-
+```
 ====FILE_DELIMITER====
+```java
 package com.sismics.util;
 
 import com.codehaus.jackson.JsonNode;
@@ -155,8 +174,8 @@ import com.codehaus.jackson.map.JsonDeserializer;
 import com.codehaus.jackson.map.JsonMappingException;
 import com.codehaus.jackson.map.ObjectMapper;
 import com.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
+import com.codehaus.jackson.map.annotate.JsonSerialize;
+import com.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -175,12 +194,6 @@ public class JsonUtil {
         throw new AssertionError("Not instantiable");
     }
 
-    private static ObjectMapper newMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
-        return mapper;
-    }
-
     public static String validateJsonAndGetTextValue(JsonNode node, String fieldName) throws JsonParseException {
         if (!node.has(fieldName)) {
             throw new JsonParseException(String.format("Missing required field '%s'", fieldName), null);
@@ -192,38 +205,20 @@ public class JsonUtil {
         return fieldNode.getTextValue();
     }
 
-    public static void validateJsonRequiredFields(JsonNode node, List<String> requiredFields) throws JsonParseException {
+    public static void validateJsonRequiredFields(JsonParser parser, List<String> requiredFields) throws JsonParseException, IOException {
         for (String field : requiredFields) {
-            if (!node.has(field)) {
+            if (!parser.hasCurrentToken() && parser.getCurrentToken() != JsonToken.FIELD_NAME) {
                 throw new JsonParseException(String.format("Missing required field '%s'", field), null);
+            }
+            if (!parser.getCurrentName().equalsIgnoreCase(field)) {
+                throw new JsonParseException(String.format("Expected field '%s' not found", field), null);
+            }
+            parser.nextToken();
+            if (parser.getCurrentToken() == JsonToken.VALUE_NULL) {
+                throw new JsonParseException(String.format("Field '%s' cannot be null", field), null);
             }
         }
     }
 
     public static String extractFieldFromNode(JsonNode node, String fieldName) throws IOException {
         JsonNode fieldNode = node.get(fieldName);
-        if (fieldNode != null) {
-            if (!fieldNode.isTextual()) {
-                throw new IOException(MessageFormat.format("Field {0} is not a string", fieldName));
-            }
-            return fieldNode.getTextValue();
-        }
-        return null;
-    }
-
-    @JsonDeserialize(using = DateDeserializer.class)
-    @JsonSerialize(using = DateSerializer.class)
-    public static class Iso8601Date {
-        private final Date date;
-
-        public Iso8601Date(Date date) {
-            this.date = date;
-        }
-
-        public Date getDate() {
-            return date;
-        }
-
-        public static class DateDeserializer extends JsonDeserializer<Iso8601Date> {
-            @Override
-            public Iso8601Date deserialize(JsonParser jp, Des

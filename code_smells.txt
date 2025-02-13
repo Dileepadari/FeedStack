@@ -1,57 +1,227 @@
 Analysis Summary:
-Total Java files: 30
-Files analyzed: 1
-Files skipped or errored: 29
+Total Java files: 169
+Files analyzed: 8
+Files skipped or errored: 161
 
 Detailed Analysis:
-Single File 4/8:
-File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/UserResource.java
+Pair 58/72:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/Job.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/JobEvent.java
 Smells Found:
 [
   {
-    "type": "LongParameterList",
-    "category": "code",
-    "description": "The constructor `User` has 8 parameters. This makes the code difficult to read and maintain, and increases the chances of errors.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Consider using the builder pattern or a more concise constructor with default values for some parameters."
-  },
-  {
-    "type": "MutableState",
+    "type": "Lack of encapsulation",
     "category": "design",
-    "description": "The `User` class has mutable state, which can lead to unexpected behavior and bugs. For example, the `authenticationTokens` field can be modified after the object is created, which could lead to inconsistencies in the system.",
+    "description": "The fields of the classes are public, which means that they can be accessed and modified from any other class. This can lead to data integrity issues.",
     "files": [
-      "file1"
+      "both"
     ],
-    "fix": "Consider making the `User` class immutable or using a more appropriate data structure for managing the `authenticationTokens` field."
+    "fix": "Encapsulate the fields by making them private and providing public getter and setter methods."
   },
   {
-    "type": "LongMethod",
-    "category": "code",
-    "description": "The `toString` method in the `User` class is too long (22 lines). This makes the code difficult to read and maintain.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Consider refactoring the `toString` method to make it more concise and readable."
-  },
-  {
-    "type": "NestedClass",
+    "type": "Data class",
     "category": "design",
-    "description": "The `Builder` class is nested within the `User` class. This makes the code more difficult to read and navigate, and it can lead to confusion about the relationship between the two classes.",
+    "description": "The classes only contain data and no behavior. This can make them difficult to maintain and extend.",
     "files": [
-      "file1"
+      "both"
     ],
-    "fix": "Consider moving the `Builder` class to a separate file or package."
+    "fix": "Add behavior to the classes by adding methods that operate on the data."
   },
   {
-    "type": "UnnecessaryNullChecks",
+    "type": "Magic numbers",
     "category": "code",
-    "description": "The `equals` and `hashCode` methods in the `User` class contain unnecessary null checks. These checks can be removed without affecting the correctness of the methods.",
+    "description": "The class uses the magic number `36` for the length of the `id` field. This makes the code difficult to understand and maintain.",
+    "files": [
+      "both"
+    ],
+    "fix": "Replace the magic number with a named constant."
+  }
+]
+
+Single File 2/25:
+File: ./repository/reader-core/src/main/java/com/sismics/util/log4j/MemoryAppender.java
+Smells Found:
+[
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "The `MemoryAppender` class is a god class that has too many responsibilities. It is responsible for appending log entries to a queue, managing the size of the queue, and providing access to the log entries. This makes the class difficult to maintain and understand.",
+    "files": [
+      "both"
+    ],
+    "fix": "Split the `MemoryAppender` class into several smaller classes, each with a single responsibility. For example, one class could be responsible for appending log entries to the queue, another class could be responsible for managing the size of the queue, and another class could be responsible for providing access to the log entries."
+  },
+  {
+    "type": "Lack of Encapsulation",
+    "category": "design",
+    "description": "The `MemoryAppender` class has a public field called `logEntries`. This means that any code that has access to the `MemoryAppender` instance can modify the log entries. This is a security risk and can lead to data corruption.",
+    "files": [
+      "both"
+    ],
+    "fix": "Make the `logEntries` field private and provide getter and setter methods to access it. This will help to protect the log entries from unauthorized modification."
+  },
+  {
+    "type": "Thread Safety",
+    "category": "code",
+    "description": "The `MemoryAppender` class is not thread-safe. This means that if multiple threads access the `MemoryAppender` instance concurrently, they may get inconsistent results.",
+    "files": [
+      "both"
+    ],
+    "fix": "Make the `MemoryAppender` class thread-safe by synchronizing access to the `logEntries` field. This can be done by using the `synchronized` keyword on the `append()` and `removeOldEntries()` methods."
+  }
+]
+
+Single File 8/25:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/UserDao.java
+Smells Found:
+[
+  {
+    "type": "Duplicated method call",
+    "category": "code",
+    "description": "The `user` is retrieved from the database twice when the `update` method is called.",
     "files": [
       "file1"
     ],
-    "fix": "Remove the unnecessary null checks from the `equals` and `hashCode` methods."
+    "fix": "Remove the first call to `em.find`"
+  },
+  {
+    "type": "Hard coded value",
+    "category": "code",
+    "description": "The default theme ID is hard coded in the `prepareUser` method.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Move the default theme ID to a configuration file or database table."
+  },
+  {
+    "type": "Unnecessary intermediate variable",
+    "category": "code",
+    "description": "The `userFromDb` variable is unnecessary in the `update` and `updatePassword` methods.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Remove the `userFromDb` variable and directly update the user object."
+  },
+  {
+    "type": "Unnecessary `try`-`catch` block",
+    "category": "code",
+    "description": "The `try`-`catch` block in the `getActiveByUsername` and `getActiveByPasswordResetKey` methods is unnecessary because the `getSingleResult` method throws a `NoResultException` when no result is found.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Remove the `try`-`catch` block and handle the `NoResultException` in the calling code."
+  },
+  {
+    "type": "Unnecessary `Optional`",
+    "category": "code",
+    "description": "The `Optional` wrapper in the `findUser` method is unnecessary because the method always returns a non-`null` value.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Remove the `Optional` wrapper and return the user object directly."
+  },
+  {
+    "type": "Complex query",
+    "category": "code",
+    "description": "The query in the `getQueryParam` method is complex and difficult to read.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Refactor the query to make it more readable and maintainable."
+  },
+  {
+    "type": "Long method",
+    "category": "code",
+    "description": "The `UserDao` class is too long and contains too many responsibilities.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Extract some of the responsibilities into separate classes or methods."
+  },
+  {
+    "type": "Lack of cohesion",
+    "category": "design",
+    "description": "The `UserDao` class contains methods that are not related to the management of user objects, such as the `authenticate` method.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Move the unrelated methods to a separate class."
+  },
+  {
+    "type": "Lack of encapsulation",
+    "category": "design",
+    "description": "The `UserDao` class exposes the `EntityManager` object, which should be hidden from the client code.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Encapsulate the `EntityManager` object within the `UserDao` class."
+  }
+]
+
+Single File 12/25:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/file/json/StarredReader.java
+Smells Found:
+[
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "StarredReader has too many responsibilities. It reads the file, parses the JSON, extracts data from the JSON, and creates events.",
+    "files": [
+      "both"
+    ],
+    "fix": "Split the class into smaller, more focused classes."
+  },
+  {
+    "type": "Long Method",
+    "category": "code",
+    "description": "The read() method is too long and does too many things. It should be broken up into smaller methods.",
+    "files": [
+      "StarredReader"
+    ],
+    "fix": "Break the method up into smaller, more focused methods."
+  },
+  {
+    "type": "Duplicate Code",
+    "category": "code",
+    "description": "The extractFeedUrl() and extractFeedTitle() methods are duplicated. They should be combined into a single method.",
+    "files": [
+      "StarredReader"
+    ],
+    "fix": "Combine the two methods into a single method."
+  }
+]
+
+Single File 17/25:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/model/context/AppContext.java
+Smells Found:
+[
+  {
+    "type": "Leaky Abstraction",
+    "category": "design",
+    "description": "The `AppContext` class has a method that is accessible only in unit tests but is used in production code.",
+    "files": [
+      "both"
+    ],
+    "fix": "Remove the `waitForAsync()` method from the `AppContext` class or make it accessible in production code."
+  },
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "The `IndexingService` class has too many responsibilities, including creating an event bus, waiting for async operations, and starting and stopping the service.",
+    "files": [
+      "IndexingService.java"
+    ],
+    "fix": "Split the `IndexingService` class into multiple classes, each with a single responsibility."
+  },
+  {
+    "type": "Thread Safety",
+    "category": "code",
+    "description": "The `resetEventBus()` method in the `AppContext` class is not thread-safe.",
+    "files": [
+      "AppContext.java"
+    ],
+    "fix": "Make the `resetEventBus()` method synchronized."
   }
 ]
 

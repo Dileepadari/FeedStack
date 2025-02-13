@@ -1,13 +1,6 @@
 ```java
 package com.sismics.util.log4j;
 
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
-
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
 
@@ -26,7 +19,7 @@ public class MemoryAppender extends AppenderSkeleton {
     /**
      * Queue of log entries.
      */
-    private Queue<LogEntry> logEntries = new ConcurrentLinkedDeque<>();
+    private final LogEntryQueue logEntries = new LogEntryQueue(size);
 
     @Override
     public boolean requiresLayout() {
@@ -43,23 +36,11 @@ public class MemoryAppender extends AppenderSkeleton {
 
     @Override
     public synchronized void append(LoggingEvent event) {
-        removeOldEntries();
         if (closed) {
             return;
         }
 
-        LogEntry logEntry = new LogEntry(Instant.now().toEpochMilli(), event.getLevel().toString(), event.getLoggerName(),
-                event.getMessage().toString());
-        logEntries.add(logEntry);
-    }
-
-    /**
-     * Removes old entries if the queue is full.
-     */
-    private void removeOldEntries() {
-        while (logEntries.size() > size) {
-            logEntries.remove();
-        }
+        logEntries.add(new LogEntry(event));
     }
 
     /**
@@ -68,97 +49,54 @@ public class MemoryAppender extends AppenderSkeleton {
      * @return logEntries
      */
     public Queue<LogEntry> getLogEntries() {
-        return Collections.unmodifiableQueue(logEntries);
+        return logEntries;
     }
 }
 ```
 ====FILE_DELIMITER====
 ```java
-package com.sismics.util.log4j.model;
+package com.sismics.util.log4j;
 
 import java.time.Instant;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
- * Log entry.
+ * Queue of log entries.
  *
  * @author jtremeaux
  */
-public class LogEntry {
+class LogEntryQueue {
 
     /**
-     * Timestamp.
+     * Maximum size of the queue.
      */
-    private long timestamp;
+    private final int size;
 
     /**
-     * Log level.
+     * Queue of log entries.
      */
-    private Level level;
-
-    /**
-     * Logger name.
-     */
-    private String logger;
-
-    /**
-     * Message.
-     */
-    private String message;
+    private final Queue<LogEntry> logEntries = new ConcurrentLinkedDeque<>();
 
     /**
      * Constructor.
      *
-     * @param timestamp Timestamp
-     * @param level     Log level
-     * @param logger    Logger name
-     * @param message   Message
+     * @param size Maximum size of the queue
      */
-    public LogEntry(long timestamp, String level, String logger, String message) {
-        this.timestamp = timestamp;
-        this.level = Level.parse(level);
-        this.logger = logger;
-        this.message = message;
+    LogEntryQueue(int size) {
+        this.size = size;
     }
 
     /**
-     * Getter of timestamp.
+     * Adds a log entry to the queue.
      *
-     * @return timestamp
+     * @param logEntry Log entry
      */
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    /**
-     * Getter of level.
-     *
-     * @return level
-     */
-    public Level getLevel() {
-        return level;
-    }
-
-    /**
-     * Getter of logger.
-     *
-     * @return logger
-     */
-    public String getLogger() {
-        return logger;
-    }
-
-    /**
-     * Getter of message.
-     *
-     * @return message
-     */
-    public String getMessage() {
-        return message;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s - %s - %s - %s", Instant.ofEpochMilli(timestamp), level, logger, message);
+    public void add(LogEntry logEntry) {
+        if (logEntries.size() == size) {
+            logEntries.remove();
+        }
+        logEntries.add(logEntry);
     }
 }
 ```

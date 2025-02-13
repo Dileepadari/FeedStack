@@ -7,7 +7,7 @@ import com.sismics.reader.core.dao.jpa.dto.UserDto;
 import com.sismics.reader.core.dao.jpa.mapper.UserMapper;
 import com.sismics.reader.core.model.jpa.User;
 import com.sismics.reader.core.model.jpa.User_;
-import com.sismics.util.context.ThreadLocalContext;
+import com.sismics.reader.util.context.ThreadLocalContext;
 import com.sismics.util.jpa.BaseDao;
 import com.sismics.util.jpa.QueryParam;
 import com.sismics.util.jpa.filter.FilterCriteria;
@@ -35,15 +35,11 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
 
     public String authenticate(String email, String password) {
         return findUser(email)
-                .filter(user -> BCrypt.checkpw(password, user.getPassword()))
-                .map(User::getId)
+                .map(user -> BCrypt.checkpw(password, user.getPassword()) ? user.getId() : null)
                 .orElse(null);
     }
 
     public String create(User user) throws Exception {
-        EntityManager em = ThreadLocalContext.get().getEntityManager();
-
-        // Create the user UUID
         user.setId(UUID.randomUUID().toString());
 
         // Checks for user unicity
@@ -52,16 +48,13 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
         }
 
         prepareUser(user);
-        em.persist(user);
+        insert(user);
 
         return user.getId();
     }
 
     public User update(User user) {
-        EntityManager em = ThreadLocalContext.get().getEntityManager();
-
-        // Get the user
-        User userFromDb = em.find(User.class, user.getId());
+        User userFromDb = getById(user.getId());
 
         // Update the user
         userFromDb.setId_locale(user.getId_locale());
@@ -77,10 +70,7 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
     }
 
     public User updatePassword(User user) {
-        EntityManager em = ThreadLocalContext.get().getEntityManager();
-
-        // Get the user
-        User userFromDb = em.find(User.class, user.getId());
+        User userFromDb = getById(user.getId());
 
         // Update the user
         userFromDb.setPassword(hashPassword(user.getPassword()));
@@ -89,82 +79,49 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
     }
 
     public User getById(String id) {
-        EntityManager em = ThreadLocalContext.get().getEntityManager();
-        return em.find(User.class, id);
+        return find(id);
     }
 
     public User getActiveByUsername(String username) {
-        EntityManager em = ThreadLocalContext.get().getEntityManager();
         try {
-            return em.createQuery("select u from User u where u.username = :username and u.delete_date is null", User.class)
-                    .setParameter("username", username)
-                    .getSingleResult();
+            return find(User_.username.eq(username));
         } catch (NoResultException e) {
             return null;
         }
     }
 
     public User getActiveByPasswordResetKey(String passwordResetKey) {
-        EntityManager em = ThreadLocalContext.get().getEntityManager();
         try {
-            return em.createQuery("select u from User u where u.password_reset_key = :passwordResetKey and u.delete_date is null", User.class)
-                    .setParameter("passwordResetKey", passwordResetKey)
-                    .getSingleResult();
+            return find(User_.password_reset_key.eq(passwordResetKey));
         } catch (NoResultException e) {
             return null;
         }
     }
 
     public void delete(String username) {
-        EntityManager em = ThreadLocalContext.get().getEntityManager();
-
-        // Get the user
-        User userFromDb = em.createQuery("select u from User u where u.username = :username and u.delete_date is null", User.class)
-                .setParameter("username", username)
-                .getSingleResult();
+        User userFromDb = getActiveByUsername(username);
 
         // Delete the user
         Date dateNow = new Date();
         userFromDb.setDelete_date(dateNow);
 
         // Delete linked data
-        em.createQuery("delete from AuthenticationToken at where at.user_id = :userId")
-                .setParameter("userId", userFromDb.getId())
-                .executeUpdate();
-
-        em.createQuery("update UserArticle ua set ua.delete_date = :dateNow where ua.user_id = :userId and ua.delete_date is null")
-                .setParameter("userId", userFromDb.getId())
-                .setParameter("dateNow", dateNow)
-                .executeUpdate();
-
-        em.createQuery("update FeedSubscription fs set fs.delete_date = :dateNow where fs.user_id = :userId and fs.delete_date is null")
-                .setParameter("userId", userFromDb.getId())
-                .setParameter("dateNow", dateNow)
-                .executeUpdate();
-
-        em.createQuery("update Category c set c.delete_date = :dateNow where c.user_id = :userId and c.delete_date is null")
-                .setParameter("userId", userFromDb.getId())
-                .setParameter("dateNow", dateNow)
-                .executeUpdate();
+        deleteAll(User.AuthenticationToken_.user.eq(userFromDb));
+        deleteAll(User.UserArticle_.user.eq(userFromDb));
+        deleteAll(User.FeedSubscription_.user.eq(userFromDb));
+        deleteAll(User.Category_.user.eq(userFromDb));
     }
 
     protected Optional<User> findUser(String email) {
-        EntityManager em = ThreadLocalContext.get().getEntityManager();
         try {
-            return Optional.of(em.createQuery("select u from User u where u.email = :email and u.delete_date is null", User.class)
-                    .setParameter("email", email)
-                    .getSingleResult());
+            return Optional.of(find(User_.email.eq(email)));
         } catch (NoResultException e) {
             return Optional.empty();
         }
     }
 
     protected boolean userExists(String username) {
-        EntityManager em = ThreadLocalContext.get().getEntityManager();
-        return !em.createQuery("select u from User u where u.username = :username and u.delete_date is null", User.class)
-                .setParameter("username", username)
-                .getResultList()
-                .isEmpty();
+        return !findAll(User_.username.eq(username)).isEmpty();
     }
 
     protected void prepareUser(User user) {

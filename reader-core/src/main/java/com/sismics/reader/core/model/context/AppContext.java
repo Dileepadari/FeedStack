@@ -37,17 +37,14 @@ public class AppContext {
     }
 
     /**
-     * Wait for termination of all asynchronous events.
-     * /!\ Must be used only in unit tests and never a multi-user environment.
+     * Reset the event bus and async latch.
      */
-    public void waitForAsync() {
-        try {
-            if (asyncLatch.getCount() > 0) {
-                asyncLatch.await(60, TimeUnit.SECONDS);
-            }
-        } catch (InterruptedException e) {
-            // NOP
-        }
+    public void reset appContext() {
+        // reset async latch
+        asyncLatch = new CountDownLatch(1);
+
+        eventBus = new EventBus();
+        eventBus.register(new DeadEventListener());
     }
 
     /**
@@ -60,14 +57,6 @@ public class AppContext {
     }
 
     private AppContext() {
-        eventBus = new EventBus();
-        eventBus.register(new DeadEventListener());
-    }
-
-    private void resetEventBus() {
-        // reset async latch
-        asyncLatch = new CountDownLatch(1);
-        
         eventBus = new EventBus();
         eventBus.register(new DeadEventListener());
     }
@@ -86,7 +75,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author jtremeaux
  */
-public class IndexingService extends Thread {
+public class IndexingService {
 
     /**
      * Lucene storage directory.
@@ -107,6 +96,7 @@ public class IndexingService extends Thread {
      * Constructor.
      *
      * @param luceneStorage Lucene storage directory
+     * @param appContext Application context
      */
     public IndexingService(String luceneStorage, AppContext appContext) {
         this.luceneStorage = luceneStorage;
@@ -114,16 +104,52 @@ public class IndexingService extends Thread {
     }
 
     /**
-     * Execute asynchronous operations.
+     * Start the indexing service.
+     */
+    public void start() {
+        if (luceneStorage == null) {
+            ConfigDao configDao = new ConfigDao();
+            Config luceneStorageConfig = configDao.getById(ConfigType.LUCENE_DIRECTORY_STORAGE);
+            luceneStorage = luceneStorageConfig != null ? luceneStorageConfig.getValue() : null;
+        }
+        if (luceneStorage == null) {
+            throw new IllegalStateException("Lucene storage directory is not configured");
+        }
+        if (EnvironmentUtil.isUnitTest()) {
+            executeAsync();
+            return;
+        }
+        executeAsync();
+    }
+
+    /**
+     * Start and wait the indexing service.
+     */
+    public void startAndWait() {
+        start();
+        try {
+            join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Stop the indexing service.
+     */
+    public void stopAndWait() {
+        if (!EnvironmentUtil.isUnitTest()) {
+            waitForAsync();
+        }
+    }
+
+    /**
+     * Start asynchronous operations.
      */
     private void executeAsync() {
         try {
             // create async event bus
-            EventBus eventBus = newAsyncEventBus();
-            // register event bus to context
-            appContext.getEventBus().register(eventBus);
-            
-            start();
+            appContext.getEventBus().register(newAsyncEventBus());
         } finally {
             if (!EnvironmentUtil.isUnitTest()) {
                 waitForAsync();
@@ -164,52 +190,6 @@ public class IndexingService extends Thread {
             asyncEventBus.register(new AsyncEventListener(asyncLatch));
             
             return asyncEventBus;
-        }
-    }
-
-    /**
-     * Start the thread.
-     */
-    @Override
-    public void run() {}
-
-    /**
-     * Start the indexing service.
-     */
-    public void start() {
-        if (luceneStorage == null) {
-            ConfigDao configDao = new ConfigDao();
-            Config luceneStorageConfig = configDao.getById(ConfigType.LUCENE_DIRECTORY_STORAGE);
-            luceneStorage = luceneStorageConfig != null ? luceneStorageConfig.getValue() : null;
-        }
-        if (luceneStorage == null) {
-            throw new IllegalStateException("Lucene storage directory is not configured");
-        }
-        if (EnvironmentUtil.isUnitTest()) {
-            executeAsync();
-            return;
-        }
-        executeAsync();
-    }
-
-    /**
-     * Start and wait the indexing service.
-     */
-    public void startAndWait() {
-        start();
-        try {
-            join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    /**
-     * Stop the indexing service.
-     */
-    public void stopAndWait() {
-        if (!EnvironmentUtil.isUnitTest()) {
-            waitForAsync();
         }
     }
 
