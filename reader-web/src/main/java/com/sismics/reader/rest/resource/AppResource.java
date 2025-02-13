@@ -70,10 +70,10 @@ public class AppResource extends BaseResource {
             @QueryParam("message") String message,
             @QueryParam("limit") Integer limit,
             @QueryParam("offset") Integer offset) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        checkBaseFunction(BaseFunction.ADMIN);
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAdmin();
 
         // Get the memory appender
         Logger logger = Logger.getRootLogger();
@@ -107,7 +107,7 @@ public class AppResource extends BaseResource {
         return Response.ok().entity(response).build();
     }
     
-    /**
+     /**
      * Destroy and rebuild articles index.
      * 
      * @return Response
@@ -116,19 +116,19 @@ public class AppResource extends BaseResource {
     @Path("batch/reindex")
     @Produces(MediaType.APPLICATION_JSON)
     public Response batchReindex() throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        checkBaseFunction(BaseFunction.ADMIN);
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAdmin();
         
-        JSONObject response = new JSONObject();
+//        JSONObject response = new JSONObject();
         try {
             AppContext.getInstance().getIndexingService().rebuildIndex();
         } catch (Exception e) {
             throw new ServerException("IndexingError", "Error rebuilding index", e);
         }
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
     
     /**
@@ -140,17 +140,17 @@ public class AppResource extends BaseResource {
     @Path("map_port")
     @Produces(MediaType.APPLICATION_JSON)
     public Response mapPort() throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        checkBaseFunction(BaseFunction.ADMIN);
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAdmin();
         
-        JSONObject response = new JSONObject();
+//        JSONObject response = new JSONObject();
         if (!NetworkUtil.mapTcpPort(request.getServerPort())) {
             throw new ServerException("NetworkError", "Error mapping port using UPnP");
         }
         
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
 }

@@ -40,10 +40,10 @@ public class SearchResource extends BaseResource {
             @PathParam("query") String query,
             @QueryParam("limit") Integer limit,
             @QueryParam("offset") Integer offset) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         ValidationUtil.validateRequired(query, "query");
         
         // Search in index

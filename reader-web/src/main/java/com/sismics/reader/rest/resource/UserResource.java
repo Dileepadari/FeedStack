@@ -65,10 +65,10 @@ public class UserResource extends BaseResource {
         @FormParam("locale") String localeId,
         @FormParam("email") String email) throws JSONException {
 
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        checkBaseFunction(BaseFunction.ADMIN);
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAdmin();
         
         // Validate the input data
         username = ValidationUtil.validateLength(username, "username", 3, 50);
@@ -122,9 +122,9 @@ public class UserResource extends BaseResource {
         AppContext.getInstance().getMailEventBus().post(userCreatedEvent);
 
         // Always return OK
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
 
     /**
@@ -155,10 +155,10 @@ public class UserResource extends BaseResource {
         @FormParam("narrow_article") Boolean narrowArticle,
         @FormParam("first_connection") Boolean firstConnection) throws JSONException {
         
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Validate the input data
         password = ValidationUtil.validateLength(password, "password", 8, 50, true);
         email = ValidationUtil.validateLength(email, "email", null, 100, true);
@@ -211,9 +211,9 @@ public class UserResource extends BaseResource {
         }
         
         // Always return "ok"
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
 
     /**
@@ -245,10 +245,10 @@ public class UserResource extends BaseResource {
         @FormParam("display_unread_mobile") Boolean displayUnreadMobile,
         @FormParam("narrow_article") Boolean narrowArticle) throws JSONException {
         
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        checkBaseFunction(BaseFunction.ADMIN);
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAdmin();
         
         // Validate the input data
         password = ValidationUtil.validateLength(password, "password", 8, 50, true);
@@ -305,9 +305,9 @@ public class UserResource extends BaseResource {
         }
         
         // Always return "ok"
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
 
     /**
@@ -389,10 +389,10 @@ public class UserResource extends BaseResource {
     @Path("logout")
     @Produces(MediaType.APPLICATION_JSON)
     public Response logout() throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Get the value of the session token
         String authToken = null;
         if (request.getCookies() != null) {
@@ -435,10 +435,10 @@ public class UserResource extends BaseResource {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     public Response delete() throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Ensure that the admin user is not deleted
         if (hasBaseFunction(BaseFunction.ADMIN)) {
             throw new ClientException("ForbiddenError", "The admin user cannot be deleted");
@@ -449,9 +449,9 @@ public class UserResource extends BaseResource {
         userDao.delete(principal.getName());
         
         // Always return ok
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
     
     /**
@@ -464,10 +464,10 @@ public class UserResource extends BaseResource {
     @Path("{username: [a-zA-Z0-9_]+}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response delete(@PathParam("username") String username) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        checkBaseFunction(BaseFunction.ADMIN);
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAdmin();
         
         // Check if the user exists
         UserDao userDao = new UserDao();
@@ -487,9 +487,9 @@ public class UserResource extends BaseResource {
         userDao.delete(user.getUsername());
         
         // Always return ok
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
     /**
      * Returns the information about the connected user.
@@ -588,10 +588,10 @@ public class UserResource extends BaseResource {
     @Path("{username: [a-zA-Z0-9_]+}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response view(@PathParam("username") String username) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        checkBaseFunction(BaseFunction.ADMIN);
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAdmin();
         
         JSONObject response = new JSONObject();
         
@@ -626,10 +626,10 @@ public class UserResource extends BaseResource {
             @QueryParam("offset") Integer offset,
             @QueryParam("sort_column") Integer sortColumn,
             @QueryParam("asc") Boolean asc) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        checkBaseFunction(BaseFunction.ADMIN);
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAdmin();
         
         JSONObject response = new JSONObject();
         List<JSONObject> users = new ArrayList<JSONObject>();

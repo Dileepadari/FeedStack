@@ -26,8 +26,8 @@ import java.util.List;
  * @author jtremeaux
  */
 @Path("/starred")
-public class StarredResource extends BaseResource {
-    /**
+public class StarredResource extends ArticleManagementBaseResource {
+     /**
      * Returns starred articles.
      *
      * @param limit Page limit
@@ -39,44 +39,46 @@ public class StarredResource extends BaseResource {
     public Response get(
             @QueryParam("limit") Integer limit,
             @QueryParam("after_article") String afterArticle) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Get the articles
         UserArticleDao userArticleDao = new UserArticleDao();
         UserArticleCriteria userArticleCriteria = new UserArticleCriteria()
             .setStarred(true)
             .setVisible(true)
             .setUserId(principal.getId());
-        if (afterArticle != null) {
-            // Paginate after this user article
-            UserArticleCriteria afterArticleCriteria = new UserArticleCriteria()
-                    .setUserArticleId(afterArticle)
-                    .setUserId(principal.getId());
-            List<UserArticleDto> userArticleDtoList = userArticleDao.findByCriteria(afterArticleCriteria);
-            if (userArticleDtoList.isEmpty()) {
-                throw new ClientException("ArticleNotFound", MessageFormat.format("Can't find user article {0}", afterArticle));
-            }
-            UserArticleDto userArticleDto = userArticleDtoList.iterator().next();
+//        if (afterArticle != null) {
+//            // Paginate after this user article
+//            UserArticleCriteria afterArticleCriteria = new UserArticleCriteria()
+//                    .setUserArticleId(afterArticle)
+//                    .setUserId(principal.getId());
+//            List<UserArticleDto> userArticleDtoList = userArticleDao.findByCriteria(afterArticleCriteria);
+//            if (userArticleDtoList.isEmpty()) {
+//                throw new ClientException("ArticleNotFound", MessageFormat.format("Can't find user article {0}", afterArticle));
+//            }
+//            UserArticleDto userArticleDto = userArticleDtoList.iterator().next();
+//
+//            userArticleCriteria.setUserArticleStarredDateMax(new Date(userArticleDto.getStarTimestamp()));
+//            userArticleCriteria.setUserArticleIdMax(userArticleDto.getId());
+//        }
 
-            userArticleCriteria.setUserArticleStarredDateMax(new Date(userArticleDto.getStarTimestamp()));
-            userArticleCriteria.setUserArticleIdMax(userArticleDto.getId());
-        }
-
-        PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(limit, null);
-        userArticleDao.findByCriteria(paginatedList, userArticleCriteria, null, null);
+//        PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(limit, null);
+        PaginatedList<UserArticleDto> paginatedList = getPaginatedArticles(userArticleCriteria, limit,afterArticle);
+//        userArticleDao.findByCriteria(paginatedList, userArticleCriteria, null, null);
         
         // Build the response
-        JSONObject response = new JSONObject();
+//        JSONObject response = new JSONObject();
+//
+//        List<JSONObject> articles = new ArrayList<JSONObject>();
+//        for (UserArticleDto userArticle : paginatedList.getResultList()) {
+//            articles.add(ArticleAssembler.asJson(userArticle));
+//        }
+//        response.put("articles", articles);
 
-        List<JSONObject> articles = new ArrayList<JSONObject>();
-        for (UserArticleDto userArticle : paginatedList.getResultList()) {
-            articles.add(ArticleAssembler.asJson(userArticle));
-        }
-        response.put("articles", articles);
-
-        return Response.ok().entity(response).build();
+//        return Response.ok().entity(response).build();
+        return buildArticleListResponse(paginatedList);
     }
 
     /**
@@ -90,16 +92,17 @@ public class StarredResource extends BaseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response star(
             @PathParam("id") String id) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Get the article
-        UserArticleDao userArticleDao = new UserArticleDao();
-        UserArticle userArticle = userArticleDao.getUserArticle(id, principal.getId());
-        if (userArticle == null) {
-            throw new ClientException("ArticleNotFound", MessageFormat.format("Article not found: {0}", id));
-        }
+        UserArticle userArticle = validateArticle(id);
+//        UserArticleDao userArticleDao = new UserArticleDao();
+//        UserArticle userArticle = userArticleDao.getUserArticle(id, principal.getId());
+//        if (userArticle == null) {
+//            throw new ClientException("ArticleNotFound", MessageFormat.format("Article not found: {0}", id));
+//        }
         if (userArticle.getStarredDate() != null) {
             throw new ClientException("ArticleAlreadyStarred", MessageFormat.format("Article already starred: {0}", id));
         }
@@ -109,9 +112,9 @@ public class StarredResource extends BaseResource {
         userArticleDao.update(userArticle);
         
         // Always return ok
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
 
     /**
@@ -125,16 +128,17 @@ public class StarredResource extends BaseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response unstar(
             @PathParam("id") String id) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Get the article
-        UserArticleDao userArticleDao = new UserArticleDao();
-        UserArticle userArticle = userArticleDao.getUserArticle(id, principal.getId());
-        if (userArticle == null) {
-            throw new ClientException("ArticleNotFound", MessageFormat.format("Article not found: {0}", id));
-        }
+        UserArticle userArticle = validateArticle(id);
+//        UserArticleDao userArticleDao = new UserArticleDao();
+//        UserArticle userArticle = userArticleDao.getUserArticle(id, principal.getId());
+//        if (userArticle == null) {
+//            throw new ClientException("ArticleNotFound", MessageFormat.format("Article not found: {0}", id));
+//        }
         if (userArticle.getStarredDate() == null) {
             throw new ClientException("ArticleNotStarred", MessageFormat.format("The article is not starred: {0}", id));
         }
@@ -144,9 +148,9 @@ public class StarredResource extends BaseResource {
         userArticleDao.update(userArticle);
         
         // Always return ok
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
     
     /**
@@ -160,10 +164,10 @@ public class StarredResource extends BaseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response starMultiple(
             @FormParam("id") List<String> idList) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         for (String id : idList) {
             // Get the article
             UserArticleDao userArticleDao = new UserArticleDao();
@@ -178,9 +182,9 @@ public class StarredResource extends BaseResource {
         }
         
         // Always return ok
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
     
     /**
@@ -194,10 +198,10 @@ public class StarredResource extends BaseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response unstarMultiple(
             @FormParam("id") List<String> idList) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         for (String id : idList) {
             // Get the article
             UserArticleDao userArticleDao = new UserArticleDao();
@@ -212,8 +216,8 @@ public class StarredResource extends BaseResource {
         }
         
         // Always return ok
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
 }

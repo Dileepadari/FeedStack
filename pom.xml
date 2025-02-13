@@ -131,6 +131,26 @@
         <artifactId>rpm-maven-plugin</artifactId>
         <version>${org.codehaus.mojo.rpm-maven-plugin.version}</version>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.15.0</version>
+        <configuration>
+          <rulesets>
+            <ruleset>category/java/bestpractices.xml</ruleset>
+            <ruleset>category/java/codestyle.xml</ruleset>
+            <ruleset>category/java/design.xml</ruleset>
+            <ruleset>category/java/performance.xml</ruleset>
+            <ruleset>category/java/errorprone.xml</ruleset>
+          </rulesets>
+          <linkXRef>false</linkXRef>
+          <outputFormats>
+            <outputFormat>xml</outputFormat>
+            <outputFormat>html</outputFormat>
+          </outputFormats>
+        </configuration>
+      </plugin>
+
 
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

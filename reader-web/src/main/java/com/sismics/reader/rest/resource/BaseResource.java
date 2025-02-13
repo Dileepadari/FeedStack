@@ -6,6 +6,7 @@ import com.sismics.security.IPrincipal;
 import com.sismics.security.UserPrincipal;
 import com.sismics.util.filter.SecurityFilter;
 import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.QueryParam;
@@ -50,7 +51,19 @@ public abstract class BaseResource {
             return false;
         }
     }
-    
+    protected void validateAuthentication() throws JSONException {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
+        }
+    }
+    protected void validateAdmin() throws JSONException {
+        validateAuthentication();
+        checkBaseFunction(BaseFunction.ADMIN);
+    }
+
+    protected JSONObject buildOkResponse() throws JSONException {
+        return new JSONObject().put("status", "ok");
+    }
     /**
      * Checks if the user has a base function. Throw an exception if the check fails.
      * 

@@ -28,7 +28,7 @@ import java.util.List;
  * @author jtremeaux
  */
 @Path("/all")
-public class AllResource extends BaseResource {
+public class AllResource extends ArticleManagementBaseResource {
     /**
      * Returns all articles.
      * 
@@ -43,10 +43,10 @@ public class AllResource extends BaseResource {
             @QueryParam("unread") boolean unread,
             @QueryParam("limit") Integer limit,
             @QueryParam("after_article") String afterArticle) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+            validateAuthentication();
         // Get the articles
         UserArticleDao userArticleDao = new UserArticleDao();
         UserArticleCriteria userArticleCriteria = new UserArticleCriteria()
@@ -54,34 +54,36 @@ public class AllResource extends BaseResource {
                 .setUserId(principal.getId())
                 .setSubscribed(true)
                 .setVisible(true);
-        if (afterArticle != null) {
-            // Paginate after this user article
-            UserArticleCriteria afterArticleCriteria = new UserArticleCriteria()
-                    .setUserArticleId(afterArticle)
-                    .setUserId(principal.getId());
-            List<UserArticleDto> userArticleDtoList = userArticleDao.findByCriteria(afterArticleCriteria);
-            if (userArticleDtoList.isEmpty()) {
-                throw new ClientException("ArticleNotFound", MessageFormat.format("Can't find user article {0}", afterArticle));
-            }
-            UserArticleDto userArticleDto = userArticleDtoList.iterator().next();
+//        if (afterArticle != null) {
+//            // Paginate after this user article
+//            UserArticleCriteria afterArticleCriteria = new UserArticleCriteria()
+//                    .setUserArticleId(afterArticle)
+//                    .setUserId(principal.getId());
+//            List<UserArticleDto> userArticleDtoList = userArticleDao.findByCriteria(afterArticleCriteria);
+//            if (userArticleDtoList.isEmpty()) {
+//                throw new ClientException("ArticleNotFound", MessageFormat.format("Can't find user article {0}", afterArticle));
+//            }
+//            UserArticleDto userArticleDto = userArticleDtoList.iterator().next();
+//
+//            userArticleCriteria.setArticlePublicationDateMax(new Date(userArticleDto.getArticlePublicationTimestamp()));
+//            userArticleCriteria.setArticleIdMax(userArticleDto.getArticleId());
+//        }
 
-            userArticleCriteria.setArticlePublicationDateMax(new Date(userArticleDto.getArticlePublicationTimestamp()));
-            userArticleCriteria.setArticleIdMax(userArticleDto.getArticleId());
-        }
-
-        PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(limit, null);
-        userArticleDao.findByCriteria(paginatedList, userArticleCriteria, null, null);
+//        PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(limit, null);
+        PaginatedList<UserArticleDto> paginatedList =getPaginatedArticles(userArticleCriteria,limit,afterArticle);
+//        userArticleDao.findByCriteria(paginatedList, userArticleCriteria, null, null);
         
         // Build the response
-        JSONObject response = new JSONObject();
+//        JSONObject response = new JSONObject();
+//
+//        List<JSONObject> articles = new ArrayList<JSONObject>();
+//        for (UserArticleDto userArticle : paginatedList.getResultList()) {
+//            articles.add(ArticleAssembler.asJson(userArticle));
+//        }
+//        response.put("articles", articles);
 
-        List<JSONObject> articles = new ArrayList<JSONObject>();
-        for (UserArticleDto userArticle : paginatedList.getResultList()) {
-            articles.add(ArticleAssembler.asJson(userArticle));
-        }
-        response.put("articles", articles);
-
-        return Response.ok().entity(response).build();
+//        return Response.ok().entity(response).build();
+        return buildArticleListResponse(paginatedList);
     }
 
     /**
@@ -93,26 +95,26 @@ public class AllResource extends BaseResource {
     @Path("/read")
     @Produces(MediaType.APPLICATION_JSON)
     public Response read() throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Marks all articles of this user as read
         UserArticleDao userArticleDao = new UserArticleDao();
         userArticleDao.markAsRead(new UserArticleCriteria()
                 .setUserId(principal.getId())
                 .setSubscribed(true));
 
-        FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
-        for (FeedSubscriptionDto feedSubscrition : feedSubscriptionDao.findByCriteria(new FeedSubscriptionCriteria()
-                .setUserId(principal.getId()))) {
-            feedSubscriptionDao.updateUnreadCount(feedSubscrition.getId(), 0);
-        }
-
+//        FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
+//        for (FeedSubscriptionDto feedSubscrition : feedSubscriptionDao.findByCriteria(new FeedSubscriptionCriteria()
+//                .setUserId(principal.getId()))) {
+//            feedSubscriptionDao.updateUnreadCount(feedSubscrition.getId(), 0);
+//        }
+        updateFeedSubscriptionUnreadCount(principal.getId(),0);
         // Always return ok
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
 
 }

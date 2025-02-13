@@ -33,7 +33,7 @@ import java.util.List;
  * @author jtremeaux
  */
 @Path("/category")
-public class CategoryResource extends BaseResource {
+public class CategoryResource extends CategoryBaseResource {
     /**
      * Returns all categories.
      * 
@@ -42,10 +42,10 @@ public class CategoryResource extends BaseResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response list() throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Get the root category
         CategoryDao categoryDao = new CategoryDao();
         Category rootCategory = categoryDao.getRootCategory(principal.getId());
@@ -62,10 +62,10 @@ public class CategoryResource extends BaseResource {
 
         List<JSONObject> categoriesJson = new ArrayList<JSONObject>();
         for (Category category : categoryList) {
-            JSONObject categoryJson = new JSONObject();
-            categoryJson.put("id", category.getId());
-            categoryJson.put("name", category.getName());
-            categoriesJson.add(categoryJson);
+//            JSONObject categoryJson = new JSONObject();
+//            categoryJson.put("id", category.getId());
+//            categoryJson.put("name", category.getName());
+            categoriesJson.add(buildCategoryJson(category));
         }
         rootCategoryJson.put("categories", categoriesJson);
         
@@ -91,18 +91,18 @@ public class CategoryResource extends BaseResource {
             @QueryParam("unread") boolean unread,
             @QueryParam("limit") Integer limit,
             @QueryParam("after_article") String afterArticle) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Get the category
-        CategoryDao categoryDao = new CategoryDao();
-        Category category;
-        try {
-            category = categoryDao.getCategory(id, principal.getId());
-        } catch (NoResultException e) {
-            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
-        }
+//        CategoryDao categoryDao = new CategoryDao();
+        Category category = validateCategory(id);
+//        try {
+//            category = categoryDao.getCategory(id, principal.getId());
+//        } catch (NoResultException e) {
+//            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
+//        }
 
         // Get the articles
         UserArticleDao userArticleDao = new UserArticleDao();
@@ -114,34 +114,35 @@ public class CategoryResource extends BaseResource {
         if (category.getParentId() != null) {
             userArticleCriteria.setCategoryId(id);
         }
-        if (afterArticle != null) {
-            // Paginate after this user article
-            UserArticleCriteria afterArticleCriteria = new UserArticleCriteria()
-                    .setUserArticleId(afterArticle)
-                    .setUserId(principal.getId());
-            List<UserArticleDto> userArticleDtoList = userArticleDao.findByCriteria(afterArticleCriteria);
-            if (userArticleDtoList.isEmpty()) {
-                throw new ClientException("ArticleNotFound", MessageFormat.format("Can't find user article {0}", afterArticle));
-            }
-            UserArticleDto userArticleDto = userArticleDtoList.iterator().next();
+        PaginatedList<UserArticleDto> paginatedList = getPaginatedArticles(userArticleCriteria,limit, afterArticle);
 
-            userArticleCriteria.setArticlePublicationDateMax(new Date(userArticleDto.getArticlePublicationTimestamp()));
-            userArticleCriteria.setArticleIdMax(userArticleDto.getArticleId());
-        }
+//        if (afterArticle != null) {
+//            // Paginate after this user article
+//            UserArticleCriteria afterArticleCriteria = new UserArticleCriteria()
+//                    .setUserArticleId(afterArticle)
+//                    .setUserId(principal.getId());
+//            List<UserArticleDto> userArticleDtoList = userArticleDao.findByCriteria(afterArticleCriteria);
+//            if (userArticleDtoList.isEmpty()) {
+//                throw new ClientException("ArticleNotFound", MessageFormat.format("Can't find user article {0}", afterArticle));
+//            }
+//            UserArticleDto userArticleDto = userArticleDtoList.iterator().next();
+//
+//            userArticleCriteria.setArticlePublicationDateMax(new Date(userArticleDto.getArticlePublicationTimestamp()));
+//            userArticleCriteria.setArticleIdMax(userArticleDto.getArticleId());
+//        }
+//        PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(limit, null);
+//        userArticleDao.findByCriteria(paginatedList, userArticleCriteria, null, null);
+//
+//        // Build the response
+//        JSONObject response = new JSONObject();
+//
+//        List<JSONObject> articles = new ArrayList<JSONObject>();
+//        for (UserArticleDto userArticle : paginatedList.getResultList()) {
+//            articles.add(ArticleAssembler.asJson(userArticle));
+//        }
+//        response.put("articles", articles);
 
-        PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(limit, null);
-        userArticleDao.findByCriteria(paginatedList, userArticleCriteria, null, null);
-        
-        // Build the response
-        JSONObject response = new JSONObject();
-
-        List<JSONObject> articles = new ArrayList<JSONObject>();
-        for (UserArticleDto userArticle : paginatedList.getResultList()) {
-            articles.add(ArticleAssembler.asJson(userArticle));
-        }
-        response.put("articles", articles);
-
-        return Response.ok().entity(response).build();
+        return buildArticleListResponse(paginatedList);
     }
     
     /**
@@ -154,13 +155,14 @@ public class CategoryResource extends BaseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response add(
             @FormParam("name") String name) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Validate input data
+
         name = ValidationUtil.validateLength(name, "name", 1, 100, false);
-        
+
         // Get the root category
         CategoryDao categoryDao = new CategoryDao();
         Category rootCategory = categoryDao.getRootCategory(principal.getId());
@@ -195,14 +197,14 @@ public class CategoryResource extends BaseResource {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
-
+        validateAuthentication();
         // Get the category
-        CategoryDao categoryDao = new CategoryDao();
-        try {
-            categoryDao.getCategory(id, principal.getId());
-        } catch (NoResultException e) {
-            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
-        }
+        Category category =  validateCategory(id);
+//        try {
+//            category = new CategoryDao().getCategory(id, principal.getId());
+//        } catch (NoResultException e) {
+//            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
+//        }
         
         // Move subscriptions in this category to root
         FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
@@ -218,9 +220,9 @@ public class CategoryResource extends BaseResource {
         categoryDao.delete(id);
         
         // Always return ok
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
 
     /**
@@ -234,36 +236,36 @@ public class CategoryResource extends BaseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response read(
             @PathParam("id") String id) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Get the category
-        Category category;
-        try {
-            category = new CategoryDao().getCategory(id, principal.getId());
-        } catch (NoResultException e) {
-            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
-        }
-
+        Category category =  validateCategory(id);
+//        try {
+//            category = new CategoryDao().getCategory(id, principal.getId());
+//        } catch (NoResultException e) {
+//            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
+//        }
         // Marks all articles as read in this category
-        UserArticleDao userArticleDao = new UserArticleDao();
-        userArticleDao.markAsRead(new UserArticleCriteria()
-                .setUserId(principal.getId())
-                .setSubscribed(true)
-                .setCategoryId(id));
-
-        FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
-        for (FeedSubscriptionDto feedSubscrition : feedSubscriptionDao.findByCriteria(new FeedSubscriptionCriteria()
-                .setCategoryId(category.getId())
-                .setUserId(principal.getId()))) {
-            feedSubscriptionDao.updateUnreadCount(feedSubscrition.getId(), 0);
-        }
+        markCategoryArticlesAsRead(id);
+//        UserArticleDao userArticleDao = new UserArticleDao();
+//        userArticleDao.markAsRead(new UserArticleCriteria()
+//                .setUserId(principal.getId())
+//                .setSubscribed(true)
+//                .setCategoryId(id));
+//
+//        FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
+//        for (FeedSubscriptionDto feedSubscrition : feedSubscriptionDao.findByCriteria(new FeedSubscriptionCriteria()
+//                .setCategoryId(category.getId())
+//                .setUserId(principal.getId()))) {
+//            feedSubscriptionDao.updateUnreadCount(feedSubscrition.getId(), 0);
+//        }
         
         // Always return ok
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
 
     /**
@@ -283,21 +285,20 @@ public class CategoryResource extends BaseResource {
             @FormParam("name") String name,
             @FormParam("order") Integer order,
             @FormParam("folded") Boolean folded) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Validate input data
         name = ValidationUtil.validateLength(name, "name", 1, 100, true);
         
         // Get the category
-        CategoryDao categoryDao = new CategoryDao();
-        Category category;
-        try {
-            category = categoryDao.getCategory(id, principal.getId());
-        } catch (NoResultException e) {
-            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
-        }
+        Category category =  validateCategory(id);
+//        try {
+//            category = new CategoryDao().getCategory(id, principal.getId());
+//        } catch (NoResultException e) {
+//            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
+//        }
         
         // Update the category
         if (name != null) {
@@ -314,8 +315,8 @@ public class CategoryResource extends BaseResource {
         }
         
         // Always return ok
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
 }

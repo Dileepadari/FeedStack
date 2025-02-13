@@ -32,10 +32,10 @@ public class JobResource extends BaseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response delete(
             @PathParam("id") String id) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-
+//        if (!authenticate()) {
+//            throw new ForbiddenClientException();
+//        }
+        validateAuthentication();
         // Check if the job exists
         JobDao jobDao = new JobDao();
         Job job = jobDao.getActiveJob(id);
@@ -50,8 +50,8 @@ public class JobResource extends BaseResource {
         jobDao.delete(job.getId());
 
         // Always return ok
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
+//        JSONObject response = new JSONObject();
+//        response.put("status", "ok");
+        return Response.ok().entity(buildOkResponse()).build();
     }
 }
