@@ -11,65 +11,49 @@ Files:
 Smells Found:
 [
   {
-    "type": "Hard to read code",
-    "category": "code",
-    "description": "The get() method in File 1 is too long and complex, making it difficult to read and understand.",
+    "type": "God Class",
+    "category": "design",
+    "description": "The `AllResource` class has too many responsibilities, including getting articles, marking articles as read, and returning information about the application.",
     "files": [
       "file1"
     ],
-    "fix": "The method should be split into smaller, more manageable chunks."
+    "fix": "Extract the different responsibilities into separate classes."
   },
   {
-    "type": "Duplicated code",
-    "category": "code",
-    "description": "The paginate() method in both File 1 and File 2 are duplicated, each performing the same functionality of paginating articles.",
+    "type": "Shotgun Surgery",
+    "category": "design",
+    "description": "The `read()` method is responsible for both marking all articles as read and updating the unread count for each feed subscription.",
     "files": [
-      "file1",
+      "file1"
+    ],
+    "fix": "Extract the updating of the unread count for each feed subscription into a separate method."
+  },
+  {
+    "type": "Long Parameter List",
+    "category": "code",
+    "description": "The `get()` method has a long parameter list, making it difficult to read and understand.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Use a request object to encapsulate the parameters."
+  },
+  {
+    "type": "Deeply Nested Code",
+    "category": "code",
+    "description": "The `log()` method contains deeply nested code, making it difficult to follow the logic.",
+    "files": [
       "file2"
     ],
-    "fix": "The paginate() method should be moved to a utility class or a base class to avoid duplication."
+    "fix": "Extract the nested code into separate methods."
   },
   {
-    "type": "God class",
-    "category": "design",
-    "description": "The AppContext class in File 2 is responsible for a wide range of functionalities, including indexing, logging, and network operations.",
+    "type": "Unhandled Exception",
+    "category": "code",
+    "description": "The `version()` method does not handle the `JSONException` that can be thrown when creating the response.",
     "files": [
       "file2"
     ],
-    "fix": "The AppContext class should be refactored into smaller, more focused classes, each with a well-defined purpose."
-  }
-]
-
-Single File 4/5:
-File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/UserResource.java
-Smells Found:
-[
-  {
-    "type": "LongParameterList",
-    "category": "code",
-    "description": "The `register` method has 10 parameters, which is a lot and can make the method difficult to understand and maintain.",
-    "files": [
-      "UserResource.java"
-    ],
-    "fix": "Consider refactoring the method to reduce the number of parameters."
-  },
-  {
-    "type": "NestedTryStatement",
-    "category": "code",
-    "description": "The `register` method has a nested try statement, which can be confusing and difficult to debug.",
-    "files": [
-      "UserResource.java"
-    ],
-    "fix": "Consider refactoring the method to avoid the nested try statement."
-  },
-  {
-    "type": "LargeClass",
-    "category": "design",
-    "description": "The `UserResource` class has 150 lines of code, which is quite large and can be difficult to understand and maintain.",
-    "files": [
-      "UserResource.java"
-    ],
-    "fix": "Consider refactoring the class into multiple smaller classes."
+    "fix": "Add exception handling to the `version()` method."
   }
 ]
 
