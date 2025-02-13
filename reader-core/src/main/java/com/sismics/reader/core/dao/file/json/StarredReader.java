@@ -11,7 +11,6 @@ import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
-import org.codehaus.jackson.node.JsonNodeFactory;
 import org.codehaus.jackson.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,4 +143,87 @@ class StarredReader {
         }
     }
 }
-```
+
+====FILE_DELIMITER====
+package com.sismics.util;
+
+import com.codehaus.jackson.JsonNode;
+import com.codehaus.jackson.JsonParseException;
+import com.codehaus.jackson.JsonParser;
+import com.codehaus.jackson.map.DeserializationContext;
+import com.codehaus.jackson.map.JsonDeserializer;
+import com.codehaus.jackson.map.JsonMappingException;
+import com.codehaus.jackson.map.ObjectMapper;
+import com.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
+
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+public class JsonUtil {
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+    private JsonUtil() {
+        throw new AssertionError("Not instantiable");
+    }
+
+    private static ObjectMapper newMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
+        return mapper;
+    }
+
+    public static String validateJsonAndGetTextValue(JsonNode node, String fieldName) throws JsonParseException {
+        if (!node.has(fieldName)) {
+            throw new JsonParseException(String.format("Missing required field '%s'", fieldName), null);
+        }
+        JsonNode fieldNode = node.get(fieldName);
+        if (!fieldNode.isTextual()) {
+            throw new JsonParseException(String.format("Field '%s' must be a string", fieldName), null);
+        }
+        return fieldNode.getTextValue();
+    }
+
+    public static void validateJsonRequiredFields(JsonNode node, List<String> requiredFields) throws JsonParseException {
+        for (String field : requiredFields) {
+            if (!node.has(field)) {
+                throw new JsonParseException(String.format("Missing required field '%s'", field), null);
+            }
+        }
+    }
+
+    public static String extractFieldFromNode(JsonNode node, String fieldName) throws IOException {
+        JsonNode fieldNode = node.get(fieldName);
+        if (fieldNode != null) {
+            if (!fieldNode.isTextual()) {
+                throw new IOException(MessageFormat.format("Field {0} is not a string", fieldName));
+            }
+            return fieldNode.getTextValue();
+        }
+        return null;
+    }
+
+    @JsonDeserialize(using = DateDeserializer.class)
+    @JsonSerialize(using = DateSerializer.class)
+    public static class Iso8601Date {
+        private final Date date;
+
+        public Iso8601Date(Date date) {
+            this.date = date;
+        }
+
+        public Date getDate() {
+            return date;
+        }
+
+        public static class DateDeserializer extends JsonDeserializer<Iso8601Date> {
+            @Override
+            public Iso8601Date deserialize(JsonParser jp, Des

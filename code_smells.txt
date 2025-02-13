@@ -1,39 +1,203 @@
 Analysis Summary:
-Total Java files: 17
-Files analyzed: 3
-Files skipped or errored: 14
+Total Java files: 139
+Files analyzed: 11
+Files skipped or errored: 128
 
 Detailed Analysis:
-Single File 4/5:
-File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/UserResource.java
+Pair 31/61:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/dto/FeedSubscriptionDto.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/dto/JobDto.java
 Smells Found:
 [
   {
-    "type": "LongParameterList",
+    "type": "Data Class",
+    "category": "design",
+    "description": "The `JobDto` class is a data class, with only getters and setters. It doesn't have any behavior.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Extract the behavior into a separate class, or use a record class."
+  },
+  {
+    "type": "Nested Data Classes",
+    "category": "design",
+    "description": "The `FeedSubscriptionDto` and `FeedCategoryDto` classes are nested within each other, which makes the code difficult to read and maintain.",
+    "files": [
+      "file2"
+    ],
+    "fix": "Move the `FeedCategoryDto` class to a separate file."
+  },
+  {
+    "type": "Magic Numbers",
     "category": "code",
-    "description": "The constructor `User` has 17 parameters, which is too many. This can make the code difficult to read and maintain.",
+    "description": "The `FeedCategoryDto` class has a boolean field called `folded` without any documentation or explanation of what it means.",
     "files": [
-      "User.java"
+      "file2"
     ],
-    "fix": "Consider breaking the constructor into multiple smaller constructors, each with a smaller number of parameters."
+    "fix": "Add a comment explaining what the `folded` field means."
+  }
+]
+
+Pair 60/61:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/RoleBaseFunction.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/User.java
+Smells Found:
+[
+  {
+    "type": "Long parameter list",
+    "category": "code",
+    "description": "The constructor of `RoleBaseFunction` has a long parameter list.",
+    "files": [
+      "File 1"
+    ],
+    "fix": "Consider using a builder pattern or a fluent API to reduce the number of parameters."
   },
   {
-    "type": "GodClass",
+    "type": "Large class",
     "category": "design",
-    "description": "The class `User` has too many responsibilities. It is responsible for managing user data, authentication, and preferences. This can make the code difficult to understand and maintain.",
+    "description": "The `User` class has a large number of fields and methods.",
     "files": [
-      "User.java"
+      "File 2"
     ],
-    "fix": "Consider breaking the class `User` into multiple smaller classes, each with a more focused set of responsibilities."
+    "fix": "Consider splitting the class into multiple smaller classes."
   },
   {
-    "type": "DataClumps",
+    "type": "God class",
     "category": "design",
-    "description": "The class `User` has several groups of related data members. For example, the data members `displayTitleWeb`, `displayTitleMobile`, `displayUnreadWeb`, and `displayUnreadMobile` are all related to the user's display preferences. This can make the code difficult to read and maintain.",
+    "description": "The `User` class has too many responsibilities.",
     "files": [
-      "User.java"
+      "File 2"
     ],
-    "fix": "Consider creating separate classes or structs to represent these groups of related data members."
+    "fix": "Consider refactoring the class to delegate some of its responsibilities to other classes."
+  },
+  {
+    "type": "Complex conditional",
+    "category": "code",
+    "description": "The `User` class has a complex conditional statement in the `toString` method.",
+    "files": [
+      "File 2"
+    ],
+    "fix": "Consider refactoring the conditional statement to make it more readable."
+  }
+]
+
+Single File 8/17:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/UserDao.java
+Smells Found:
+[
+  {
+    "type": "Code smell",
+    "category": "code",
+    "description": "Avoid using raw types - Replace usages of raw types with bounded parametrized types wherever possible.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Replace `List` with `List<T>` where `T` is a specific type."
+  },
+  {
+    "type": "Design smell",
+    "category": "design",
+    "description": "Use getters and setters",
+    "files": [
+      "file1"
+    ],
+    "fix": "Add getters and setters to access the `name` field."
+  }
+]
+
+Single File 12/17:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/file/json/StarredReader.java
+Smells Found:
+[
+  {
+    "type": "ExceptionHandlingSmell",
+    "category": "code",
+    "description": "The exception handling is not centralized, which makes it difficult to track down and debug issues.",
+    "files": [
+      "StarredReader.java"
+    ],
+    "fix": "Centralize the exception handling in a single location, such as a `try-catch` block in the `read` method."
+  },
+  {
+    "type": "GodClassSmell",
+    "category": "design",
+    "description": "The `StarredReader` class has too many responsibilities, including reading the JSON file, parsing the JSON, and creating the `Feed` and `Article` objects.",
+    "files": [
+      "StarredReader.java"
+    ],
+    "fix": "Refactor the class into smaller, more focused classes, such as a `JsonParser` class and a `FeedCreator` class."
+  },
+  {
+    "type": "LongMethodSmell",
+    "category": "code",
+    "description": "The `read` method is too long and complex, with over 50 lines of code.",
+    "files": [
+      "StarredReader.java"
+    ],
+    "fix": "Refactor the method into smaller, more manageable methods."
+  },
+  {
+    "type": "MagicNumberSmell",
+    "category": "code",
+    "description": "The `publishedTimestamp` is multiplied by 1000 to convert it from seconds to milliseconds.",
+    "files": [
+      "StarredReader.java"
+    ],
+    "fix": "Replace the magic number with a named constant, such as `MILLISECONDS_PER_SECOND`."
+  },
+  {
+    "type": "NestedBlockDepthSmell",
+    "category": "code",
+    "description": "The `read` method has a nested block depth of 4, which makes it difficult to read and understand.",
+    "files": [
+      "StarredReader.java"
+    ],
+    "fix": "Refactor the method to reduce the nesting depth."
+  },
+  {
+    "type": "SwitchStatementSmell",
+    "category": "code",
+    "description": "The `extractUrl` method uses a switch statement to extract the URL from the JSON node.",
+    "files": [
+      "StarredReader.java"
+    ],
+    "fix": "Replace the switch statement with a more concise and readable `if-else` statement."
+  }
+]
+
+Single File 17/17:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/model/context/AppContext.java
+Smells Found:
+[
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "The AppContext class has too many responsibilities and knows too much about the application.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Refactor the AppContext class to break it up into smaller, more cohesive classes."
+  },
+  {
+    "type": "Data Clump",
+    "category": "code",
+    "description": "The `if (EnvironmentUtil.isUnitTest())` blocks in the `IndexingService` class duplicate a lot of code.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Extract the common code into a method and call it from both blocks."
+  },
+  {
+    "type": "Feature Envy",
+    "category": "code",
+    "description": "The `reloadIndex` method in the `IndexingService` class is better placed in the `FeedService` class.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Move the `reloadIndex` method to the `FeedService` class."
   }
 ]
 

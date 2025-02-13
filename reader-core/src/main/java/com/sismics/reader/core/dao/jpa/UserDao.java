@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
  *
  * @author jtremeaux
  */
+@SuppressWarnings({"unused", "RedundantSuppression"})
 public class UserDao extends BaseDao<UserDto, UserCriteria> {
 
     @Override
@@ -223,5 +224,4 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
      * @param password Clear password
      * @return Hashed password
      */
-    protected String hashPassword(String password) {
-        return BCrypt.
+    protected String hash

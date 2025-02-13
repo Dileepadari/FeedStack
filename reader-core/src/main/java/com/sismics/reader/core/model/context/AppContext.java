@@ -5,11 +5,7 @@ import com.google.common.eventbus.EventBus;
 import com.sismics.reader.core.constant.ConfigType;
 import com.sismics.reader.core.dao.jpa.ConfigDao;
 import com.sismics.reader.core.listener.sync.DeadEventListener;
-import com.sismics.reader.core.mediator.ConcreteMediator;
-import com.sismics.reader.core.mediator.Mediator;
 import com.sismics.reader.core.model.jpa.Config;
-import com.sismics.reader.core.service.FeedService;
-import com.sismics.reader.core.service.IndexingService;
 import com.sismics.util.EnvironmentUtil;
 
 import java.util.concurrent.ThreadPoolExecutor;
@@ -23,40 +19,12 @@ public class AppContext {
     /**
      * Singleton instance.
      */
-    private AppContext() {
-        eventBus = new EventBus();
-        mediator = new ConcreteMediator(this, feedService);
-
-        feedService = new FeedService(mediator);
-        feedService.startAndWait();
-
-        ConfigDao configDao = new ConfigDao();
-        Config luceneStorageConfig = configDao.getById(ConfigType.LUCENE_DIRECTORY_STORAGE);
-        indexingService = new IndexingService(luceneStorageConfig != null ? luceneStorageConfig.getValue() : null, mediator);
-        indexingService.startAndWait();
-    }
-
     private static AppContext instance;
 
     /**
      * Event bus.
      */
     private EventBus eventBus;
-
-    /**
-     * Feed service.
-     */
-    private FeedService feedService;
-
-    /**
-     * Indexing service.
-     */
-    private IndexingService indexingService;
-
-    /**
-     * Mediator
-     */
-    private Mediator mediator;
 
     /**
      * Returns a single instance of the application context.
@@ -100,32 +68,22 @@ public class AppContext {
         return eventBus;
     }
 
-    /**
-     * Getter of feedService.
-     *
-     * @return feedService
-     */
-    public FeedService getFeedService() {
-        return feedService;
+    private AppContext() {
+        eventBus = new EventBus();
+        eventBus.register(new DeadEventListener());
     }
 
-    /**
-     * Getter of indexingService.
-     *
-     * @return indexingService
-     */
-    public IndexingService getIndexingService() {
-        return indexingService;
+    private void resetEventBus() {
+        eventBus = new EventBus();
+        eventBus.register(new DeadEventListener());
     }
 }
-
 ====FILE_DELIMITER====
 package com.sismics.reader.core.service;
 
 import com.google.common.eventbus.EventBus;
 import com.sismics.reader.core.constant.ConfigType;
 import com.sismics.reader.core.dao.jpa.ConfigDao;
-import com.sismics.reader.core.listener.async.*;
 import com.sismics.reader.core.model.context.AppContext;
 import com.sismics.reader.core.model.jpa.Config;
 import com.sismics.util.EnvironmentUtil;
@@ -173,12 +131,6 @@ public class IndexingService extends Thread {
     private void executeAsync() {
         try {
             eventBus = newAsyncEventBus();
-            eventBus.register(new ArticleCreatedAsyncListener());
-            eventBus.register(new ArticleUpdatedAsyncListener());
-            eventBus.register(new ArticleDeletedAsyncListener());
-            eventBus.register(new RebuildIndexAsyncListener());
-            eventBus.register(new FaviconUpdateRequestedAsyncListener());
-            
             start();
         } finally {
             if (!EnvironmentUtil.isUnitTest()) {
@@ -268,13 +220,6 @@ public class IndexingService extends Thread {
         if (!EnvironmentUtil.isUnitTest() && eventBus != null) {
             waitForAsync();
         }
-    }
-
-    /**
-     * Reload the index.
-     */
-    public void reloadIndex() {
-        appContext.getFeedService().reloadIndex();
     }
 
     /**
