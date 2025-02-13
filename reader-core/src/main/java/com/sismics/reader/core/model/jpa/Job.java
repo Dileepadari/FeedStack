@@ -8,69 +8,36 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
-import com.google.common.base.Objects;
-
-/**
- * Job.
- * 
- * @author jtremeaux
- */
 @Entity
-@Table(name = "T_JOB")
 public class Job {
-    /**
-     * Job ID.
-     */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "JOB_ID_C", length = 36)
-    private String id;
-    
-    /**
-     * User ID.
-     */
-    @Column(name = "JOB_IDUSER_C", length = 36)
+    private Long id;
+
+    @Column(nullable = false)
     private String userId;
-    
-    /**
-     * Job name.
-     */
-    @Column(name = "JOB_NAME_C", length = 50, nullable = false)
+
+    @Column(nullable = false)
     private String name;
-    
-    /**
-     * Creation date.
-     */
-    @Column(name = "JOB_CREATEDATE_D", nullable = false)
+
+    @Column(nullable = false)
     private Date createDate;
-    
-    /**
-     * Start date.
-     */
-    @Column(name = "JOB_STARTDATE_D")
+
     private Date startDate;
-    
-    /**
-     * End date.
-     */
-    @Column(name = "JOB_ENDDATE_D")
+
     private Date endDate;
-    
-    /**
-     * Deletion date.
-     */
-    @Column(name = "JOB_DELETEDATE_D")
+
     private Date deleteDate;
-    
+
     // ==================== Getters / Setters ==================== //
-    
-    public String getId() {
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -120,16 +87,6 @@ public class Job {
 
     public void setDeleteDate(Date deleteDate) {
         this.deleteDate = deleteDate;
-    }
-
-    // ==================== Methods ==================== //
-    
-    @Override
-    public String toString() {
-        return Objects.toStringHelper(this)
-                .add("id", id)
-                .add("name", name)
-                .toString();
     }
 }
 

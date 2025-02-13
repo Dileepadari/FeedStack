@@ -1,30 +1,171 @@
 Analysis Summary:
-Total Java files: 30
-Files analyzed: 1
-Files skipped or errored: 29
+Total Java files: 169
+Files analyzed: 7
+Files skipped or errored: 162
 
 Detailed Analysis:
-Single File 4/8:
-File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/UserResource.java
+Pair 58/72:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/Job.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/JobEvent.java
 Smells Found:
 [
   {
     "type": "Data Class",
     "category": "design",
-    "description": "AuthenticationToken is a simple data class, only containing fields and getters/setters.",
+    "description": "Both classes are simple data holders with getters and setters.",
     "files": [
-      "AuthenticationToken.java"
+      "file1",
+      "file2"
     ],
-    "fix": "Remove the getters and setters and make the fields public."
+    "fix": "Consider using a Record or Value Object pattern instead."
   },
   {
-    "type": "Data Class",
-    "category": "design",
-    "description": "User is a simple data class, only containing fields and getters/setters.",
+    "type": "Long Field Names",
+    "category": "code",
+    "description": "Field names in both classes are unnecessarily long and verbose.",
     "files": [
-      "User.java"
+      "file1",
+      "file2"
     ],
-    "fix": "Remove the getters and setters and make the fields public."
+    "fix": "Rename fields to be more concise and meaningful."
+  },
+  {
+    "type": "Magic Numbers",
+    "category": "code",
+    "description": "Length of the `JOB_ID_C` and `JOE_ID_C` columns is set to 36 without any clear reason.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Specify the length only if there's a specific requirement for it."
+  },
+  {
+    "type": "Naming Convention",
+    "category": "code",
+    "description": "Table names in both classes use the `T_` prefix, which is not a common naming convention.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Remove the `T_` prefix from the table names."
+  }
+]
+
+Single File 2/25:
+File: ./repository/reader-core/src/main/java/com/sismics/util/log4j/MemoryAppender.java
+Smells Found:
+[
+  {
+    "type": "LongParameterList",
+    "category": "code",
+    "description": "The constructor of `LogEntryQueue` has one parameter.",
+    "files": [
+      "both"
+    ],
+    "fix": "Consider using a builder pattern to reduce the number of parameters."
+  },
+  {
+    "type": "LimitedExceptionHandling",
+    "category": "code",
+    "description": "The method `add` in `LogEntryQueue` doesn't handle the case when the queue is full.",
+    "files": [
+      "both"
+    ],
+    "fix": "Add a check to see if the queue is full before adding an element, and throw an exception if it is."
+  }
+]
+
+Single File 8/25:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/UserDao.java
+Smells Found:
+[
+  {
+    "type": "Long Parameter List",
+    "category": "code",
+    "description": "The `getQueryParam` method has a large number of parameters, which can make it difficult to read and maintain.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Consider refactoring the method to use a builder pattern or to pass the parameters as an object."
+  },
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "The `UserDao` class has a large number of responsibilities, which can make it difficult to understand and maintain.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Consider refactoring the class to break it up into smaller, more focused classes."
+  },
+  {
+    "type": "Data Clumps",
+    "category": "design",
+    "description": "The `User` class has a number of data members that are related to each other, such as `username`, `email`, and `password`. These data members should be grouped together into a separate class or object.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Create a new class or object to hold the related data members."
+  }
+]
+
+Single File 16/25:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/UserArticle.java
+Smells Found:
+[
+  {
+    "type": "EmptyDefaultConstructor",
+    "category": "code",
+    "description": "Empty default constructor present in class UserArticle.",
+    "files": [
+      "UserArticle.java"
+    ],
+    "fix": "Provide a meaningful default constructor."
+  },
+  {
+    "type": "TooManyFields",
+    "category": "code",
+    "description": "Class UserArticleDetails has too many fields (6).",
+    "files": [
+      "UserArticle.java"
+    ],
+    "fix": "Split the class into multiple smaller ones."
+  },
+  {
+    "type": "LackOfEncapsulation",
+    "category": "design",
+    "description": "Fields in class UserArticleDetails are public, violating encapsulation principles.",
+    "files": [
+      "UserArticle.java"
+    ],
+    "fix": "Make the fields private and provide appropriate getters and setters."
+  },
+  {
+    "type": "LargeClass",
+    "category": "design",
+    "description": "Class UserArticle has more than 20 lines of code.",
+    "files": [
+      "UserArticle.java"
+    ],
+    "fix": "Break down the class into smaller ones."
+  },
+  {
+    "type": "TrivialGetter",
+    "category": "code",
+    "description": "Getters in class UserArticleDetails are trivial (just return the field value).",
+    "files": [
+      "UserArticle.java"
+    ],
+    "fix": "Remove the getters and access the fields directly."
+  },
+  {
+    "type": "TrivialSetter",
+    "category": "code",
+    "description": "Setters in class UserArticleDetails are trivial (just assign the parameter to the field).",
+    "files": [
+      "UserArticle.java"
+    ],
+    "fix": "Remove the setters and access the fields directly."
   }
 ]
 

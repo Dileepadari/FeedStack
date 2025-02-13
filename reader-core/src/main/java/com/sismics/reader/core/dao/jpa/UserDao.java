@@ -33,8 +33,16 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
         return new QueryParam(query.toString(), criteriaList, parameterMap, null, filterCriteria, new UserMapper());
     }
 
+    private Optional<User> findUserBy(String field, String value) {
+        try {
+            return Optional.of(find(User_.field.eq(value)));
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
     public String authenticate(String email, String password) {
-        return findUser(email)
+        return findUserBy("email", email)
                 .map(user -> BCrypt.checkpw(password, user.getPassword()) ? user.getId() : null)
                 .orElse(null);
     }
@@ -83,19 +91,11 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
     }
 
     public User getActiveByUsername(String username) {
-        try {
-            return find(User_.username.eq(username));
-        } catch (NoResultException e) {
-            return null;
-        }
+        return findUserBy("username", username).orElse(null);
     }
 
     public User getActiveByPasswordResetKey(String passwordResetKey) {
-        try {
-            return find(User_.password_reset_key.eq(passwordResetKey));
-        } catch (NoResultException e) {
-            return null;
-        }
+        return findUserBy("password_reset_key", passwordResetKey).orElse(null);
     }
 
     public void delete(String username) {
@@ -110,14 +110,6 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
         deleteAll(User.UserArticle_.user.eq(userFromDb));
         deleteAll(User.FeedSubscription_.user.eq(userFromDb));
         deleteAll(User.Category_.user.eq(userFromDb));
-    }
-
-    protected Optional<User> findUser(String email) {
-        try {
-            return Optional.of(find(User_.email.eq(email)));
-        } catch (NoResultException e) {
-            return Optional.empty();
-        }
     }
 
     protected boolean userExists(String username) {

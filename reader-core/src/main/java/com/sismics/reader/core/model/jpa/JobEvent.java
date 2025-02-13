@@ -8,71 +8,43 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
-import com.google.common.base.Objects;
-
-/**
- * Job event.
- * 
- * @author jtremeaux
- */
 @Entity
-@Table(name = "T_JOB_EVENT")
 public class JobEvent {
-    /**
-     * Job event ID.
-     */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "JOE_ID_C", length = 36)
-    private String id;
-    
-    /**
-     * Job ID.
-     */
-    @Column(name = "JOE_IDJOB_C", nullable = false, length = 36)
-    private String jobId;
-    
-    /**
-     * Job event name.
-     */
-    @Column(name = "JOE_NAME_C", length = 50)
+    private Long id;
+
+    @Column(nullable = false)
+    private Long jobId;
+
+    @Column
     private String name;
-    
-    /**
-     * Job event value.
-     */
-    @Column(name = "JOE_VALUE_C", length = 250)
+
+    @Column
     private String value;
-    
-    /**
-     * Creation date.
-     */
-    @Column(name = "JOE_CREATEDATE_D", nullable = false)
+
+    @Column(nullable = false)
     private Date createDate;
-    
-    /**
-     * Deletion date.
-     */
-    @Column(name = "JOE_DELETEDATE_D")
+
     private Date deleteDate;
-    
+
     // ==================== Getters / Setters ==================== //
-    
-    public String getId() {
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getJobId() {
+    public Long getJobId() {
         return jobId;
     }
 
-    public void setJobId(String jobId) {
+    public void setJobId(Long jobId) {
         this.jobId = jobId;
     }
 
@@ -107,17 +79,5 @@ public class JobEvent {
     public void setDeleteDate(Date deleteDate) {
         this.deleteDate = deleteDate;
     }
-
-    // ==================== Methods ==================== //
-    
-    @Override
-    public String toString() {
-        return Objects.toStringHelper(this)
-                .add("id", id)
-                .add("name", name)
-                .add("value", value)
-                .toString();
-    }
 }
-
 ```

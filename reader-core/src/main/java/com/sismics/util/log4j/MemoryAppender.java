@@ -9,17 +9,28 @@ import org.apache.log4j.spi.LoggingEvent;
  *
  * @author jtremeaux
  */
+@SuppressWarnings("unused")
 public class MemoryAppender extends AppenderSkeleton {
 
     /**
      * Maximum size of the queue.
      */
-    private int size = 1000;
+    private final int size;
 
     /**
      * Queue of log entries.
      */
-    private final LogEntryQueue logEntries = new LogEntryQueue(size);
+    private final LogEntryQueue logEntries;
+
+    /**
+     * Constructor.
+     *
+     * @param size Maximum size of the queue.
+     */
+    public MemoryAppender(int size) {
+        this.size = size;
+        this.logEntries = new LogEntryQueue(size);
+    }
 
     @Override
     public boolean requiresLayout() {

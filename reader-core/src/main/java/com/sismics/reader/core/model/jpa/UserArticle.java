@@ -19,9 +19,23 @@ import com.google.common.base.Objects;
 @Table(name = "T_USER_ARTICLE")
 public class UserArticle {
     /**
-     * UserArticle details.
+     * Subscription details.
      */
-    private UserArticleDetails details;
+    @Id
+    @Column(name = "USA_ID_C", length = 36)
+    private String id;
+    
+    /**
+     * User ID.
+     */
+    @Column(name = "USA_IDUSER_C", nullable = false, length = 36)
+    private String userId;
+    
+    /**
+     * Article ID.
+     */
+    @Column(name = "USA_IDARTICLE_C", nullable = false, length = 36)
+    private String articleId;
     
     /**
      * Creation date.
@@ -29,56 +43,44 @@ public class UserArticle {
     @Column(name = "USA_CREATEDATE_D", nullable = false)
     private Date createDate;
     
-    /**
-     * Default constructor.
-     */
     public UserArticle() {
-        this.details = new UserArticleDetails();
     }
-    
-    /**
-     * Constructor.
-     * 
-     * @param details UserArticle details
-     * @param createDate Creation date
-     */
-    public UserArticle(UserArticleDetails details, Date createDate) {
-        this.details = details;
+
+    public UserArticle(String id, String userId, String articleId, Date createDate) {
+        this.id = id;
+        this.userId = userId;
+        this.articleId = articleId;
         this.createDate = createDate;
     }
-    
-    /**
-     * Getter of details.
-     *
-     * @return details
-     */
-    public UserArticleDetails getDetails() {
-        return details;
+
+    public String getId() {
+        return id;
     }
 
-    /**
-     * Setter of details.
-     *
-     * @param details details
-     */
-    public void setDetails(UserArticleDetails details) {
-        this.details = details;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    /**
-     * Getter of createDate.
-     *
-     * @return createDate
-     */
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getArticleId() {
+        return articleId;
+    }
+
+    public void setArticleId(String articleId) {
+        this.articleId = articleId;
+    }
+
     public Date getCreateDate() {
         return createDate;
     }
 
-    /**
-     * Setter of createDate.
-     *
-     * @param createDate createDate
-     */
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
@@ -86,96 +88,44 @@ public class UserArticle {
     @Override
     public String toString() {
         return Objects.toStringHelper(this)
-                .add("details", details)
+                .add("id", id)
+                .add("userId", userId)
+                .add("articleId", articleId)
                 .add("createDate", createDate)
                 .toString();
     }
-    
+}
+```
+====FILE_DELIMITER====
+```java
+package com.sismics.reader.core.model.jpa;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+/**
+ * Subscription details for {@link UserArticle}.
+ * 
+ * @author jtremeaux
+ */
+@Entity
+@Table(name = "T_USER_ARTICLE_DETAILS")
+public class UserArticleDetails {
     /**
-     * UserArticle details.
+     * Subscription ID.
      */
-    public static class UserArticleDetails {
-        /**
-         * Subscription ID.
-         */
-        @Id
-        @Column(name = "USA_ID_C", length = 36)
-        private String id;
-        
-        /**
-         * User ID.
-         */
-        @Column(name = "USA_IDUSER_C", nullable = false, length = 36)
-        private String userId;
-        
-        /**
-         * Article ID.
-         */
-        @Column(name = "USA_IDARTICLE_C", nullable = false, length = 36)
-        private String articleId;
-        
-        /**
-         * Getter of id.
-         *
-         * @return id
-         */
-        public String getId() {
-            return id;
-        }
+    @Id
+    @Column(name = "UAD_ID_C")
+    private String id;
 
-        /**
-         * Setter of id.
-         *
-         * @param id id
-         */
-        public void setId(String id) {
-            this.id = id;
-        }
+    public String getId() {
+        return id;
+    }
 
-        /**
-         * Getter of userId.
-         *
-         * @return userId
-         */
-        public String getUserId() {
-            return userId;
-        }
-
-        /**
-         * Setter of userId.
-         *
-         * @param userId userId
-         */
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-
-        /**
-         * Getter of articleId.
-         *
-         * @return articleId
-         */
-        public String getArticleId() {
-            return articleId;
-        }
-
-        /**
-         * Setter of articleId.
-         *
-         * @param articleId articleId
-         */
-        public void setArticleId(String articleId) {
-            this.articleId = articleId;
-        }
-
-        @Override
-        public String toString() {
-            return Objects.toStringHelper(this)
-                    .add("id", id)
-                    .add("userId", userId)
-                    .add("articleId", articleId)
-                    .toString();
-        }
+    public void setId(String id) {
+        this.id = id;
     }
 }
 ```
