@@ -2,20 +2,21 @@
 package com.sismics.reader.core.dao.jpa.dto;
 
 /**
- * Job DTO.
+ * Feed subscription DTO.
  *
- * @author jtremeaux 
+ * @author jtremeaux
  */
-public class JobDto {
+public class FeedSubscriptionDto {
+
     /**
-     * Job ID.
+     * Feed subscription ID.
      */
     private String id;
 
     /**
-     * Job name.
+     * Feed subscription title.
      */
-    private String name;
+    private String title;
 
     /**
      * User ID.
@@ -23,127 +24,111 @@ public class JobDto {
     private String userId;
 
     /**
-     * Creation date.
+     * Feed ID.
      */
-    private Date createDate;
+    private String feedId;
 
     /**
-     * Start date.
+     * Feed category DTO.
      */
-    private Date startDate;
+    private FeedCategoryDto feedCategoryDto;
 
-    /**
-     * End date.
-     */
-    private Date endDate;
-
-
-    /**
-     * Getter of id.
-     *
-     * @return id
-     */
     public String getId() {
         return id;
     }
 
-    /**
-     * Setter of id.
-     *
-     * @param id id
-     */
     public void setId(String id) {
         this.id = id;
     }
 
-    /**
-     * Getter of name.
-     *
-     * @return name
-     */
-    public String getName() {
-        return name;
+    public String getTitle() {
+        return title;
     }
 
-    /**
-     * Setter of name.
-     *
-     * @param name name
-     */
-    public void setName(String name) {
-        this.name = name;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    /**
-     * Getter of userId.
-     *
-     * @return userId
-     */
     public String getUserId() {
         return userId;
     }
 
-    /**
-     * Setter of userId.
-     *
-     * @param userId userId
-     */
     public void setUserId(String userId) {
         this.userId = userId;
     }
 
-    /**
-     * Getter of createDate.
-     *
-     * @return createDate
-     */
-    public Date getCreateDate() {
-        return createDate;
+    public String getFeedId() {
+        return feedId;
     }
 
-    /**
-     * Setter of createDate.
-     *
-     * @param createDate createDate
-     */
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
+    public void setFeedId(String feedId) {
+        this.feedId = feedId;
     }
 
-    /**
-     * Getter of startDate.
-     *
-     * @return startDate
-     */
-    public Date getStartDate() {
-        return startDate;
+    public FeedCategoryDto getFeedCategoryDto() {
+        return feedCategoryDto;
     }
 
-    /**
-     * Setter of startDate.
-     *
-     * @param startDate startDate
-     */
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
+    public void setFeedCategoryDto(FeedCategoryDto feedCategoryDto) {
+        this.feedCategoryDto = feedCategoryDto;
     }
+}
+
+/**
+ * Feed category DTO.
+ */
+public class FeedCategoryDto {
 
     /**
-     * Getter of endDate.
-     *
-     * @return endDate
+     * Feed category ID.
      */
-    public Date getEndDate() {
-        return endDate;
-    }
+    private String id;
 
     /**
-     * Setter of endDate.
-     *
-     * @param endDate endDate
+     * Feed category parent Id.
      */
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
+    private String parentId;
+
+    /**
+     * Feed category name.
+     */
+    private String name;
+
+    /**
+     * True if this category is folded in the subscriptions tree.
+     */
+    private boolean folded;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public boolean isFolded() {
+        return folded;
+    }
+
+    public void setFolded(boolean folded) {
+        this.folded = folded;
     }
 }
 ```

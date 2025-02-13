@@ -4,20 +4,21 @@ package com.sismics.reader.core.dao.jpa.dto;
 import java.util.Date;
 
 /**
- * Feed subscription DTO.
+ * Job DTO.
  *
- * @author jtremeaux 
+ * @author jtremeaux
  */
-public class FeedSubscriptionDto {
+public class JobDto {
+
     /**
-     * Feed subscription ID.
+     * Job ID.
      */
     private String id;
 
     /**
-     * Feed subscription title.
+     * Job name.
      */
-    private String title;
+    private String name;
 
     /**
      * User ID.
@@ -25,131 +26,127 @@ public class FeedSubscriptionDto {
     private String userId;
 
     /**
-     * Feed ID.
+     * Creation date.
      */
-    private String feedId;
+    private Date createDate;
 
     /**
-     * Feed RSS URL.
+     * Start date.
      */
-    private String feedRssUrl;
+    private Date startDate;
 
     /**
-     * Feed URL.
+     * End date.
      */
-    private String feedUrl;
+    private Date endDate;
+
 
     /**
-     * Feed description.
+     * Getter of id.
+     *
+     * @return id
      */
-    private String feedDescription;
-
-    /**
-     * Category ID.
-     */
-    private String categoryId;
-
-    /**
-     * Category parent Id.
-     */
-    private String categoryParentId;
-
-    /**
-     * Category name.
-     */
-    private String categoryName;
-
-    /**
-     * True if this category is folded in the subscriptions tree.
-     */
-    private boolean categoryFolded;
-
     public String getId() {
         return id;
     }
 
+    /**
+     * Setter of id.
+     *
+     * @param id id
+     */
     public void setId(String id) {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    /**
+     * Getter of name.
+     *
+     * @return name
+     */
+    public String getName() {
+        return name;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    /**
+     * Setter of name.
+     *
+     * @param name name
+     */
+    public void setName(String name) {
+        this.name = name;
     }
 
+    /**
+     * Getter of userId.
+     *
+     * @return userId
+     */
     public String getUserId() {
         return userId;
     }
 
+    /**
+     * Setter of userId.
+     *
+     * @param userId userId
+     */
     public void setUserId(String userId) {
         this.userId = userId;
     }
 
-    public String getFeedId() {
-        return feedId;
+    /**
+     * Getter of createDate.
+     *
+     * @return createDate
+     */
+    public Date getCreateDate() {
+        return createDate;
     }
 
-    public void setFeedId(String feedId) {
-        this.feedId = feedId;
+    /**
+     * Setter of createDate.
+     *
+     * @param createDate createDate
+     */
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
     }
 
-    public String getFeedRssUrl() {
-        return feedRssUrl;
+    /**
+     * Getter of startDate.
+     *
+     * @return startDate
+     */
+    public Date getStartDate() {
+        return startDate;
     }
 
-    public void setFeedRssUrl(String feedRssUrl) {
-        this.feedRssUrl = feedRssUrl;
+    /**
+     * Setter of startDate.
+     *
+     * @param startDate startDate
+     */
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
     }
 
-    public String getFeedUrl() {
-        return feedUrl;
+    /**
+     * Getter of endDate.
+     *
+     * @return endDate
+     */
+    public Date getEndDate() {
+        return endDate;
     }
 
-    public void setFeedUrl(String feedUrl) {
-        this.feedUrl = feedUrl;
-    }
-
-    public String getFeedDescription() {
-        return feedDescription;
-    }
-
-    public void setFeedDescription(String feedDescription) {
-        this.feedDescription = feedDescription;
-    }
-
-    public String getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
-    }
-
-    public String getCategoryParentId() {
-        return categoryParentId;
-    }
-
-    public void setCategoryParentId(String categoryParentId) {
-        this.categoryParentId = categoryParentId;
-    }
-
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
-    }
-
-    public boolean isCategoryFolded() {
-        return categoryFolded;
-    }
-
-    public void setCategoryFolded(boolean categoryFolded) {
-        this.categoryFolded = categoryFolded;
+    /**
+     * Setter of endDate.
+     *
+     * @param endDate endDate
+     */
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
     }
 }
 ```

@@ -38,32 +38,36 @@ public class TokenBasedSecurityFilter extends SecurityFilter {
     public static final int TOKEN_SESSION_LIFETIME = 3600 * 24;
 
     @Override
-    protected User authenticate(HttpServletRequest request) {
-        // Get the value of the client authentication token
-        String authTokenID = extractAuthToken(request.getCookies());
-        if (authTokenID == null) {
+    public User authenticate(HttpServletRequest request) {
+        // Extract the authentication token from the request
+        String authTokenId = extractAuthToken(request.getCookies());
+        if (authTokenId == null) {
             return null;
         }
 
-        // Get the corresponding server token
-        AuthenticationTokenDao authTokenDao = new AuthenticationTokenDao();
-        AuthenticationToken authToken = authTokenDao.get(authTokenID);
-        if (authToken == null) {
+        // Retrieve the authentication token from the database
+        AuthenticationTokenDao authenticationTokenDao = new AuthenticationTokenDao();
+        AuthenticationToken authenticationToken = authenticationTokenDao.get(authTokenId);
+        if (authenticationToken == null) {
             return null;
         }
 
         // Handle expired token
-        if (isTokenExpired(authToken)) {
-            handleExpiredToken(authTokenDao, authTokenID);
+        if (isTokenExpired(authenticationToken)) {
+            handleExpiredToken(authenticationTokenDao, authTokenId);
             return null;
         }
 
-        // Update last connection date
-        authTokenDao.updateLastConnectionDate(authToken.getId());
+        // Update the last connection date of the token
+        authenticationTokenDao.updateLastConnectionDate(authenticationToken.getId());
 
-        // Get the user
-        String userID = authToken.getUserId();
-        return new UserDao().getById(userID);
+        // Retrieve the user from the database using the user id from the token
+        String userId = authenticationToken.getUserId();
+        UserDao userDao = new UserDao();
+        User user = userDao.getById(userId);
+
+        // Return the authenticated user
+        return user;
     }
 
     private static String extractAuthToken(Cookie[] cookies) {
@@ -83,18 +87,18 @@ public class TokenBasedSecurityFilter extends SecurityFilter {
         if (authenticationToken.isLongLasted()) {
             return now >= creationDate + ((long) TOKEN_LONG_LIFETIME) * 1000L;
         } else {
-            long date = authenticationToken.getLastConnectionDate() != null ?
+            long lastConnectionDate = authenticationToken.getLastConnectionDate() != null ?
                     authenticationToken.getLastConnectionDate().getTime() : creationDate;
-            return now >= date + ((long) TOKEN_SESSION_LIFETIME) * 1000L;
+            return now >= lastConnectionDate + ((long) TOKEN_SESSION_LIFETIME) * 1000L;
         }
     }
 
-    private static void handleExpiredToken(AuthenticationTokenDao authTokenDao, String authTokenID) {
+    private static void handleExpiredToken(AuthenticationTokenDao authenticationTokenDao, String authTokenId) {
         try {
-            authTokenDao.delete(authTokenID);
+            authenticationTokenDao.delete(authTokenId);
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
-                LOG.error(MessageFormat.format("Error deleting authentication token {0} ", authTokenID), e);
+                LOG.error(MessageFormat.format("Error deleting authentication token {0} ", authTokenId), e);
             }
         }
     }

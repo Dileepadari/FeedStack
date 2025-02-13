@@ -23,6 +23,19 @@ public class AppContext {
     /**
      * Singleton instance.
      */
+    private AppContext() {
+        eventBus = new EventBus();
+        mediator = new ConcreteMediator(this, feedService);
+
+        feedService = new FeedService(mediator);
+        feedService.startAndWait();
+
+        ConfigDao configDao = new ConfigDao();
+        Config luceneStorageConfig = configDao.getById(ConfigType.LUCENE_DIRECTORY_STORAGE);
+        indexingService = new IndexingService(luceneStorageConfig != null ? luceneStorageConfig.getValue() : null, mediator);
+        indexingService.startAndWait();
+    }
+
     private static AppContext instance;
 
     /**
@@ -44,31 +57,6 @@ public class AppContext {
      * Mediator
      */
     private Mediator mediator;
-
-    /**
-     * Private constructor.
-     */
-    private AppContext() {
-        resetEventBus();
-
-        mediator = new ConcreteMediator(this, feedService);
-
-        feedService = new FeedService(mediator);
-        feedService.startAndWait();
-
-        ConfigDao configDao = new ConfigDao();
-        Config luceneStorageConfig = configDao.getById(ConfigType.LUCENE_DIRECTORY_STORAGE);
-        indexingService = new IndexingService(luceneStorageConfig != null ? luceneStorageConfig.getValue() : null, mediator);
-        indexingService.startAndWait();
-    }
-
-    /**
-     * (Re)-initializes the event buses.
-     */
-    private void resetEventBus() {
-        eventBus = new EventBus();
-        eventBus.register(new DeadEventListener());
-    }
 
     /**
      * Returns a single instance of the application context.
@@ -153,6 +141,7 @@ import java.util.concurrent.TimeUnit;
  * @author jtremeaux
  */
 public class IndexingService extends Thread {
+
     /**
      * Lucene storage directory.
      */
@@ -239,9 +228,7 @@ public class IndexingService extends Thread {
      * Start the thread.
      */
     @Override
-    public void run() {
-        reloadIndex();
-    }
+    public void run() {}
 
     /**
      * Start the indexing service.
@@ -255,12 +242,10 @@ public class IndexingService extends Thread {
         if (luceneStorage == null) {
             throw new IllegalStateException("Lucene storage directory is not configured");
         }
-
         if (EnvironmentUtil.isUnitTest()) {
             executeAsync();
             return;
         }
-        
         executeAsync();
     }
 

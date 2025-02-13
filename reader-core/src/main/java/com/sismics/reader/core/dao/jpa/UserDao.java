@@ -6,16 +6,16 @@ import com.sismics.reader.core.dao.jpa.criteria.UserCriteria;
 import com.sismics.reader.core.dao.jpa.dto.UserDto;
 import com.sismics.reader.core.dao.jpa.mapper.UserMapper;
 import com.sismics.reader.core.model.jpa.User;
+import com.sismics.reader.core.model.jpa.User_;
 import com.sismics.util.context.ThreadLocalContext;
 import com.sismics.util.jpa.BaseDao;
 import com.sismics.util.jpa.QueryParam;
 import com.sismics.util.jpa.filter.FilterCriteria;
 import org.mindrot.jbcrypt.BCrypt;
 
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * User DAO.
@@ -40,15 +40,15 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
     /**
      * Authenticates an user.
      *
-     * @param username User login
+     * @param email    User login
      * @param password User password
      * @return ID of the authenticated user or null
      */
-    public String authenticate(String username, String password) {
+    public String authenticate(String email, String password) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
         try {
-            Query query = em.createQuery("select u from User u where u.username = :username and u.delete_date is null")
-                    .setParameter("username", username);
+            Query query = em.createQuery("select u from User u where u.email = :email and u.delete_date is null")
+                    .setParameter("email", email);
             User user = (User) query.getSingleResult();
             if (!BCrypt.checkpw(password, user.getPassword())) {
                 return null;
@@ -66,11 +66,12 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
      * @return User ID
      */
     public String create(User user) throws Exception {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+
         // Create the user UUID
         user.setId(UUID.randomUUID().toString());
 
         // Checks for user unicity
-        EntityManager em = ThreadLocalContext.get().getEntityManager();
         Query query = em.createQuery("select u from User u where u.username = :username and u.delete_date is null")
                 .setParameter("username", user.getUsername());
         List<?> resultList = query.getResultList();
@@ -141,11 +142,7 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
      */
     public User getById(String id) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        try {
-            return em.find(User.class, id);
-        } catch (NoResultException e) {
-            return null;
-        }
+        return em.find(User.class, id);
     }
 
     /**
@@ -226,4 +223,5 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
      * @param password Clear password
      * @return Hashed password
      */
-    protected String hashPassword(
+    protected String hashPassword(String password) {
+        return BCrypt.

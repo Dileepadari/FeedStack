@@ -1,3 +1,4 @@
+```java
 package com.sismics.reader.core.dao.lucene;
 
 import com.sismics.reader.core.dao.jpa.dto.UserArticleDto;
@@ -31,14 +32,14 @@ import java.util.Map;
 
 /**
  * Lucene Article DAO.
- * 
+ *
  * @author bgamard
  */
 public class ArticleDao {
 
     /**
      * Destroy and rebuild index.
-     * 
+     *
      * @param articleList The list of articles
      */
     public void rebuildIndex(final List<Article> articleList) {
@@ -48,38 +49,38 @@ public class ArticleDao {
 
             // Add all articles
             for (Article article : articleList) {
-                Document document = getDocumentFromArticle(article);
+                Document document = createArticleDocument(article);
                 indexWriter.addDocument(document);
             }
         });
     }
 
-    
+
     /**
      * Add articles to the index.
-     * 
+     *
      * @param articleList The list of articles
      */
     public void create(final List<Article> articleList) {
         LuceneUtil.handle(indexWriter -> {
             // Add all articles
             for (Article article : articleList) {
-                Document document = getDocumentFromArticle(article);
+                Document document = createArticleDocument(article);
                 indexWriter.addDocument(document);
             }
         });
     }
-    
+
     /**
      * Update index.
-     * 
+     *
      * @param articleList Article list
      */
     public void update(final List<Article> articleList) {
         LuceneUtil.handle(indexWriter -> {
             // Update all articles
             for (Article article : articleList) {
-                Document document = getDocumentFromArticle(article);
+                Document document = createArticleDocument(article);
                 indexWriter.updateDocument(new Term("id", article.getId()), document);
             }
         });
@@ -87,7 +88,7 @@ public class ArticleDao {
 
     /**
      * Delete index.
-     * 
+     *
      * @param articleList Article list
      */
     public void delete(final List<Article> articleList) {
@@ -101,7 +102,7 @@ public class ArticleDao {
 
     /**
      * Search articles.
-     * 
+     *
      * @param paginatedList The list of articles
      * @param searchQuery The query
      * @return List of articles
@@ -109,25 +110,25 @@ public class ArticleDao {
     public Map<String, Article> search(PaginatedList<UserArticleDto> paginatedList, String searchQuery) throws Exception {
         // Escape query and add quotes so QueryParser generate a PhraseQuery
         searchQuery = "\"" + QueryParserUtil.escape(searchQuery) + "\"";
-        
+
         // Build search query
         StandardQueryParser qpHelper = new StandardQueryParser(new ReaderStandardAnalyzer(Version.LUCENE_42));
         qpHelper.setPhraseSlop(100000); // PhraseQuery add terms
         Query titleQuery = qpHelper.parse(searchQuery, "title");
         Query descriptionQuery = qpHelper.parse(searchQuery, "description");
-        
+
         // Search on article content
         BooleanQuery query = new BooleanQuery();
         query.add(titleQuery, Occur.SHOULD);
         query.add(descriptionQuery, Occur.SHOULD);
-        
+
         // Grouping
         GroupingSearch groupingSearch = new GroupingSearch("url");
         groupingSearch.setGroupSort(new Sort(new SortField("date", Type.LONG, true)));
         groupingSearch.setFillSortFields(true);
         groupingSearch.setCachingInMB(20, true);
         groupingSearch.setAllGroups(true);
-        
+
         // Searching
         IndexSearcher searcher = new IndexSearcher(AppContext.getInstance().getIndexingService().getDirectoryReader());
         TopGroups<BytesRef> topGroups = groupingSearch.search(searcher, query, paginatedList.getOffset(), paginatedList.getLimit());
@@ -139,7 +140,7 @@ public class ArticleDao {
             scoreDocs[j++] = groupDocs.scoreDocs[0];
         }
         TopDocs topDocs = new TopDocs(total, scoreDocs, 0);
-        
+
         // Highlighting
         PostingsHighlighter highlighter = new PostingsHighlighter(1000000, BreakIterator.getSentenceInstance(Locale.ROOT), new PassageScorer(), new PassageFormatter() {
             @Override
@@ -163,8 +164,8 @@ public class ArticleDao {
                 return sb.toString();
             }
         });
-        Map<String, String[]> highlights = highlighter.highlightFields(new String[] { "title", "description" }, query, searcher, topDocs, 3);
-        
+        Map<String, String[]> highlights = highlighter.highlightFields(new String[]{"title", "description"}, query, searcher, topDocs, 3);
+
         // Extract article ids
         Map<String, Article> articleList = new HashMap<String, Article>();
         for (int i = 0; i < scoreDocs.length; i++) {
@@ -177,21 +178,21 @@ public class ArticleDao {
             article.setDescription(description);
             articleList.put(id, article);
         }
-        
+
         return articleList;
     }
-    
+
     /**
      * Build Lucene document from article.
-     * 
+     *
      * @param article Article
      * @return Document
      */
-    private org.apache.lucene.document.Document getDocumentFromArticle(Article article) {
+    private org.apache.lucene.document.Document createArticleDocument(Article article) {
         // Index character offsets for the highlighter
         FieldType fieldType = new FieldType(TextField.TYPE_STORED);
         fieldType.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
-        
+
         // Building document
         org.apache.lucene.document.Document document = new org.apache.lucene.document.Document();
         document.add(new StringField("id", article.getId(), Field.Store.YES));
@@ -199,7 +200,7 @@ public class ArticleDao {
         document.add(new LongField("date", article.getPublicationDate().getTime(), Field.Store.YES));
         document.add(new Field("title", article.getTitle(), fieldType));
         document.add(new Field("description", article.getDescription(), fieldType));
-        
+
         return document;
     }
 }

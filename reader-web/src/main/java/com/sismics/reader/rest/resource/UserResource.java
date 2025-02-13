@@ -1,4 +1,5 @@
-```java
+====FILE_DELIMITER====
+
 package com.sismics.reader.rest.resource;
 
 import com.sismics.reader.core.constant.BaseFunction;
@@ -11,6 +12,7 @@ import com.sismics.reader.core.dao.jpa.dto.JobEventDto;
 import com.sismics.reader.core.dao.jpa.dto.UserDto;
 import com.sismics.reader.core.event.PasswordChangedEvent;
 import com.sismics.reader.core.event.UserCreatedEvent;
+import com.sismics.reader.core.event.UserUpdatedEvent;
 import com.sismics.reader.core.model.context.AppContext;
 import com.sismics.reader.core.model.jpa.AuthenticationToken;
 import com.sismics.reader.core.model.jpa.Category;
@@ -46,12 +48,6 @@ import java.util.Set;
 @Path("/user")
 public class UserResource extends BaseResource {
 
-    /**
-     * Creates a new user.
-     *
-     * @param json Request JSON object
-     * @return Response
-     */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     public Response register(JSONObject json) throws JSONException {
@@ -60,13 +56,11 @@ public class UserResource extends BaseResource {
         }
         checkBaseFunction(BaseFunction.ADMIN);
 
-        // Validate the input data
         String username = ValidationUtil.validateUsername(json.has("username") ? json.getString("username") : null, 3, 50);
         String password = ValidationUtil.validatePassword(json.has("password") ? json.getString("password") : null, 8, 50);
         String email = ValidationUtil.validateEmail(json.has("email") ? json.getString("email") : null, 3, 50);
         String localeId = ValidationUtil.validateLocale(json.has("locale") ? json.getString("locale") : null, true);
 
-        // Create the user
         User user = new User();
         user.setRoleId(SecurityConfig.DEFAULT_USER_ROLE);
         user.setUsername(username);
@@ -79,9 +73,8 @@ public class UserResource extends BaseResource {
         user.setCreateDate(new Date());
         user.setLocaleId(localeId);
 
-        // Create the user
         UserDao userDao = new UserDao();
-        String userId;
+        String userId = null;
         try {
             userId = userDao.create(user);
         } catch (Exception e) {
@@ -92,7 +85,6 @@ public class UserResource extends BaseResource {
             }
         }
 
-        // Create the root category for this user
         Category category = new Category();
         category.setUserId(userId);
         category.setOrder(0);
@@ -100,23 +92,15 @@ public class UserResource extends BaseResource {
         CategoryDao categoryDao = new CategoryDao();
         categoryDao.create(category);
 
-        // Raise a user creation event
         UserCreatedEvent userCreatedEvent = new UserCreatedEvent();
         userCreatedEvent.setUser(user);
         AppContext.getInstance().getMailEventBus().post(userCreatedEvent);
 
-        // Always return OK
         JSONObject response = new JSONObject();
         response.put("status", "ok");
         return Response.ok().entity(response).build();
     }
 
-    /**
-     * Updates user informations.
-     *
-     * @param json Request JSON object
-     * @return Response
-     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Response update(JSONObject json) throws JSONException {
@@ -124,7 +108,6 @@ public class UserResource extends BaseResource {
             throw new ForbiddenClientException();
         }
 
-        // Validate the input data
         String password = ValidationUtil.validatePassword(json.has("password") ? json.getString("password") : null, 8, 50, true);
         String email = ValidationUtil.validateEmail(json.has("email") ? json.getString("email") : null, 3, 50, true);
         String themeId = ValidationUtil.validateTheme(EnvironmentUtil.isUnitTest() ? null : request.getServletContext(), json.has("theme") ? json.getString("theme") : null, "theme", true);
@@ -136,7 +119,6 @@ public class UserResource extends BaseResource {
         Boolean narrowArticle = json.has("narrow_article") ? json.getBoolean("narrow_article") : null;
         Boolean firstConnection = json.has("first_connection") && hasBaseFunction(BaseFunction.ADMIN) ? json.getBoolean("first_connection") : null;
 
-        // Update the user
         UserDao userDao = new UserDao();
         User user = userDao.getActiveByUsername(principal.getName());
         if (email != null) {
@@ -170,21 +152,44 @@ public class UserResource extends BaseResource {
         userDao.update(user);
 
         if (password != null) {
-            // Update the password
             PasswordChangedEvent passwordChangedEvent = new PasswordChangedEvent();
             passwordChangedEvent.setUserId(user.getUserId());
             AppContext.getInstance().getMailEventBus().post(passwordChangedEvent);
         }
 
-        // Raise a user update event
         UserUpdatedEvent userUpdatedEvent = new UserUpdatedEvent();
         userUpdatedEvent.setUser(user);
         AppContext.getInstance().getMailEventBus().post(userUpdatedEvent);
 
-        // Always return OK
         JSONObject response = new JSONObject();
         response.put("status", "ok");
         return Response.ok().entity(response).build();
     }
 }
-```
+====FILE_DELIMITER====
+package com.sismics.reader.core.model.jpa;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * User.
+ *
+ * @author jtremeaux
+ */
+@Entity
+@Table(name = "users")
+public class User implements Serializable {
+
+    /**
+     * User ID.
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "user_id", nullable = false)
+    private String userId;
+
+    /**

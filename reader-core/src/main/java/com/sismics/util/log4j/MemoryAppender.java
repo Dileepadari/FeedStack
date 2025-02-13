@@ -1,16 +1,13 @@
 ```java
 package com.sismics.util.log4j;
 
-import java.util.Iterator;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
 
-import com.google.common.collect.Lists;
 import com.sismics.reader.core.util.jpa.PaginatedList;
+import com.sismics.util.log4j.model.LogEntry;
 
 /**
  * Memory appender for Log4J.
@@ -23,11 +20,11 @@ public class MemoryAppender extends AppenderSkeleton {
      * Maximum size of the queue.
      */
     private int size;
-    
+
     /**
      * Queue of log entries.
      */
-    private final Queue<LogEntry> logQueue = new ConcurrentLinkedQueue<LogEntry>();
+    private Queue<LogEntry> logEntries = new ConcurrentLinkedQueue<>();
 
     @Override
     public boolean requiresLayout() {
@@ -44,32 +41,32 @@ public class MemoryAppender extends AppenderSkeleton {
 
     @Override
     public synchronized void append(LoggingEvent event) {
-        while (logQueue.size() > size) {
-            logQueue.remove();
-        }
+        removeOldEntries();
         if (closed) {
-            LogLog.warn("This appender is already closed, cannot append event.");
             return;
         }
-        
-        String loggerName = getLoggerName(event);
 
-        LogEntry logEntry = new LogEntry(System.currentTimeMillis(), event.getLevel().toString(), loggerName, event.getMessage().toString());
-        logQueue.add(logEntry);
+        LogEntry logEntry = new LogEntry(System.currentTimeMillis(), event.getLevel().toString(), event.getLoggerName(),
+                event.getMessage().toString());
+        logEntries.add(logEntry);
     }
 
     /**
-     * Extracts the class name of the logger, without the package name.
-     * 
-     * @param event Event
-     * @return Class name
+     * Removes old entries if the queue is full.
      */
-    private String getLoggerName(LoggingEvent event) {
-        int index = event.getLoggerName().lastIndexOf('.');
+    private void removeOldEntries() {
+        while (logEntries.size() > size) {
+            logEntries.remove();
+        }
+    }
 
-        return (index > -1) ?
-            event.getLoggerName().substring(index + 1) :
-            event.getLoggerName();
+    /**
+     * Getter of logEntries.
+     *
+     * @return logEntries
+     */
+    public Queue<LogEntry> getLogEntries() {
+        return logEntries;
     }
 
     /**
@@ -85,94 +82,84 @@ public class MemoryAppender extends AppenderSkeleton {
 ```
 ====FILE_DELIMITER====
 ```java
-package com.sismics.util.log4j;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.spi.LoggingEvent;
-
-import com.google.common.collect.Lists;
-import com.sismics.reader.core.util.jpa.PaginatedList;
+package com.sismics.util.log4j.model;
 
 /**
- * Memory appender for Log4J.
+ * Log entry.
  *
  * @author jtremeaux
  */
-public class MemoryAppender extends AppenderSkeleton {
+public class LogEntry {
 
     /**
-     * Maximum size of the queue.
+     * Timestamp.
      */
-    private int size;
-    
+    private long timestamp;
+
     /**
-     * Queue of log entries.
+     * Log level.
      */
-    private final Queue<LogEntry> logQueue = new ConcurrentLinkedQueue<LogEntry>();
-
-    @Override
-    public boolean requiresLayout() {
-        return false;
-    }
-
-    @Override
-    public synchronized void close() {
-        if (closed) {
-            return;
-        }
-        closed = true;
-    }
-
-    @Override
-    public synchronized void append(LoggingEvent event) {
-        // TODO Don't use size()
-        while (logQueue.size() > size) {
-            logQueue.remove();
-        }
-        if (closed) {
-            return;
-        }
-        
-        String loggerName = getLoggerName(event);
-
-        LogEntry logEntry = new LogEntry(System.currentTimeMillis(), event.getLevel().toString(), loggerName, event.getMessage().toString());
-        logQueue.add(logEntry);
-    }
+    private String level;
 
     /**
-     * Extracts the class name of the logger, without the package name.
-     * 
-     * @param event Event
-     * @return Class name
+     * Logger name.
      */
-    private String getLoggerName(LoggingEvent event) {
-        int index = event.getLoggerName().lastIndexOf('.');
-
-        return (index > -1) ?
-            event.getLoggerName().substring(index + 1) :
-            event.getLoggerName();
-    }
+    private String logger;
 
     /**
-     * Getter of logList.
+     * Message.
+     */
+    private String message;
+
+    /**
+     * Constructor.
      *
-     * @return logList
+     * @param timestamp Timestamp
+     * @param level     Log level
+     * @param logger    Logger name
+     * @param message   Message
      */
-    public Queue<LogEntry> getLogList() {
-        return logQueue;
+    public LogEntry(long timestamp, String level, String logger, String message) {
+        this.timestamp = timestamp;
+        this.level = level;
+        this.logger = logger;
+        this.message = message;
     }
 
     /**
-     * Setter of size.
+     * Getter of timestamp.
      *
-     * @param size size
+     * @return timestamp
      */
-    public void setSize(int size) {
-        this.size = size;
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    /**
+     * Getter of level.
+     *
+     * @return level
+     */
+    public String getLevel() {
+        return level;
+    }
+
+    /**
+     * Getter of logger.
+     *
+     * @return logger
+     */
+    public String getLogger() {
+        return logger;
+    }
+
+    /**
+     * Getter of message.
+     *
+     * @return message
+     */
+    public String getMessage() {
+        return message;
     }
 
 }
