@@ -1,7 +1,7 @@
 Analysis Summary:
 Total Java files: 139
-Files analyzed: 11
-Files skipped or errored: 128
+Files analyzed: 9
+Files skipped or errored: 130
 
 Detailed Analysis:
 Pair 31/61:
@@ -11,75 +11,187 @@ Files:
 Smells Found:
 [
   {
-    "type": "Data Class",
-    "category": "design",
-    "description": "The `JobDto` class is a data class, with only getters and setters. It doesn't have any behavior.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Extract the behavior into a separate class, or use a record class."
-  },
-  {
-    "type": "Nested Data Classes",
-    "category": "design",
-    "description": "The `FeedSubscriptionDto` and `FeedCategoryDto` classes are nested within each other, which makes the code difficult to read and maintain.",
-    "files": [
-      "file2"
-    ],
-    "fix": "Move the `FeedCategoryDto` class to a separate file."
-  },
-  {
-    "type": "Magic Numbers",
+    "type": "Anemic Domain Model",
     "category": "code",
-    "description": "The `FeedCategoryDto` class has a boolean field called `folded` without any documentation or explanation of what it means.",
+    "description": "The DTOs are simple data containers with getters and setters, without any logic.",
+    "files": [
+      "both"
+    ],
+    "fix": "Add some business logic to the DTOs."
+  },
+  {
+    "type": "Data Clumps",
+    "category": "code",
+    "description": "The `FeedSubscriptionDto` and `FeedCategoryDto` classes have several fields related to the same concept (feed subscription and feed category, respectively).",
     "files": [
       "file2"
     ],
-    "fix": "Add a comment explaining what the `folded` field means."
+    "fix": "Create separate classes to represent the feed subscription and feed category concepts."
+  },
+  {
+    "type": "Shotgun Surgery",
+    "category": "design",
+    "description": "Any change to the data model of the feed subscription or feed category requires modifying both the DTOs and the corresponding entities.",
+    "files": [
+      "both"
+    ],
+    "fix": "Use a mapping framework to generate the DTOs from the entities."
   }
 ]
 
-Pair 60/61:
+Pair 58/61:
 Files:
-- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/RoleBaseFunction.java
-- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/User.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/Job.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/JobEvent.java
 Smells Found:
 [
   {
-    "type": "Long parameter list",
+    "type": "DuplicatedCode",
     "category": "code",
-    "description": "The constructor of `RoleBaseFunction` has a long parameter list.",
+    "description": "The getter and setter methods are duplicated in both of files.",
     "files": [
-      "File 1"
+      "file1",
+      "file2"
     ],
-    "fix": "Consider using a builder pattern or a fluent API to reduce the number of parameters."
+    "fix": "Use Lombok or a code generator to automatically generate these methods."
   },
   {
-    "type": "Large class",
-    "category": "design",
-    "description": "The `User` class has a large number of fields and methods.",
-    "files": [
-      "File 2"
-    ],
-    "fix": "Consider splitting the class into multiple smaller classes."
-  },
-  {
-    "type": "God class",
-    "category": "design",
-    "description": "The `User` class has too many responsibilities.",
-    "files": [
-      "File 2"
-    ],
-    "fix": "Consider refactoring the class to delegate some of its responsibilities to other classes."
-  },
-  {
-    "type": "Complex conditional",
+    "type": "NestedIf",
     "category": "code",
-    "description": "The `User` class has a complex conditional statement in the `toString` method.",
+    "description": "In both files the conditional statements are nested multiple times, which makes it difficult to read and understand the code.",
     "files": [
-      "File 2"
+      "file1",
+      "file2"
     ],
-    "fix": "Consider refactoring the conditional statement to make it more readable."
+    "fix": "Break down the conditional statements into simpler ones to improve the readability of the code."
+  },
+  {
+    "type": "ExcessiveComplexity",
+    "category": "design",
+    "description": "The classes are large and complex, with many methods and a lot of logic.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Split the classes into smaller, more manageable ones."
+  },
+  {
+    "type": "GodClass",
+    "category": "design",
+    "description": "The classes do too much and could be split into several smaller classes.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Split the classes into smaller, more focused ones."
+  },
+  {
+    "type": "LongMethod",
+    "category": "code",
+    "description": "There are methods that are too long and should be split into smaller ones.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Split the methods into smaller, more focused ones."
+  },
+  {
+    "type": "LackOfCohesion",
+    "category": "design",
+    "description": "The classes do not have a clear focus and contain unrelated functionality.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Split the classes into smaller, more focused ones."
+  },
+  {
+    "type": "UnnecessaryNullChecks",
+    "category": "code",
+    "description": "There are unnecessary null checks in the code.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Remove the unnecessary null checks."
+  }
+]
+
+Single File 2/17:
+File: ./repository/reader-core/src/main/java/com/sismics/util/log4j/MemoryAppender.java
+Smells Found:
+[
+  {
+    "type": "EmptyCatchBlock",
+    "category": "code",
+    "description": "The catch block is empty and does not handle any exceptions that may occur within the try block.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Add code to the catch block to handle any exceptions that may occur in the try block."
+  },
+  {
+    "type": "MagicNumber",
+    "category": "code",
+    "description": "The value 1000 is a magic number and its meaning is not clear from the code.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Rename the variable to a more meaningful name and add a comment to explain its purpose."
+  },
+  {
+    "type": "GodClass",
+    "category": "design",
+    "description": "The class has too many responsibilities and should be split into multiple smaller classes.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Break down the class into smaller, more manageable classes."
+  },
+  {
+    "type": "LongMethod",
+    "category": "code",
+    "description": "The method is too long and should be split into multiple smaller methods.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Extract the code into smaller methods with clear and concise names."
+  },
+  {
+    "type": "NestedTryStatement",
+    "category": "code",
+    "description": "The code contains nested try-catch statements, which can make it difficult to follow the flow of execution and handle exceptions properly.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Refactor the code to avoid nested try-catch statements and use more structured error handling mechanisms."
+  },
+  {
+    "type": "SwitchStatementWithoutDefault",
+    "category": "code",
+    "description": "Switch statement is missing the default case and switching over any non-covered value can lead to unexpected behavior.",
+    "files": [
+      "file1"
+    ],
+    "fix": "In switch statements, the default branch should be used to handle any input that is not explicitly covered by the case labels to ensure that the program behaves as intended."
+  },
+  {
+    "type": "UncommentedCode",
+    "category": "code",
+    "description": "The code lacks sufficient comments, making it difficult to understand its purpose and functionality.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Add meaningful comments throughout the code to document its logic and functionality."
+  },
+  {
+    "type": "UseOfSystemOutPrintln",
+    "category": "code",
+    "description": "The Java program uses System.out.println() for logging, which is not recommended.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Use a proper logging framework like log4j or SLF4J for logging purposes."
   }
 ]
 
@@ -88,83 +200,64 @@ File: ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/Use
 Smells Found:
 [
   {
-    "type": "Code smell",
+    "type": "long_method",
     "category": "code",
-    "description": "Avoid using raw types - Replace usages of raw types with bounded parametrized types wherever possible.",
+    "description": "Method UserDao.authenticate has more than 50 lines of code.",
     "files": [
-      "file1",
-      "file2"
+      "UserDao.java"
     ],
-    "fix": "Replace `List` with `List<T>` where `T` is a specific type."
+    "fix": "Extract the responsibility of the method into smaller methods."
   },
   {
-    "type": "Design smell",
-    "category": "design",
-    "description": "Use getters and setters",
+    "type": "nested_block",
+    "category": "code",
+    "description": "Block of code in UserDao.authenticate has more than 3 nested blocks.",
     "files": [
-      "file1"
+      "UserDao.java"
     ],
-    "fix": "Add getters and setters to access the `name` field."
+    "fix": "Extract the responsibility of the block into smaller blocks."
+  },
+  {
+    "type": "long_class",
+    "category": "design",
+    "description": "Class UserDao has more than 100 lines of code.",
+    "files": [
+      "UserDao.java"
+    ],
+    "fix": "Extract the responsibility of the class into smaller classes."
   }
 ]
 
-Single File 12/17:
-File: ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/file/json/StarredReader.java
+Single File 16/17:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/UserArticle.java
 Smells Found:
 [
   {
-    "type": "ExceptionHandlingSmell",
+    "type": "Long Parameter List",
     "category": "code",
-    "description": "The exception handling is not centralized, which makes it difficult to track down and debug issues.",
+    "description": "The `toString` method has 4 parameters.",
     "files": [
-      "StarredReader.java"
+      "UserArticle.java"
     ],
-    "fix": "Centralize the exception handling in a single location, such as a `try-catch` block in the `read` method."
+    "fix": "Reduce the number of parameters by using a builder pattern or by extracting some of the parameters into separate methods."
   },
   {
-    "type": "GodClassSmell",
+    "type": "God Class",
     "category": "design",
-    "description": "The `StarredReader` class has too many responsibilities, including reading the JSON file, parsing the JSON, and creating the `Feed` and `Article` objects.",
+    "description": "The `UserArticle` class has 9 methods and 5 instance variables.",
     "files": [
-      "StarredReader.java"
+      "UserArticle.java"
     ],
-    "fix": "Refactor the class into smaller, more focused classes, such as a `JsonParser` class and a `FeedCreator` class."
+    "fix": "Break the class up into smaller, more manageable chunks."
   },
   {
-    "type": "LongMethodSmell",
-    "category": "code",
-    "description": "The `read` method is too long and complex, with over 50 lines of code.",
+    "type": "Data Clumps",
+    "category": "design",
+    "description": "The `UserArticle` class has a number of related instance variables, such as `id`, `userId`, and `articleId`. These instance variables could be grouped together into a separate object, such as a `UserArticleDetails` object.",
     "files": [
-      "StarredReader.java"
+      "UserArticle.java"
     ],
-    "fix": "Refactor the method into smaller, more manageable methods."
-  },
-  {
-    "type": "MagicNumberSmell",
-    "category": "code",
-    "description": "The `publishedTimestamp` is multiplied by 1000 to convert it from seconds to milliseconds.",
-    "files": [
-      "StarredReader.java"
-    ],
-    "fix": "Replace the magic number with a named constant, such as `MILLISECONDS_PER_SECOND`."
-  },
-  {
-    "type": "NestedBlockDepthSmell",
-    "category": "code",
-    "description": "The `read` method has a nested block depth of 4, which makes it difficult to read and understand.",
-    "files": [
-      "StarredReader.java"
-    ],
-    "fix": "Refactor the method to reduce the nesting depth."
-  },
-  {
-    "type": "SwitchStatementSmell",
-    "category": "code",
-    "description": "The `extractUrl` method uses a switch statement to extract the URL from the JSON node.",
-    "files": [
-      "StarredReader.java"
-    ],
-    "fix": "Replace the switch statement with a more concise and readable `if-else` statement."
+    "fix": "Create a separate object to hold the related instance variables."
   }
 ]
 
@@ -173,31 +266,22 @@ File: ./repository/reader-core/src/main/java/com/sismics/reader/core/model/conte
 Smells Found:
 [
   {
-    "type": "God Class",
-    "category": "design",
-    "description": "The AppContext class has too many responsibilities and knows too much about the application.",
+    "type": "Thread.sleep is evil",
+    "category": "code",
+    "description": "Usage of `sleep` can lead to unresponsive application.",
     "files": [
-      "file1"
+      "both"
     ],
-    "fix": "Refactor the AppContext class to break it up into smaller, more cohesive classes."
+    "fix": "Use a `CountDownLatch` or `Semaphore` instead."
   },
   {
-    "type": "Data Clump",
+    "type": "Avoid thread synchronization in the constructor",
     "category": "code",
-    "description": "The `if (EnvironmentUtil.isUnitTest())` blocks in the `IndexingService` class duplicate a lot of code.",
+    "description": "Synchronization in the constructor, can lead to dead-locks and cascading failures.",
     "files": [
-      "file1"
+      "both"
     ],
-    "fix": "Extract the common code into a method and call it from both blocks."
-  },
-  {
-    "type": "Feature Envy",
-    "category": "code",
-    "description": "The `reloadIndex` method in the `IndexingService` class is better placed in the `FeedService` class.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Move the `reloadIndex` method to the `FeedService` class."
+    "fix": "Extract the synchronization logic to a newly created method."
   }
 ]
 

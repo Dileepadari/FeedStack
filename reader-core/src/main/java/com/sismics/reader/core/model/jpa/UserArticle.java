@@ -19,82 +19,50 @@ import com.google.common.base.Objects;
 @Table(name = "T_USER_ARTICLE")
 public class UserArticle {
     /**
-     * Subscription ID.
+     * UserArticle details.
      */
-    @Id
-    @Column(name = "USA_ID_C", length = 36)
-    private String id;
-    
-    /**
-     * User ID.
-     */
-    @Column(name = "USA_IDUSER_C", nullable = false, length = 36)
-    private String userId;
-    
-    /**
-     * Article ID.
-     */
-    @Column(name = "USA_IDARTICLE_C", nullable = false, length = 36)
-    private String articleId;
+    private UserArticleDetails details;
     
     /**
      * Creation date.
      */
     @Column(name = "USA_CREATEDATE_D", nullable = false)
     private Date createDate;
-
+    
     /**
-     * Getter of id.
-     *
-     * @return id
+     * Default constructor.
      */
-    public String getId() {
-        return id;
+    public UserArticle() {
+        this.details = new UserArticleDetails();
+    }
+    
+    /**
+     * Constructor.
+     * 
+     * @param details UserArticle details
+     * @param createDate Creation date
+     */
+    public UserArticle(UserArticleDetails details, Date createDate) {
+        this.details = details;
+        this.createDate = createDate;
+    }
+    
+    /**
+     * Getter of details.
+     *
+     * @return details
+     */
+    public UserArticleDetails getDetails() {
+        return details;
     }
 
     /**
-     * Setter of id.
+     * Setter of details.
      *
-     * @param id id
+     * @param details details
      */
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    /**
-     * Getter of userId.
-     *
-     * @return userId
-     */
-    public String getUserId() {
-        return userId;
-    }
-
-    /**
-     * Setter of userId.
-     *
-     * @param userId userId
-     */
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    /**
-     * Getter of articleId.
-     *
-     * @return articleId
-     */
-    public String getArticleId() {
-        return articleId;
-    }
-
-    /**
-     * Setter of articleId.
-     *
-     * @param articleId articleId
-     */
-    public void setArticleId(String articleId) {
-        this.articleId = articleId;
+    public void setDetails(UserArticleDetails details) {
+        this.details = details;
     }
 
     /**
@@ -118,10 +86,96 @@ public class UserArticle {
     @Override
     public String toString() {
         return Objects.toStringHelper(this)
-                .add("id", id)
-                .add("userId", userId)
-                .add("articleId", articleId)
+                .add("details", details)
+                .add("createDate", createDate)
                 .toString();
+    }
+    
+    /**
+     * UserArticle details.
+     */
+    public static class UserArticleDetails {
+        /**
+         * Subscription ID.
+         */
+        @Id
+        @Column(name = "USA_ID_C", length = 36)
+        private String id;
+        
+        /**
+         * User ID.
+         */
+        @Column(name = "USA_IDUSER_C", nullable = false, length = 36)
+        private String userId;
+        
+        /**
+         * Article ID.
+         */
+        @Column(name = "USA_IDARTICLE_C", nullable = false, length = 36)
+        private String articleId;
+        
+        /**
+         * Getter of id.
+         *
+         * @return id
+         */
+        public String getId() {
+            return id;
+        }
+
+        /**
+         * Setter of id.
+         *
+         * @param id id
+         */
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        /**
+         * Getter of userId.
+         *
+         * @return userId
+         */
+        public String getUserId() {
+            return userId;
+        }
+
+        /**
+         * Setter of userId.
+         *
+         * @param userId userId
+         */
+        public void setUserId(String userId) {
+            this.userId = userId;
+        }
+
+        /**
+         * Getter of articleId.
+         *
+         * @return articleId
+         */
+        public String getArticleId() {
+            return articleId;
+        }
+
+        /**
+         * Setter of articleId.
+         *
+         * @param articleId articleId
+         */
+        public void setArticleId(String articleId) {
+            this.articleId = articleId;
+        }
+
+        @Override
+        public String toString() {
+            return Objects.toStringHelper(this)
+                    .add("id", id)
+                    .add("userId", userId)
+                    .add("articleId", articleId)
+                    .toString();
+        }
     }
 }
 ```

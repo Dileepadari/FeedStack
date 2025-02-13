@@ -1,13 +1,15 @@
 ```java
 package com.sismics.util.log4j;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
-
-import com.sismics.reader.core.util.jpa.PaginatedList;
-import com.sismics.util.log4j.model.LogEntry;
 
 /**
  * Memory appender for Log4J.
@@ -19,12 +21,12 @@ public class MemoryAppender extends AppenderSkeleton {
     /**
      * Maximum size of the queue.
      */
-    private int size;
+    private int size = 1000;
 
     /**
      * Queue of log entries.
      */
-    private Queue<LogEntry> logEntries = new ConcurrentLinkedQueue<>();
+    private Queue<LogEntry> logEntries = new ConcurrentLinkedDeque<>();
 
     @Override
     public boolean requiresLayout() {
@@ -46,7 +48,7 @@ public class MemoryAppender extends AppenderSkeleton {
             return;
         }
 
-        LogEntry logEntry = new LogEntry(System.currentTimeMillis(), event.getLevel().toString(), event.getLoggerName(),
+        LogEntry logEntry = new LogEntry(Instant.now().toEpochMilli(), event.getLevel().toString(), event.getLoggerName(),
                 event.getMessage().toString());
         logEntries.add(logEntry);
     }
@@ -61,28 +63,20 @@ public class MemoryAppender extends AppenderSkeleton {
     }
 
     /**
-     * Getter of logEntries.
+     * Getter of log entries.
      *
      * @return logEntries
      */
     public Queue<LogEntry> getLogEntries() {
-        return logEntries;
+        return Collections.unmodifiableQueue(logEntries);
     }
-
-    /**
-     * Setter of size.
-     *
-     * @param size size
-     */
-    public void setSize(int size) {
-        this.size = size;
-    }
-
 }
 ```
 ====FILE_DELIMITER====
 ```java
 package com.sismics.util.log4j.model;
+
+import java.time.Instant;
 
 /**
  * Log entry.
@@ -99,7 +93,7 @@ public class LogEntry {
     /**
      * Log level.
      */
-    private String level;
+    private Level level;
 
     /**
      * Logger name.
@@ -121,7 +115,7 @@ public class LogEntry {
      */
     public LogEntry(long timestamp, String level, String logger, String message) {
         this.timestamp = timestamp;
-        this.level = level;
+        this.level = Level.parse(level);
         this.logger = logger;
         this.message = message;
     }
@@ -140,7 +134,7 @@ public class LogEntry {
      *
      * @return level
      */
-    public String getLevel() {
+    public Level getLevel() {
         return level;
     }
 
@@ -162,5 +156,9 @@ public class LogEntry {
         return message;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s - %s - %s - %s", Instant.ofEpochMilli(timestamp), level, logger, message);
+    }
 }
 ```

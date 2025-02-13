@@ -17,11 +17,6 @@ import javax.persistence.NoResultException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * User DAO.
- *
- * @author jtremeaux
- */
 @SuppressWarnings({"unused", "RedundantSuppression"})
 public class UserDao extends BaseDao<UserDto, UserCriteria> {
 
@@ -38,34 +33,13 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
         return new QueryParam(query.toString(), criteriaList, parameterMap, null, filterCriteria, new UserMapper());
     }
 
-    /**
-     * Authenticates an user.
-     *
-     * @param email    User login
-     * @param password User password
-     * @return ID of the authenticated user or null
-     */
     public String authenticate(String email, String password) {
-        EntityManager em = ThreadLocalContext.get().getEntityManager();
-        try {
-            Query query = em.createQuery("select u from User u where u.email = :email and u.delete_date is null")
-                    .setParameter("email", email);
-            User user = (User) query.getSingleResult();
-            if (!BCrypt.checkpw(password, user.getPassword())) {
-                return null;
-            }
-            return user.getId();
-        } catch (NoResultException e) {
-            return null;
-        }
+        return findUser(email)
+                .filter(user -> BCrypt.checkpw(password, user.getPassword()))
+                .map(User::getId)
+                .orElse(null);
     }
 
-    /**
-     * Creates a new user.
-     *
-     * @param user User to create
-     * @return User ID
-     */
     public String create(User user) throws Exception {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
 
@@ -73,34 +47,21 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
         user.setId(UUID.randomUUID().toString());
 
         // Checks for user unicity
-        Query query = em.createQuery("select u from User u where u.username = :username and u.delete_date is null")
-                .setParameter("username", user.getUsername());
-        List<?> resultList = query.getResultList();
-        if (!resultList.isEmpty()) {
+        if (userExists(user.getUsername())) {
             throw new Exception("AlreadyExistingUsername");
         }
 
-        user.setCreated_date(new Date());
-        user.setPassword(hashPassword(user.getPassword()));
-        user.setTheme(DefaultConfig.DEFAULT_THEME_ID);
+        prepareUser(user);
         em.persist(user);
 
         return user.getId();
     }
 
-    /**
-     * Updates a user.
-     *
-     * @param user User to update
-     * @return Updated user
-     */
     public User update(User user) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
 
         // Get the user
-        Query query = em.createQuery("select u from User u where u.id = :id and u.delete_date is null")
-                .setParameter("id", user.getId());
-        User userFromDb = (User) query.getSingleResult();
+        User userFromDb = em.find(User.class, user.getId());
 
         // Update the user
         userFromDb.setId_locale(user.getId_locale());
@@ -112,84 +73,53 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
         userFromDb.setDisplay_unread_mobile(user.isDisplay_unread_mobile());
         userFromDb.setFirst_connection(user.isFirst_connection());
 
-        return user;
+        return userFromDb;
     }
 
-    /**
-     * Update the user password.
-     *
-     * @param user User to update
-     * @return Updated user
-     */
     public User updatePassword(User user) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
 
         // Get the user
-        Query query = em.createQuery("select u from User u where u.id = :id and u.delete_date is null")
-                .setParameter("id", user.getId());
-        User userFromDb = (User) query.getSingleResult();
+        User userFromDb = em.find(User.class, user.getId());
 
         // Update the user
         userFromDb.setPassword(hashPassword(user.getPassword()));
 
-        return user;
+        return userFromDb;
     }
 
-    /**
-     * Gets a user by its ID.
-     *
-     * @param id User ID
-     * @return User
-     */
     public User getById(String id) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
         return em.find(User.class, id);
     }
 
-    /**
-     * Gets an active user by its username.
-     *
-     * @param username User's username
-     * @return User
-     */
     public User getActiveByUsername(String username) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
         try {
-            Query query = em.createQuery("select u from User u where u.username = :username and u.delete_date is null")
-                    .setParameter("username", username);
-            return (User) query.getSingleResult();
+            return em.createQuery("select u from User u where u.username = :username and u.delete_date is null", User.class)
+                    .setParameter("username", username)
+                    .getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
     }
 
-    /**
-     * Gets an active user by its password recovery token.
-     *
-     * @param passwordResetKey Password recovery token
-     * @return User
-     */
     public User getActiveByPasswordResetKey(String passwordResetKey) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
         try {
-            Query query = em.createQuery("select u from User u where u.password_reset_key = :passwordResetKey and u.delete_date is null")
-                    .setParameter("passwordResetKey", passwordResetKey);
-            return (User) query.getSingleResult();
+            return em.createQuery("select u from User u where u.password_reset_key = :passwordResetKey and u.delete_date is null", User.class)
+                    .setParameter("passwordResetKey", passwordResetKey)
+                    .getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
     }
 
-    /**
-     * Deletes a user.
-     *
-     * @param username User's username
-     */
     public void delete(String username) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
 
         // Get the user
-        User userFromDb = (User) em.createQuery("select u from User u where u.username = :username and u.delete_date is null")
+        User userFromDb = em.createQuery("select u from User u where u.username = :username and u.delete_date is null", User.class)
                 .setParameter("username", username)
                 .getSingleResult();
 
@@ -218,10 +148,54 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
                 .executeUpdate();
     }
 
-    /**
-     * Hash the user's password.
-     *
-     * @param password Clear password
-     * @return Hashed password
-     */
-    protected String hash
+    protected Optional<User> findUser(String email) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        try {
+            return Optional.of(em.createQuery("select u from User u where u.email = :email and u.delete_date is null", User.class)
+                    .setParameter("email", email)
+                    .getSingleResult());
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
+    protected boolean userExists(String username) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        return !em.createQuery("select u from User u where u.username = :username and u.delete_date is null", User.class)
+                .setParameter("username", username)
+                .getResultList()
+                .isEmpty();
+    }
+
+    protected void prepareUser(User user) {
+        user.setCreated_date(new Date());
+        user.setPassword(hashPassword(user.getPassword()));
+        user.setTheme(DefaultConfig.DEFAULT_THEME_ID);
+    }
+
+    protected String hashPassword(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
+    }
+}
+====FILE_DELIMITER====
+package com.sismics.reader.core.dao.jpa.mapper;
+
+import com.sismics.reader.core.dao.jpa.dto.UserDto;
+import com.sismics.reader.core.model.jpa.User;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
+
+@Mapper
+public interface UserMapper {
+
+    @Mappings({
+            @Mapping(source = User_.ID, target = UserDto.ID),
+            @Mapping(source = User_.USERNAME, target = UserDto.USERNAME),
+            @Mapping(source = User_.EMAIL, target = UserDto.EMAIL),
+            @Mapping(source = User_.CREATED_DATE, target = UserDto.CREATED_DATE),
+            @Mapping(source = User_.ID_LOCALE, target = UserDto.ID_LOCALE)
+    })
+    UserDto toDto(User user);
+}
+```

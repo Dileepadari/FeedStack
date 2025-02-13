@@ -1,14 +1,7 @@
 ====FILE_DELIMITER====
 package com.sismics.reader.core.model.context;
 
-import com.google.common.eventbus.EventBus;
-import com.sismics.reader.core.constant.ConfigType;
-import com.sismics.reader.core.dao.jpa.ConfigDao;
-import com.sismics.reader.core.listener.sync.DeadEventListener;
-import com.sismics.reader.core.model.jpa.Config;
-import com.sismics.util.EnvironmentUtil;
-
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Global application context.
@@ -27,6 +20,11 @@ public class AppContext {
     private EventBus eventBus;
 
     /**
+     * Async operations latch.
+     */
+    private CountDownLatch asyncLatch = new CountDownLatch(1);
+
+    /**
      * Returns a single instance of the application context.
      *
      * @return Application context
@@ -43,19 +41,12 @@ public class AppContext {
      * /!\ Must be used only in unit tests and never a multi-user environment.
      */
     public void waitForAsync() {
-        if (EnvironmentUtil.isUnitTest()) {
-            return;
-        }
         try {
-            // Shutdown executor, don't accept any more tasks (can cause error with nested events)
-            try {
-                ((ThreadPoolExecutor) eventBus).shutdown();
-                eventBus.awaitTermination(60, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                // NOP
+            if (asyncLatch.getCount() > 0) {
+                asyncLatch.await(60, TimeUnit.SECONDS);
             }
-        } finally {
-            resetEventBus();
+        } catch (InterruptedException e) {
+            // NOP
         }
     }
 
@@ -74,6 +65,9 @@ public class AppContext {
     }
 
     private void resetEventBus() {
+        // reset async latch
+        asyncLatch = new CountDownLatch(1);
+        
         eventBus = new EventBus();
         eventBus.register(new DeadEventListener());
     }
@@ -81,13 +75,7 @@ public class AppContext {
 ====FILE_DELIMITER====
 package com.sismics.reader.core.service;
 
-import com.google.common.eventbus.EventBus;
-import com.sismics.reader.core.constant.ConfigType;
-import com.sismics.reader.core.dao.jpa.ConfigDao;
-import com.sismics.reader.core.model.context.AppContext;
-import com.sismics.reader.core.model.jpa.Config;
-import com.sismics.util.EnvironmentUtil;
-
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -111,9 +99,9 @@ public class IndexingService extends Thread {
     private AppContext appContext;
 
     /**
-     * Asynchronous event bus.
+     * Async operations latch.
      */
-    private EventBus eventBus;
+    private CountDownLatch asyncLatch;
 
     /**
      * Constructor.
@@ -130,7 +118,11 @@ public class IndexingService extends Thread {
      */
     private void executeAsync() {
         try {
-            eventBus = newAsyncEventBus();
+            // create async event bus
+            EventBus eventBus = newAsyncEventBus();
+            // register event bus to context
+            appContext.getEventBus().register(eventBus);
+            
             start();
         } finally {
             if (!EnvironmentUtil.isUnitTest()) {
@@ -144,19 +136,12 @@ public class IndexingService extends Thread {
      * /!\ Must be used only in unit tests and never a multi-user environment.
      */
     public void waitForAsync() {
-        if (EnvironmentUtil.isUnitTest()) {
-            return;
-        }
         try {
-            // Shutdown executor, don't accept any more tasks (can cause error with nested events)
-            try {
-                ((ThreadPoolExecutor) eventBus).shutdown();
-                eventBus.awaitTermination(60, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                // NOP
+            if (asyncLatch.getCount() > 0) {
+                asyncLatch.await(60, TimeUnit.SECONDS);
             }
-        } finally {
-            eventBus = null;
+        } catch (InterruptedException e) {
+            // NOP
         }
     }
 
@@ -172,7 +157,13 @@ public class IndexingService extends Thread {
             ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1,
                     0L, TimeUnit.MILLISECONDS,
                     new LinkedBlockingQueue<Runnable>());
-            return new com.google.common.eventbus.AsyncEventBus(executor);
+            EventBus asyncEventBus = new EventBus(executor);
+            
+            // use CountDownLatch for async operations
+            asyncLatch = new CountDownLatch(1);
+            asyncEventBus.register(new AsyncEventListener(asyncLatch));
+            
+            return asyncEventBus;
         }
     }
 
@@ -217,7 +208,7 @@ public class IndexingService extends Thread {
      * Stop the indexing service.
      */
     public void stopAndWait() {
-        if (!EnvironmentUtil.isUnitTest() && eventBus != null) {
+        if (!EnvironmentUtil.isUnitTest()) {
             waitForAsync();
         }
     }

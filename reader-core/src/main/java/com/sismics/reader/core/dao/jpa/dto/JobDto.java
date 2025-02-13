@@ -1,6 +1,8 @@
 ```java
 package com.sismics.reader.core.dao.jpa.dto;
 
+import java.util.Date;
+
 /**
  * Feed subscription DTO.
  *
@@ -29,48 +31,24 @@ public class FeedSubscriptionDto {
     private String feedId;
 
     /**
-     * Feed category DTO.
+     * Feed category ID.
      */
-    private FeedCategoryDto feedCategoryDto;
+    private String feedCategoryId;
 
-    public String getId() {
-        return id;
-    }
+    /**
+     * True if this subscription is folded in the subscriptions tree.
+     */
+    private boolean folded;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    // TODO: Add getters and setters
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getFeedId() {
-        return feedId;
-    }
-
-    public void setFeedId(String feedId) {
-        this.feedId = feedId;
-    }
-
-    public FeedCategoryDto getFeedCategoryDto() {
-        return feedCategoryDto;
-    }
-
-    public void setFeedCategoryDto(FeedCategoryDto feedCategoryDto) {
-        this.feedCategoryDto = feedCategoryDto;
+    /**
+     * Is this subscription folded?
+     *
+     * @return True if this subscription is folded, false otherwise
+     */
+    public boolean isFolded() {
+        return folded;
     }
 }
 
@@ -94,41 +72,6 @@ public class FeedCategoryDto {
      */
     private String name;
 
-    /**
-     * True if this category is folded in the subscriptions tree.
-     */
-    private boolean folded;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isFolded() {
-        return folded;
-    }
-
-    public void setFolded(boolean folded) {
-        this.folded = folded;
-    }
+    // TODO: Add getters and setters
 }
 ```
