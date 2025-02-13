@@ -6,6 +6,8 @@ import com.sismics.reader.core.constant.ConfigType;
 import com.sismics.reader.core.dao.jpa.ConfigDao;
 import com.sismics.reader.core.listener.async.*;
 import com.sismics.reader.core.listener.sync.DeadEventListener;
+import com.sismics.reader.core.mediator.ConcreteMediator;
+import com.sismics.reader.core.mediator.Mediator;
 import com.sismics.reader.core.model.jpa.Config;
 import com.sismics.reader.core.service.FeedService;
 import com.sismics.reader.core.service.IndexingService;
@@ -64,18 +66,26 @@ public class AppContext {
      */
     private List<ExecutorService> asyncExecutorList;
     
+
+    /**
+     * Mediator
+     */
+    private Mediator mediator;
+
     /**
      * Private constructor.
      */
     private AppContext() {
         resetEventBus();
         
-        feedService = new FeedService();
+        mediator = new ConcreteMediator(this, feedService);
+
+        feedService = new FeedService(mediator);
         feedService.startAndWait();
         
         ConfigDao configDao = new ConfigDao();
         Config luceneStorageConfig = configDao.getById(ConfigType.LUCENE_DIRECTORY_STORAGE);
-        indexingService = new IndexingService(luceneStorageConfig != null ? luceneStorageConfig.getValue() : null);
+        indexingService = new IndexingService(luceneStorageConfig != null ? luceneStorageConfig.getValue() : null, mediator);
         indexingService.startAndWait();
     }
     
