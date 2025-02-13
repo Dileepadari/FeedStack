@@ -9,22 +9,22 @@ File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/Use
 Smells Found:
 [
   {
-    "type": "Data Class",
-    "category": "design",
-    "description": "Class `AuthenticationToken` has a lot of getters and setters and no methods, making it a data class.",
+    "type": "Magic number",
+    "category": "code",
+    "description": "The threshold for the maximum token length is hardcoded to 256.",
     "files": [
       "file1"
     ],
-    "fix": "Extract methods from the data class and move it to a service or a utility class."
+    "fix": "Use a constant instead of a magic number."
   },
   {
-    "type": "Data Class",
-    "category": "design",
-    "description": "Class `User` has a lot of getters and setters, indicating that it might be a data class.",
+    "type": "Duplicated code",
+    "category": "code",
+    "description": "The getters and setters for the `createDate` field are duplicated in both `AuthenticationToken` and `User`.",
     "files": [
-      "file2"
+      "both"
     ],
-    "fix": "Extract methods from the data class and move it to a service or a utility class."
+    "fix": "Refactor the getters and setters to a common superclass or interface."
   }
 ]
 

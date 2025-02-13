@@ -5,12 +5,13 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.sql.Date;
 
 @Entity
 @Table(name = "authentication_tokens")
 public class AuthenticationToken {
 
-    private static final int MAX_TOKEN_LENGTH = 256;
+    public static final int MAX_TOKEN_LENGTH = 256;
 
     @Id
     @Column(name = "token_id", nullable = false)
@@ -20,7 +21,7 @@ public class AuthenticationToken {
     private String token;
 
     @Column(name = "create_date", nullable = false)
-    private java.sql.Date createDate;
+    private Date createDate;
 
     @Column(name = "user_id")
     private String userId;
@@ -28,7 +29,7 @@ public class AuthenticationToken {
     public AuthenticationToken() {
     }
 
-    public AuthenticationToken(String id, String token, java.sql.Date createDate, String userId) {
+    public AuthenticationToken(String id, String token, Date createDate, String userId) {
         this.id = id;
         this.token = token;
         this.createDate = createDate;
@@ -51,11 +52,11 @@ public class AuthenticationToken {
         this.token = token;
     }
 
-    public java.sql.Date getCreateDate() {
+    public Date getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(java.sql.Date createDate) {
+    public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
 
@@ -110,18 +111,18 @@ public class AuthenticationToken {
     }
 }
 ====FILE_DELIMITER====
-```java
 package com.sismics.reader.core.model.jpa;
 
 import javax.persistence.*;
+import java.sql.Date;
 
 @Entity
 @Table(name = "users")
 public class User {
 
-    private static final int MAX_USERNAME_LENGTH = 50;
-    private static final int MAX_PASSWORD_LENGTH = 256;
-    private static final int MAX_EMAIL_LENGTH = 50;
+    public static final int MAX_USERNAME_LENGTH = 50;
+    public static final int MAX_PASSWORD_LENGTH = 256;
+    public static final int MAX_EMAIL_LENGTH = 50;
 
     @Id
     @Column(name = "user_id", nullable = false)
@@ -137,10 +138,10 @@ public class User {
     private String email;
 
     @Column(name = "create_date", nullable = false)
-    private java.sql.Date createDate;
+    private Date createDate;
 
     @Column(name = "modified_date")
-    private java.sql.Date modifiedDate;
+    private Date modifiedDate;
 
     @Column(name = "first_connection", nullable = false)
     private boolean firstConnection;
@@ -148,7 +149,7 @@ public class User {
     public User() {
     }
 
-    public User(String id, String username, String password, String email, java.sql.Date createDate, java.sql.Date modifiedDate, boolean firstConnection) {
+    public User(String id, String username, String password, String email, Date createDate, Date modifiedDate, boolean firstConnection) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -190,19 +191,19 @@ public class User {
         this.email = email;
     }
 
-    public java.sql.Date getCreateDate() {
+    public Date getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(java.sql.Date createDate) {
+    public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
 
-    public java.sql.Date getModifiedDate() {
+    public Date getModifiedDate() {
         return modifiedDate;
     }
 
-    public void setModifiedDate(java.sql.Date modifiedDate) {
+    public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
 
