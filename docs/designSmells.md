@@ -1,214 +1,168 @@
-## Broken Modularization - com.sismics.reader.core.constant
+# Task 2A - Design Smells
 
+## Tools
 
-**Problem:**
+### SonarQube Report
+![SonarQube Report](sonarqube/image.png)
 
-1. Many constants not related to each other are in the same class.
+Eventhough SonarQube identified 424 code smells, almost all of them are mostly code related smells and not design smells. (Ex: Try-catch blocks, refactoring if statements, etc.)
 
-Violates Single Responsibility Principle.
+### DesigniteJava Report
 
-**Solution:**
+Design Smells identified by DesigniteJava are included in the file `docs/designite/designCodeSmells.csv`
 
-1. Separate constants into different classes.
+## Design Smell Analysis
 
-2. If some constants are related to each other, put them in the same class.
-
-
-**Quality Attributes Affected:**
-
-1. Maintainability
-
-Changes in one concern (e.g., job-related constants) affect an unrelated area (e.g., localization).
-The file grows large and difficult to manage.
-
-2. Scalability 
-
-Adding new features or constants requires modifying this single class, making it harder to scale.
-
-3. Readability 
-
-Mixing unrelated concerns reduces clarity and makes it difficult for developers to locate relevant constants.
-
-4. Reusability
-
-Modules cannot reuse only the constants they need, leading to unnecessary dependencies.
-
-## Cyclic Dependency - com.sismics.reader.core.service.FeedService, com.sismics.reader.core.service.IndexService
-
+### 1. Broken Modularization
+**Location:** `com.sismics.reader.core.constant`
 
 **Problem:**
-
-Cyclic dependency between classes.
-
-FeedService -> FeedDao -> FeedService
-
-This is happening as new DAOs re being directly created in the service layer.
-
-So tight coupling between service and dao layers.
-
-FeedService -> AppContext -> FeedService
-
-FeedService is created and managed by AppContext. FeedService is also using AppContext to get other services.
-
-FeedService -> FeedSubscription -> FeedService
-
-FeedService manages subscriptions. FeedSubscription requires FeedService for synchronization.
+- Constants unrelated to each other are grouped in the same class
+- Violates Single Responsibility Principle
 
 **Solution:**
+1. Separate constants into domain-specific classes
+2. Group related constants together
 
-1. Use Dependency Injection to manage dependencies.
+**Quality Impact:**
+- Maintainability: Changes in one concern affect unrelated areas
+- Scalability: Adding features requires modifying a single class
+- Readability: Mixed concerns reduce code clarity
+- Reusability: Unnecessary dependencies between modules
 
-2. Use Factory pattern to create instances of services.
+**Code Changes:**
+
+Before: (in `com.sismics.reader.core.constant.Constants`)
+```java
+public class Constants {
+   /**
+     * Default locale.
+     */
+    public static final String DEFAULT_LOCALE_ID = "en";
+    /**
+     * Default timezone ID.
+     */
+    public static final String DEFAULT_TIMEZONE_ID = "Europe/London";
+    ....
+
+}
+```
+
+Here, not only there are many constants, but also they are not related to each other. There are different groups of constants in the same class.
+
+After:
+
+4 different classes are created:
+
+- `com.sismics.reader.core.constant.DefaultConfig`
+- `com.sismics.reader.core.constant.SecurityConfig`
+- `com.sismics.reader.core.constant.LuceneConfig`
+- `com.sismics.reader.core.constant.ImportJobConfig`
+
+Each of these classes are responsible for a single concern and are not mixed with other concerns. This makes the code more maintainable and easier to understand. It is also easier to add new constants without affecting other classes.
 
 
-- Introduction of interfaces for services. (IFeedService, IFeedRepository)
-
-- Extract Service Classes.
-(FeedSyncService is a new class that is responsible for synchronization of feeds.)
-
-- Factory Classes. (FeedFactory)
-
-- Update AppContext to use factory classes.
-
-Remove direct instantiation of FeedService.
-Use dependency injection container
-Configure component lifecycle management
-**Quality Attributes Affected:**
-
-1. Maintainability
-
-Changes in one component require changes in dependent components.Hard to modify components independently. Increased risk of breaking changes
-
-2. Testability
-
-Difficult to unit test components in isolation. Need complex mocking setups. Hard to create test scenarios.
-
-3. Reusability
-
-Components cannot be reused independently. High coupling makes it hard to extract functionality.
-
-4. Flexibility
-
-Difficult to replace implementations. Changes have ripple effects across the system.
-
-
-
-
-## Deficient Encapsulation - com.sismics.reader.core.dao.file.rss.RssReader, com.sismics.reader.core.dao.file.html.FaviconDownloader, com.sismics.reader.core.constant
+### 2. Cyclic Dependency
+**Location:** 
+- `com.sismics.reader.core.service.FeedService`
+- `com.sismics.reader.core.service.IndexService`
 
 **Problem:**
-
-The RssReader class exposes internal implementation details and data structures directly, violating encapsulation principles. This happens through:
-
-1. Public fields that expose internal state
-2. Methods returning internal data structures without defensive copying
-3. Lack of proper access modifiers for class members
-
-Public static DateFormatters, getArticleList returns direct List. 
+Multiple circular dependencies:
+- FeedService ↔️ FeedDao
+- FeedService ↔️ AppContext
+- FeedService ↔️ FeedSubscription
 
 **Solution:**
+1. Implement Dependency Injection
+2. Use Factory pattern for service instantiation
+3. Introduce service interfaces
+4. Extract FeedSyncService for synchronization
+5. Update AppContext to use factories
 
-1. Make instance variables private and provide controlled access through methods
-2. Implement defensive copying for returned collections and mutable objects
-3. Create immutable value objects for returned data where appropriate
+**Quality Impact:**
+- Maintainability: Changes cascade through dependent components
+- Testability: Complex mocking required
+- Reusability: Components tightly coupled
+- Flexibility: Changes have system-wide effects
 
-**Quality Attributes Affected:**
-
-1. Maintainability
-   - Changes to internal implementation can affect multiple external components
-   - Difficult to modify internal data structures without breaking client code
-
-2. Security
-   - External code can directly manipulate internal state
-   - Potential for object state corruption
-
-
-## Insufficient Modularization - com.sismics.reader.core.dao.jpa.dto.UserArticleDto, com.sismics.reader.core.dao.jpa.dto.ArticleDto, com.sismics.reader.core.dao.jpa.dto.FeedSubscriptionDto
-
-**Problem**
-
-1. These DTOs contain mixed responsibilities by combining data from multiple domain entities
-2. They have tight coupling between different concerns (e.g., UserArticleDto combines User, Article, and Feed data)
-3. Large number of fields and getter/setter methods make the classes unwieldy
-4. Data duplication across DTOs (e.g., article fields repeated in UserArticleDto and ArticleDto)
-
-**Solution**
-
-1. Split DTOs by Domain Concept
-2. Create Composite DTOs When Needed
-3. Implement Builder Pattern
-4. Update Mappers
-5. Update Service Layer
-   - Modify services to use appropriate DTOs for each operation
-   - Create facade services for operations requiring combined data
-
-**Quality Attributes Affected:**
-
-1. Maintainability
-   - Improved separation of concerns
-   - Reduced code duplication
-   - Easier to manage and extend DTOs
-
-2. Reusability
-   - DTOs can be reused across different parts of the application
-
-3. Testability
-   - Improved testability of DTOs
-   - Reduced code duplication
-   - Easier to create test scenarios
-
-4. Flexibility
-   - Improved flexibility of DTOs
-   - Reduced code duplication
-
-## Unutilized Abstraction - All files in com.sismics.reader.rest.resource
+### 3. Deficient Encapsulation
+**Location:**
+- `com.sismics.reader.core.dao.file.rss.RssReader`
+- `com.sismics.reader.core.dao.file.html.FaviconDownloader`
 
 **Problem:**
-
-1. Resource classes are designed with inheritance from BaseResource but don't effectively utilize the inheritance relationship
-2. Many methods duplicate logic that could be shared through the base class
-3. Authentication checks and error handling patterns are repeated across resources
+- Public fields expose internal state
+- Direct exposure of internal data structures
+- Improper access modifiers
 
 **Solution:**
+1. Make instance variables private
+2. Implement defensive copying
+3. Create immutable value objects
 
-1. Extract shared logic into a base class
-2. Use inheritance for common functionality
-3. Update resource classes to inherit from the base class
+**Quality Impact:**
+- Maintainability: Implementation changes affect external components
+- Security: Vulnerable to state manipulation
 
-**Quality Attributes Affected:**
-
-1. Maintainability
-   - Code duplication makes changes harder
-
-2. Reusability
-   - Common functionality isn't properly abstracted
-
-3. Complexity
-   - Duplicate code increases cognitive load
-
-
-## Wide Heirarchy - com.sismics.reader.rest.resource.BaseResource
+### 4. Insufficient Modularization
+**Location:**
+- `com.sismics.reader.core.dao.jpa.dto.UserArticleDto`
+- `com.sismics.reader.core.dao.jpa.dto.ArticleDto`
+- `com.sismics.reader.core.dao.jpa.dto.FeedSubscriptionDto`
 
 **Problem:**
-
-1. Many direct subclasses of BaseResource
-2. Lack of intermediate abstractions to group related functionality
-3. Poor organization of REST endpoint responsibilities
+- Mixed responsibilities in DTOs
+- Tight coupling between concerns
+- Code duplication across DTOs
 
 **Solution:**
+1. Split DTOs by domain concept
+2. Create composite DTOs
+3. Implement Builder pattern
+4. Update mappers and service layer
 
-1. Create intermediate abstractions
-2. Group related functionality in new resource classes
-3. Update resource classes to inherit from the new classes
+**Quality Impact:**
+- Maintainability: Mixed concerns make changes difficult
+- Reusability: DTOs too specific to reuse
+- Testability: Complex objects hard to test
+- Flexibility: Changes affect multiple components
 
-**Quality Attributes Affected:**
+### 5. Unutilized Abstraction
+**Location:** `com.sismics.reader.rest.resource.*`
 
-1. Maintainability
-   - Inconsistent patterns make maintenance difficult
+**Problem:**
+- Ineffective use of BaseResource inheritance
+- Duplicated logic across resources
+- Repeated authentication and error handling
 
-2. Reliability
-   - Inconsistent error handling can lead to bugs
+**Solution:**
+1. Extract common logic to base class
+2. Implement proper inheritance
+3. Standardize error handling
 
-3. Security
-   - Inconsistent authentication checks create vulnerabilities
+**Quality Impact:**
+- Maintainability: Duplicated code increases maintenance burden
+- Reusability: Common functionality not shared
+- Complexity: Duplicate patterns increase cognitive load
 
+### 6. Wide Hierarchy
+**Location:** `com.sismics.reader.rest.resource.BaseResource`
+
+**Problem:**
+- Too many direct subclasses
+- Missing intermediate abstractions
+- Poor organization of endpoints
+
+**Solution:**
+1. Create intermediate abstract classes
+2. Group related functionality
+3. Reorganize inheritance hierarchy
+
+**Quality Impact:**
+- Maintainability: Inconsistent patterns
+- Reliability: Inconsistent error handling
+- Security: Varying authentication implementations
+
+
+All of these design smells are identified using DesigniteJava. It identified many more, but these were selected.
