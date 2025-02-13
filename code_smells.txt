@@ -11,47 +11,47 @@ Smells Found:
   {
     "type": "Long Class",
     "category": "design",
-    "description": "The User class has 23 fields and is over 100 lines long. This makes it difficult to follow and maintain.",
+    "description": "The class has more than 200 lines of code.",
     "files": [
       "User.java"
     ],
-    "fix": "Split the class into multiple smaller classes, each of which handles a specific aspect of the user's data or behavior."
+    "fix": "Split the class into multiple smaller classes."
   },
   {
-    "type": "Data Clumps",
-    "category": "design",
-    "description": "The User class has several groups of related fields, such as the fields related to authentication (username, password, email) and the fields related to user preferences (localeId, theme, lastLoginDate). These groups of fields would be better placed in separate classes.",
+    "type": "Large Method",
+    "category": "code",
+    "description": "The method has more than 100 lines of code.",
     "files": [
       "User.java"
     ],
-    "fix": "Extract the related fields into separate classes, such as an AuthenticationInfo class and a UserPreferences class."
+    "fix": "Split the method into multiple smaller methods."
+  },
+  {
+    "type": "Duplicated Code",
+    "category": "code",
+    "description": "The code is duplicated in multiple places.",
+    "files": [
+      "User.java"
+    ],
+    "fix": "Extract the duplicated code into a separate method or class."
   },
   {
     "type": "God Class",
     "category": "design",
-    "description": "The User class does too much. It is responsible for managing authentication, user preferences, and user data. This makes it difficult to understand and maintain.",
+    "description": "The class has too many responsibilities.",
     "files": [
       "User.java"
     ],
-    "fix": "Split the User class into multiple smaller classes, each of which handles a specific aspect of the user's data or behavior."
+    "fix": "Split the class into multiple smaller classes."
   },
   {
-    "type": "Lazy Evaluation",
+    "type": "Switch Statement",
     "category": "code",
-    "description": "The User class has several fields that are initialized to default values (null, 0, false). This can lead to unexpected behavior, especially if the fields are used in calculations or comparisons.",
+    "description": "The code uses a switch statement with more than 5 cases.",
     "files": [
       "User.java"
     ],
-    "fix": "Initialize the fields to non-default values, or provide setter methods that allow the caller to specify the initial value."
-  },
-  {
-    "type": "Mutable Objects",
-    "category": "code",
-    "description": "The User class has several fields that are mutable (e.g., the authenticationTokens field). This can lead to race conditions and other concurrency issues.",
-    "files": [
-      "User.java"
-    ],
-    "fix": "Make the fields immutable, or provide synchronized access to them."
+    "fix": "Replace the switch statement with a more appropriate data structure, such as a map or a lookup table."
   }
 ]
 
