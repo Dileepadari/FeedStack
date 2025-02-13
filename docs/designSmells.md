@@ -76,26 +76,211 @@ Here the change suggested by ChatGPT is correct, the actual change made is the s
 ### 2. Cyclic Dependency
 **Location:** 
 - `com.sismics.reader.core.service.FeedService`
-- `com.sismics.reader.core.service.IndexService`
+- `com.sismics.reader.core.service.IndexingService`
 
 **Problem:**
+
 Multiple circular dependencies:
-- FeedService ↔️ FeedDao
-- FeedService ↔️ AppContext
-- FeedService ↔️ FeedSubscription
+- AppContext ↔️ FeedService ↔️ AppContext
+- AppContext ↔️ IndexingService ↔️ AppContext
 
 **Solution:**
-1. Implement Dependency Injection
-2. Use Factory pattern for service instantiation
-3. Introduce service interfaces
-4. Extract FeedSyncService for synchronization
-5. Update AppContext to use factories
 
-**Quality Impact:**
-- Maintainability: Changes cascade through dependent components
-- Testability: Complex mocking required
-- Reusability: Components tightly coupled
-- Flexibility: Changes have system-wide effects
+I have added an interface that takes both **AppContext**,**FeedService** and takes care of posting events to the listeners in the **AppContext**.
+
+1. **Mediator** interface
+```java
+package com.sismics.reader.core.mediator;
+
+public interface Mediator {
+    void notify(Object sender,Object event);
+}
+
+```
+
+2. **ConcreteMediator** class
+
+```java 
+package com.sismics.reader.core.mediator;
+
+import com.sismics.reader.core.service.FeedService;
+import com.sismics.reader.core.model.context.AppContext;
+
+public  class ConcreteMediator implements Mediator {
+    private AppContext appContext;
+    private FeedService feedService;
+
+    public ConcreteMediator(AppContext appContext, FeedService feedService) {
+        this.appContext = appContext;
+        this.feedService = feedService;
+    }
+
+    @Override
+    public void notify(Object sender, Object event) {
+        if (sender instanceof FeedService) {
+           appContext.getInstance().getEventBus().post(event);
+        }
+    }
+}
+```
+
+
+**Code Changes:**
+
+- Before Refactoring step:
+
+1. **AppContext** class
+```java
+
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.EventBus;
+import com.sismics.reader.core.constant.ConfigType;
+import com.sismics.reader.core.dao.jpa.ConfigDao;
+import com.sismics.reader.core.listener.async.*;
+import com.sismics.reader.core.listener.sync.DeadEventListener;
+import com.sismics.reader.core.model.jpa.Config;
+import com.sismics.reader.core.service.FeedService;
+import com.sismics.reader.core.service.IndexingService;
+import com.sismics.util.EnvironmentUtil;
+
+private AppContext() {
+    resetEventBus();
+    
+    feedService = new FeedService();
+    feedService.startAndWait();
+    
+    ConfigDao configDao = new ConfigDao();
+    Config luceneStorageConfig = configDao.getById(ConfigType.LUCENE_DIRECTORY_STORAGE);
+    indexingService = new IndexingService(luceneStorageConfig != null ? luceneStorageConfig.getValue() : null);
+    indexingService.startAndWait();
+}
+```
+
+2. **FeedService** class
+
+```java
+import com.sismics.reader.core.event.ArticleCreatedAsyncEvent;
+import com.sismics.reader.core.event.ArticleDeletedAsyncEvent;
+import com.sismics.reader.core.event.ArticleUpdatedAsyncEvent;
+import com.sismics.reader.core.event.FaviconUpdateRequestedEvent;
+import com.sismics.reader.core.model.context.AppContext;
+
+List<Article> articleToRemove = getArticleToRemove(articleList);
+    if (!articleToRemove.isEmpty()) {
+        for (Article article : articleToRemove) {
+            // Update unread counts
+            // FIXME count be optimized in 1 query instead of a*s*2
+            List<UserArticleDto> userArticleDtoList = new UserArticleDao()
+                    .findByCriteria(new UserArticleCriteria()
+                            .setArticleId(article.getId())
+                            .setFetchAllFeedSubscription(true) // to test: subscribe another user, u2, read u1, not u2, u1 is decremented anyway
+                            .setUnread(true));
+
+            for (UserArticleDto userArticleDto : userArticleDtoList) {
+                FeedSubscriptionDto feedSubscriptionDto = new FeedSubscriptionDao().findFirstByCriteria(new FeedSubscriptionCriteria()
+                        .setId(userArticleDto.getFeedSubscriptionId()));
+                if (feedSubscriptionDto != null) {
+                    new FeedSubscriptionDao().updateUnreadCount(feedSubscriptionDto.getId(), feedSubscriptionDto.getUnreadUserArticleCount() - 1);
+                }
+            }
+        }
+
+        // Delete articles that don't exist anymore
+        for (Article article: articleToRemove) {
+            new ArticleDao().delete(article.getId());
+        }
+
+        // Removed articles from index
+        ArticleDeletedAsyncEvent articleDeletedAsyncEvent = new ArticleDeletedAsyncEvent();
+        articleDeletedAsyncEvent.setArticleList(articleToRemove);
+        AppContext.getInstance().getAsyncEventBus().post(articleDeletedAsyncEvent);
+    }
+```
+
+
+- After Refactoring step:
+1. **AppContext** class
+```java
+private AppContext() {
+    resetEventBus();
+    
+    mediator = new ConcreteMediator(this, feedService);
+
+    feedService = new FeedService(mediator);
+    feedService.startAndWait();
+    
+    ConfigDao configDao = new ConfigDao();
+    Config luceneStorageConfig = configDao.getById(ConfigType.LUCENE_DIRECTORY_STORAGE);
+    indexingService = new IndexingService(luceneStorageConfig != null ? luceneStorageConfig.getValue() : null, mediator);
+    indexingService.startAndWait();
+}
+```
+
+2. **FeedService** class
+
+```java
+import com.sismics.reader.core.event.ArticleCreatedAsyncEvent;
+import com.sismics.reader.core.event.ArticleDeletedAsyncEvent;
+import com.sismics.reader.core.event.ArticleUpdatedAsyncEvent;
+import com.sismics.reader.core.event.FaviconUpdateRequestedEvent;
+import com.sismics.reader.core.mediator.Mediator;
+
+private Mediator mediator;
+
+public FeedService(Mediator mediator) {
+    this.mediator = mediator;
+}
+
+List<Article> articleToRemove = getArticleToRemove(articleList);
+if (!articleToRemove.isEmpty()) {
+    for (Article article : articleToRemove) {
+        // Update unread counts
+        // FIXME count be optimized in 1 query instead of a*s*2
+        List<UserArticleDto> userArticleDtoList = new UserArticleDao()
+                .findByCriteria(new UserArticleCriteria()
+                        .setArticleId(article.getId())
+                        .setFetchAllFeedSubscription(true) // to test: subscribe another user, u2, read u1, not u2, u1 is decremented anyway
+                        .setUnread(true));
+
+        for (UserArticleDto userArticleDto : userArticleDtoList) {
+            FeedSubscriptionDto feedSubscriptionDto = new FeedSubscriptionDao().findFirstByCriteria(new FeedSubscriptionCriteria()
+                    .setId(userArticleDto.getFeedSubscriptionId()));
+            if (feedSubscriptionDto != null) {
+                new FeedSubscriptionDao().updateUnreadCount(feedSubscriptionDto.getId(), feedSubscriptionDto.getUnreadUserArticleCount() - 1);
+            }
+        }
+    }
+
+    // Delete articles that don't exist anymore
+    for (Article article: articleToRemove) {
+        new ArticleDao().delete(article.getId());
+    }
+
+    // Removed articles from index
+    ArticleDeletedAsyncEvent articleDeletedAsyncEvent = new ArticleDeletedAsyncEvent();
+    articleDeletedAsyncEvent.setArticleList(articleToRemove);
+    mediator.notify(this, articleDeletedAsyncEvent);
+}
+```
+
+**Issues**:
+
+1. With this fix it is creating a new issue for search functionality. Rebuilding the index in IndexingService is not working as expected. So, left the issue open for further investigation.
+
+**llm Suggestions:**
+
+Prompt : AppContext initalizes feedservice, eventbuses which listens the events. Feedservice calls appcontext and posts the events. So, this forms circular dependency right.
+
+Reply :
+Yes, the current design forms a circular dependency where AppContext initializes FeedService, and FeedService calls back to AppContext to post events. This circular dependency can be problematic and should be refactored.
+
+Refactoring with **Dependency Injection**
+To break this circular dependency, we can use dependency injection to manage the dependencies and ensure that FeedService does not directly depend on AppContext. Instead, we can inject the necessary dependencies into FeedService.
+
+![fig1](llm_responses/smell-2/fig1.png)
+![fig2](llm_responses/smell-2/fig2.png)
+![fig3](llm_responses/smell-2/fig3.png)
+![fig4](llm_responses/smell-2/fig4.png)
 
 ### 3. Deficient Encapsulation
 **Location:**
