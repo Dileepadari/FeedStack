@@ -9,22 +9,22 @@ File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/Use
 Smells Found:
 [
   {
-    "type": "Magic number",
-    "category": "code",
-    "description": "The threshold for the maximum token length is hardcoded to 256.",
+    "type": "Data Class",
+    "category": "design",
+    "description": "AuthenticationToken is a simple data class, only containing fields and getters/setters.",
     "files": [
-      "file1"
+      "AuthenticationToken.java"
     ],
-    "fix": "Use a constant instead of a magic number."
+    "fix": "Remove the getters and setters and make the fields public."
   },
   {
-    "type": "Duplicated code",
-    "category": "code",
-    "description": "The getters and setters for the `createDate` field are duplicated in both `AuthenticationToken` and `User`.",
+    "type": "Data Class",
+    "category": "design",
+    "description": "User is a simple data class, only containing fields and getters/setters.",
     "files": [
-      "both"
+      "User.java"
     ],
-    "fix": "Refactor the getters and setters to a common superclass or interface."
+    "fix": "Remove the getters and setters and make the fields public."
   }
 ]
 
