@@ -8,7 +8,7 @@ import com.sismics.reader.core.dao.jpa.dto.UserArticleDto;
 /**
  * Article DTO / JSON assembler.
  *
- * @author jtremeaux 
+ * @author jtremeaux
  */
 public class ArticleAssembler {
 
@@ -23,20 +23,22 @@ public class ArticleAssembler {
         userArticleJson.put("id", userArticle.getId());
         JSONObject subscription = new JSONObject();
         subscription.put("id", userArticle.getFeedSubscriptionId());
-        subscription.put("title", userArticle.getFeedSubscriptionTitle() != null ? userArticle.getFeedSubscriptionTitle() : userArticle.getFeedTitle());
+        subscription.put("title",
+                userArticle.getFeedSubscriptionTitle() != null ? userArticle.getFeedSubscriptionTitle()
+                        : userArticle.getFeedTitle());
         userArticleJson.put("subscription", subscription);
-        userArticleJson.put("title", userArticle.getArticleTitle());
-        userArticleJson.put("url", userArticle.getArticleUrl());
+        userArticleJson.put("title", userArticle.getArticle().getTitle());
+        userArticleJson.put("url", userArticle.getArticle().getUrl());
         userArticleJson.put("date", userArticle.getArticlePublicationTimestamp());
-        userArticleJson.put("creator", userArticle.getArticleCreator());
-        userArticleJson.put("description", userArticle.getArticleDescription());
-        userArticleJson.put("comment_url", userArticle.getArticleCommentUrl());
-        userArticleJson.put("comment_count", userArticle.getArticleCommentCount());
-        if (userArticle.getArticleEnclosureUrl() != null) {
+        userArticleJson.put("creator", userArticle.getArticle().getCreator());
+        userArticleJson.put("description", userArticle.getArticle().getDescription());
+        userArticleJson.put("comment_url", userArticle.getArticle().getComment().getUrl());
+        userArticleJson.put("comment_count", userArticle.getArticle().getComment().getCount());
+        if (userArticle.getArticle().getEnclosure().getUrl() != null) {
             JSONObject enclosure = new JSONObject();
-            enclosure.put("url", userArticle.getArticleEnclosureUrl());
-            enclosure.put("length", userArticle.getArticleEnclosureLength());
-            enclosure.put("type", userArticle.getArticleEnclosureType());
+            enclosure.put("url", userArticle.getArticle().getEnclosure().getUrl());
+            enclosure.put("length", userArticle.getArticle().getEnclosure().getCount());
+            enclosure.put("type", userArticle.getArticle().getEnclosure().getType());
             userArticleJson.put("enclosure", enclosure);
         }
         userArticleJson.put("is_read", userArticle.getReadTimestamp() != null);

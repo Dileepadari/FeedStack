@@ -3,7 +3,7 @@ package com.sismics.reader.core.dao.jpa.dto;
 /**
  * Job DTO.
  *
- * @author jtremeaux 
+ * @author jtremeaux
  */
 public class JobDto {
     /**
@@ -35,7 +35,6 @@ public class JobDto {
      * End date.
      */
     private Long endTimestamp;
-
 
     /**
      * Getter of id.

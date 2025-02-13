@@ -32,8 +32,8 @@ public class AllResource extends BaseResource {
     /**
      * Returns all articles.
      * 
-     * @param unread Returns only unread articles
-     * @param limit Page limit
+     * @param unread       Returns only unread articles
+     * @param limit        Page limit
      * @param afterArticle Start the list after this user article
      * @return Response
      */
@@ -61,17 +61,18 @@ public class AllResource extends BaseResource {
                     .setUserId(principal.getId());
             List<UserArticleDto> userArticleDtoList = userArticleDao.findByCriteria(afterArticleCriteria);
             if (userArticleDtoList.isEmpty()) {
-                throw new ClientException("ArticleNotFound", MessageFormat.format("Can't find user article {0}", afterArticle));
+                throw new ClientException("ArticleNotFound",
+                        MessageFormat.format("Can't find user article {0}", afterArticle));
             }
             UserArticleDto userArticleDto = userArticleDtoList.iterator().next();
 
             userArticleCriteria.setArticlePublicationDateMax(new Date(userArticleDto.getArticlePublicationTimestamp()));
-            userArticleCriteria.setArticleIdMax(userArticleDto.getArticleId());
+            userArticleCriteria.setArticleIdMax(userArticleDto.getArticle().getId());
         }
 
         PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(limit, null);
         userArticleDao.findByCriteria(paginatedList, userArticleCriteria, null, null);
-        
+
         // Build the response
         JSONObject response = new JSONObject();
 
@@ -96,7 +97,7 @@ public class AllResource extends BaseResource {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
-        
+
         // Marks all articles of this user as read
         UserArticleDao userArticleDao = new UserArticleDao();
         userArticleDao.markAsRead(new UserArticleCriteria()
