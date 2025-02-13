@@ -117,27 +117,108 @@ Multiple circular dependencies:
 - Security: Vulnerable to state manipulation
 
 ### 4. Insufficient Modularization
+
 **Location:**
 - `com.sismics.reader.core.dao.jpa.dto.UserArticleDto`
 - `com.sismics.reader.core.dao.jpa.dto.ArticleDto`
 - `com.sismics.reader.core.dao.jpa.dto.FeedSubscriptionDto`
 
 **Problem:**
-- Mixed responsibilities in DTOs
-- Tight coupling between concerns
-- Code duplication across DTOs
+- **Mixed Responsibilities:** DTOs contained fields for multiple domain concerns (e.g., article data mixed with comment and enclosure details).
+- **Tight Coupling:** Changes in one concern (such as comments) required modifications in several DTOs, increasing the risk of errors.
+- **Code Duplication:** Similar fields (like `commentCount`, `enclosureType`, etc.) were repeated across different DTOs, making the code hard to maintain and extend.
 
 **Solution:**
-1. Split DTOs by domain concept
-2. Create composite DTOs
-3. Implement Builder pattern
-4. Update mappers and service layer
+1. **Split DTOs by Domain Concept:**  
+   Create new domain-specific DTOs such as:
+   - `CommentDto`
+   - `EnclosureDto`
+   - `CategoryDto`
+   - `FeedDto`
+2. **Refactor Existing DTOs:**  
+   Update classes like `ArticleDto` and `FeedSubscriptionDto` to delegate responsibilities to these new DTOs.  
+   **Example:**  
+   - **Old Approach:**  
+     ```java
+     public class ArticleDto {
+         private String commentUrl;
+         private Integer commentCount;
+         private String enclosureUrl;
+         // Other fields...
+     }
+     ```
+   - **New Approach:**  
+     ```java
+     public class ArticleDto {
+         private CommentDto comment;
+         private EnclosureDto enclosure;
+         // Other fields...
+     }
+     ```
+3. **Update Mappers:**  
+   Refactor mappers (e.g., `ArticleMapper`) to map data into nested DTOs.  
+   **Example:**  
+   - **Old Mapping:**  
+     ```java
+     dto.setCommentUrl(stringValue(o[i++]));
+     dto.setCommentCount(intValue(o[i++]));
+     ```
+   - **New Mapping:**  
+     ```java
+     CommentDto commentDto = new CommentDto();
+     commentDto.setUrl(stringValue(o[i++]));
+     commentDto.setCount(intValue(o[i++]));
+     dto.setComment(commentDto);
+     ```
+4. **Revise Service and REST Layers:**  
+   Update assemblers and service methods to access data via the nested DTOs.  
+   **Example:**  
+   - **Old:**  
+     ```java
+     userArticleJson.put("comment_url", userArticle.getArticle().getCommentUrl());
+     ```
+   - **New:**  
+     ```java
+     userArticleJson.put("comment_url", userArticle.getArticle().getComment().getUrl());
+     ```
 
 **Quality Impact:**
-- Maintainability: Mixed concerns make changes difficult
-- Reusability: DTOs too specific to reuse
-- Testability: Complex objects hard to test
-- Flexibility: Changes affect multiple components
+- **Maintainability:**  
+  Isolating concerns means that modifications in one domain (e.g., comments) only affect the corresponding DTO, reducing the risk of unintended side effects.
+- **Reusability:**  
+  Domain-specific DTOs are more generic and can be reused across various parts of the application without duplicating code.
+- **Testability:**  
+  Smaller, focused DTOs simplify unit testing, as tests can target individual components rather than large, composite objects.
+- **Flexibility:**  
+  The modular structure makes it easier to add new features or modify existing ones without affecting unrelated components.
+
+---
+
+#### Detailed Comparison: Old vs. Refactored Code
+
+| **Aspect**         | **Old Code**                                                                                                           | **New Code**                                                                                                                                                   | **Why It’s Better**                                                                                                                                                                   |
+|--------------------|------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Responsibilities** | Mixed article data with comment/enclosure fields (e.g., `commentUrl`, `enclosureUrl`).                                  | Split into domain-specific DTOs: `ArticleDto` now uses `CommentDto`, `EnclosureDto`, etc.                                                                    | Each DTO now has a single responsibility, reducing complexity.                                                                                                                     |
+| **Coupling**          | Tight coupling: Changes to comment/enclosure details required modifying multiple DTOs.                                | Loose coupling: `ArticleDto` depends on abstracted DTOs like `CommentDto`, `EnclosureDto`.                                                                   | Decouples concerns—changes in one area (like comments) only affect its corresponding DTO.                                                                                            |
+| **Code Duplication**  | Fields like `commentCount` and `enclosureType` were duplicated across several DTOs.                                    | Reusable DTOs (e.g., `CommentDto` is used wherever comment data is needed).                                                                                    | Eliminates duplication, thereby improving consistency and reducing maintenance effort.                                                                                               |
+| **Data Structure**    | Flat structure with all properties directly embedded in a single DTO.                                                | Hierarchical structure with nested DTOs (e.g., `article.getComment().getUrl()`).                                                                              | More accurately models real-world relationships and improves readability.                                                                                                            |
+| **Maintainability**   | Modifications to comment logic required changes in multiple DTOs and mappers.                                           | Changes are localized: updating `CommentDto` automatically propagates to all DTOs that utilize it.                                                              | Simplifies maintenance and minimizes the risk of errors.                                                                                                                             |
+| **Testability**       | Testing involved constructing large objects with numerous unrelated fields.                                          | Smaller, focused DTOs allow for targeted unit tests in isolation.                                                                                             | Enhances test coverage by allowing easier and more precise unit tests.                                                                                                                 |
+| **Flexibility**       | Adding or removing fields (like `isFolded` in categories) required changes across multiple layers.                   | New features can be added by extending only the relevant DTO (e.g., `CategoryDto` now includes `isFolded`), without impacting other components.             | Increases adaptability to new requirements, as changes are isolated within specific domain areas.                                                                                      |
+
+---
+
+**LLM Suggestions:**
+
+Prompt:
+`
+I will provide code, type of design smell. Justify the reason why that happens, also indicate where exactly in the code it happens. Explain the quality attributes affected by that smell, and also indicate the steps to refactor it.
+`
+
+
+#### Conclusion
+
+By refactoring the DTOs to enforce proper modularization, we directly address the issues of mixed responsibilities, tight coupling, and code duplication. This change aligns with the Single Responsibility Principle, leading to a cleaner, more maintainable, and testable codebase. Future changes—such as updating comment details or extending feed information—will be isolated to their respective DTOs, thereby reducing the risk of unintended side effects and streamlining the overall development process.
 
 ### 5. Unutilized Abstraction
 **Location:** `com.sismics.reader.rest.resource.*`
