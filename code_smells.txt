@@ -1,287 +1,103 @@
 Analysis Summary:
-Total Java files: 139
-Files analyzed: 9
-Files skipped or errored: 130
+Total Java files: 30
+Files analyzed: 5
+Files skipped or errored: 25
 
 Detailed Analysis:
-Pair 31/61:
+Pair 1/11:
 Files:
-- ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/dto/FeedSubscriptionDto.java
-- ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/dto/JobDto.java
+- ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/AllResource.java
+- ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/AppResource.java
 Smells Found:
 [
   {
-    "type": "Anemic Domain Model",
-    "category": "code",
-    "description": "The DTOs are simple data containers with getters and setters, without any logic.",
-    "files": [
-      "both"
-    ],
-    "fix": "Add some business logic to the DTOs."
-  },
-  {
-    "type": "Data Clumps",
-    "category": "code",
-    "description": "The `FeedSubscriptionDto` and `FeedCategoryDto` classes have several fields related to the same concept (feed subscription and feed category, respectively).",
-    "files": [
-      "file2"
-    ],
-    "fix": "Create separate classes to represent the feed subscription and feed category concepts."
-  },
-  {
-    "type": "Shotgun Surgery",
+    "type": "God Class",
     "category": "design",
-    "description": "Any change to the data model of the feed subscription or feed category requires modifying both the DTOs and the corresponding entities.",
-    "files": [
-      "both"
-    ],
-    "fix": "Use a mapping framework to generate the DTOs from the entities."
-  }
-]
-
-Pair 58/61:
-Files:
-- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/Job.java
-- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/JobEvent.java
-Smells Found:
-[
-  {
-    "type": "DuplicatedCode",
-    "category": "code",
-    "description": "The getter and setter methods are duplicated in both of files.",
-    "files": [
-      "file1",
-      "file2"
-    ],
-    "fix": "Use Lombok or a code generator to automatically generate these methods."
-  },
-  {
-    "type": "NestedIf",
-    "category": "code",
-    "description": "In both files the conditional statements are nested multiple times, which makes it difficult to read and understand the code.",
-    "files": [
-      "file1",
-      "file2"
-    ],
-    "fix": "Break down the conditional statements into simpler ones to improve the readability of the code."
-  },
-  {
-    "type": "ExcessiveComplexity",
-    "category": "design",
-    "description": "The classes are large and complex, with many methods and a lot of logic.",
-    "files": [
-      "file1",
-      "file2"
-    ],
-    "fix": "Split the classes into smaller, more manageable ones."
-  },
-  {
-    "type": "GodClass",
-    "category": "design",
-    "description": "The classes do too much and could be split into several smaller classes.",
-    "files": [
-      "file1",
-      "file2"
-    ],
-    "fix": "Split the classes into smaller, more focused ones."
-  },
-  {
-    "type": "LongMethod",
-    "category": "code",
-    "description": "There are methods that are too long and should be split into smaller ones.",
-    "files": [
-      "file1",
-      "file2"
-    ],
-    "fix": "Split the methods into smaller, more focused ones."
-  },
-  {
-    "type": "LackOfCohesion",
-    "category": "design",
-    "description": "The classes do not have a clear focus and contain unrelated functionality.",
-    "files": [
-      "file1",
-      "file2"
-    ],
-    "fix": "Split the classes into smaller, more focused ones."
-  },
-  {
-    "type": "UnnecessaryNullChecks",
-    "category": "code",
-    "description": "There are unnecessary null checks in the code.",
-    "files": [
-      "file1",
-      "file2"
-    ],
-    "fix": "Remove the unnecessary null checks."
-  }
-]
-
-Single File 2/17:
-File: ./repository/reader-core/src/main/java/com/sismics/util/log4j/MemoryAppender.java
-Smells Found:
-[
-  {
-    "type": "EmptyCatchBlock",
-    "category": "code",
-    "description": "The catch block is empty and does not handle any exceptions that may occur within the try block.",
+    "description": "`AllResource` class has high number of methods and responsibilities.",
     "files": [
       "file1"
     ],
-    "fix": "Add code to the catch block to handle any exceptions that may occur in the try block."
+    "fix": "Split the class into smaller, more manageable classes."
   },
   {
-    "type": "MagicNumber",
+    "type": "Feature Envy",
     "category": "code",
-    "description": "The value 1000 is a magic number and its meaning is not clear from the code.",
+    "description": "Method `get` in `AllResource` class uses more code from `UserArticleDao` than `ArticleAssembler` class.",
     "files": [
       "file1"
     ],
-    "fix": "Rename the variable to a more meaningful name and add a comment to explain its purpose."
+    "fix": "Move logic to the `UserArticleDao` class."
   },
   {
-    "type": "GodClass",
-    "category": "design",
-    "description": "The class has too many responsibilities and should be split into multiple smaller classes.",
+    "type": "Long Method",
+    "category": "code",
+    "description": "Method `get` in `AllResource` class contains more than 50 lines of code. ",
     "files": [
       "file1"
     ],
-    "fix": "Break down the class into smaller, more manageable classes."
-  },
-  {
-    "type": "LongMethod",
-    "category": "code",
-    "description": "The method is too long and should be split into multiple smaller methods.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Extract the code into smaller methods with clear and concise names."
-  },
-  {
-    "type": "NestedTryStatement",
-    "category": "code",
-    "description": "The code contains nested try-catch statements, which can make it difficult to follow the flow of execution and handle exceptions properly.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Refactor the code to avoid nested try-catch statements and use more structured error handling mechanisms."
-  },
-  {
-    "type": "SwitchStatementWithoutDefault",
-    "category": "code",
-    "description": "Switch statement is missing the default case and switching over any non-covered value can lead to unexpected behavior.",
-    "files": [
-      "file1"
-    ],
-    "fix": "In switch statements, the default branch should be used to handle any input that is not explicitly covered by the case labels to ensure that the program behaves as intended."
-  },
-  {
-    "type": "UncommentedCode",
-    "category": "code",
-    "description": "The code lacks sufficient comments, making it difficult to understand its purpose and functionality.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Add meaningful comments throughout the code to document its logic and functionality."
-  },
-  {
-    "type": "UseOfSystemOutPrintln",
-    "category": "code",
-    "description": "The Java program uses System.out.println() for logging, which is not recommended.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Use a proper logging framework like log4j or SLF4J for logging purposes."
-  }
-]
-
-Single File 8/17:
-File: ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/UserDao.java
-Smells Found:
-[
-  {
-    "type": "long_method",
-    "category": "code",
-    "description": "Method UserDao.authenticate has more than 50 lines of code.",
-    "files": [
-      "UserDao.java"
-    ],
-    "fix": "Extract the responsibility of the method into smaller methods."
-  },
-  {
-    "type": "nested_block",
-    "category": "code",
-    "description": "Block of code in UserDao.authenticate has more than 3 nested blocks.",
-    "files": [
-      "UserDao.java"
-    ],
-    "fix": "Extract the responsibility of the block into smaller blocks."
-  },
-  {
-    "type": "long_class",
-    "category": "design",
-    "description": "Class UserDao has more than 100 lines of code.",
-    "files": [
-      "UserDao.java"
-    ],
-    "fix": "Extract the responsibility of the class into smaller classes."
-  }
-]
-
-Single File 16/17:
-File: ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/UserArticle.java
-Smells Found:
-[
-  {
-    "type": "Long Parameter List",
-    "category": "code",
-    "description": "The `toString` method has 4 parameters.",
-    "files": [
-      "UserArticle.java"
-    ],
-    "fix": "Reduce the number of parameters by using a builder pattern or by extracting some of the parameters into separate methods."
+    "fix": "Extract the logic into helper methods."
   },
   {
     "type": "God Class",
     "category": "design",
-    "description": "The `UserArticle` class has 9 methods and 5 instance variables.",
+    "description": "`AppResource` class has high number of methods and responsibilities.",
     "files": [
-      "UserArticle.java"
+      "file2"
     ],
-    "fix": "Break the class up into smaller, more manageable chunks."
+    "fix": "Split the class into smaller, more manageable classes."
   },
   {
-    "type": "Data Clumps",
-    "category": "design",
-    "description": "The `UserArticle` class has a number of related instance variables, such as `id`, `userId`, and `articleId`. These instance variables could be grouped together into a separate object, such as a `UserArticleDetails` object.",
+    "type": "Feature Envy",
+    "category": "code",
+    "description": "Method `version` in `AppResource` class uses more code from `ConfigUtil` than `ResourceBundle` class.",
     "files": [
-      "UserArticle.java"
+      "file2"
     ],
-    "fix": "Create a separate object to hold the related instance variables."
+    "fix": "Move logic to the `ConfigUtil` class."
+  },
+  {
+    "type": "Long Method",
+    "category": "code",
+    "description": "Method `version` in `AppResource` class contains more than 50 lines of code. ",
+    "files": [
+      "file2"
+    ],
+    "fix": "Extract the logic into helper methods."
   }
 ]
 
-Single File 17/17:
-File: ./repository/reader-core/src/main/java/com/sismics/reader/core/model/context/AppContext.java
+Pair 8/11:
+Files:
+- ./repository/reader-web-common/src/main/java/com/sismics/util/filter/SecurityFilter.java
+- ./repository/reader-web-common/src/main/java/com/sismics/util/filter/TokenBasedSecurityFilter.java
 Smells Found:
 [
   {
-    "type": "Thread.sleep is evil",
-    "category": "code",
-    "description": "Usage of `sleep` can lead to unresponsive application.",
+    "type": "God Class",
+    "category": "design",
+    "description": "The `SecurityFilter` class does too much. It is responsible for user authentication, injecting users into requests, and handling expired tokens.",
     "files": [
-      "both"
+      "File 1"
     ],
-    "fix": "Use a `CountDownLatch` or `Semaphore` instead."
+    "fix": "Split the `SecurityFilter` class into smaller, more focused classes. For example, create a separate class for user authentication, a separate class for injecting users into requests, and a separate class for handling expired tokens."
   },
   {
-    "type": "Avoid thread synchronization in the constructor",
+    "type": "Long Method",
     "category": "code",
-    "description": "Synchronization in the constructor, can lead to dead-locks and cascading failures.",
+    "description": "The `authenticate` method in the `TokenBasedSecurityFilter` class is too long. It contains over 50 lines of code.",
     "files": [
-      "both"
+      "File 2"
     ],
-    "fix": "Extract the synchronization logic to a newly created method."
+    "fix": "Break the `authenticate` method into smaller, more manageable methods."
+  },
+  {
+    "type": "Duplicate Code",
+    "category": "code",
+    "description": "The `injectAuthenticatedUser` and `injectAnonymousUser` methods in the `SecurityFilter` class are very similar. They both inject a user into the request attributes. The only difference is that the `injectAuthenticatedUser` method adds some additional information to the request attributes.",
+    "files": [
+      "File 1"
+    ],
+    "fix": "Extract the common code between the `injectAuthenticatedUser` and `injectAnonymousUser` methods into a separate method."
   }
 ]
 
