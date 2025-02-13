@@ -1,84 +1,57 @@
 Analysis Summary:
 Total Java files: 30
-Files analyzed: 3
-Files skipped or errored: 27
+Files analyzed: 1
+Files skipped or errored: 29
 
 Detailed Analysis:
-Pair 8/11:
-Files:
-- ./repository/reader-web-common/src/main/java/com/sismics/util/filter/SecurityFilter.java
-- ./repository/reader-web-common/src/main/java/com/sismics/util/filter/TokenBasedSecurityFilter.java
-Smells Found:
-[
-  {
-    "type": "Cyclic dependency",
-    "category": "design",
-    "description": "The two files depend on each other.",
-    "files": [
-      "file1",
-      "file2"
-    ],
-    "fix": "Extract common functionality into a separate module or library."
-  },
-  {
-    "type": "God class",
-    "category": "code",
-    "description": "The SecurityFilter class has too many responsibilities.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Break the class into smaller, more focused classes."
-  },
-  {
-    "type": "Long method",
-    "category": "code",
-    "description": "The doFilter method is too long.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Extract the parts of the method that are not directly related to the core functionality into separate methods."
-  },
-  {
-    "type": "Duplicated code",
-    "category": "code",
-    "description": "The injectAuthenticatedUser and injectAnonymousUser methods are very similar.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Extract the common functionality into a separate method."
-  }
-]
-
 Single File 4/8:
 File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/UserResource.java
 Smells Found:
 [
   {
-    "type": "Long Parameter List",
-    "category": "code",
-    "description": "The constructor of the `User` class has 14 parameters, which is considered excessive and difficult to maintain.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Use the builder pattern to create instances of the `User` class, or split the constructor into multiple methods with smaller parameter lists."
-  },
-  {
-    "type": "Lazy Initialization",
-    "category": "code",
-    "description": "The `authenticationTokens` field is initialized to a new `HashSet` instance in the constructor, but this initialization is unnecessary and can be removed.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Remove the initialization of the `authenticationTokens` field in the constructor."
-  },
-  {
-    "type": "Complex Data Structure",
+    "type": "Long Class",
     "category": "design",
-    "description": "The `User` class has a complex data structure, with multiple fields and a one-to-many relationship with the `AuthenticationToken` class.",
+    "description": "The User class has 23 fields and is over 100 lines long. This makes it difficult to follow and maintain.",
     "files": [
-      "file1"
+      "User.java"
     ],
-    "fix": "Consider refactoring the `User` class to make it more cohesive and easier to maintain, perhaps by creating separate classes for different aspects of the user's data."
+    "fix": "Split the class into multiple smaller classes, each of which handles a specific aspect of the user's data or behavior."
+  },
+  {
+    "type": "Data Clumps",
+    "category": "design",
+    "description": "The User class has several groups of related fields, such as the fields related to authentication (username, password, email) and the fields related to user preferences (localeId, theme, lastLoginDate). These groups of fields would be better placed in separate classes.",
+    "files": [
+      "User.java"
+    ],
+    "fix": "Extract the related fields into separate classes, such as an AuthenticationInfo class and a UserPreferences class."
+  },
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "The User class does too much. It is responsible for managing authentication, user preferences, and user data. This makes it difficult to understand and maintain.",
+    "files": [
+      "User.java"
+    ],
+    "fix": "Split the User class into multiple smaller classes, each of which handles a specific aspect of the user's data or behavior."
+  },
+  {
+    "type": "Lazy Evaluation",
+    "category": "code",
+    "description": "The User class has several fields that are initialized to default values (null, 0, false). This can lead to unexpected behavior, especially if the fields are used in calculations or comparisons.",
+    "files": [
+      "User.java"
+    ],
+    "fix": "Initialize the fields to non-default values, or provide setter methods that allow the caller to specify the initial value."
+  },
+  {
+    "type": "Mutable Objects",
+    "category": "code",
+    "description": "The User class has several fields that are mutable (e.g., the authenticationTokens field). This can lead to race conditions and other concurrency issues.",
+    "files": [
+      "User.java"
+    ],
+    "fix": "Make the fields immutable, or provide synchronized access to them."
   }
 ]
 

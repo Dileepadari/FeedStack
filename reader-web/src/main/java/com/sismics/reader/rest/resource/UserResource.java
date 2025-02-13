@@ -49,119 +49,8 @@ public class User implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     private Set<AuthenticationToken> authenticationTokens = new HashSet<>();
 
-    public User() {
-    }
+    // Getters and Setters (omitted)
 
-    private User(String id, String username, String password, String email, String roleId, String localeId, Date createDate, Date modifiedDate, boolean firstConnection, String theme, Date lastLoginDate, Set<AuthenticationToken> authenticationTokens) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.roleId = roleId;
-        this.localeId = localeId;
-        this.createDate = createDate;
-        this.modifiedDate = modifiedDate;
-        this.firstConnection = firstConnection;
-        this.theme = theme;
-        this.lastLoginDate = lastLoginDate;
-        this.authenticationTokens = authenticationTokens;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
-    }
-
-    public String getLocaleId() {
-        return localeId;
-    }
-
-    public void setLocaleId(String localeId) {
-        this.localeId = localeId;
-    }
-
-    public Date getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
-
-    public Date getModifiedDate() {
-        return modifiedDate;
-    }
-
-    public void setModifiedDate(Date modifiedDate) {
-        this.modifiedDate = modifiedDate;
-    }
-
-    public boolean isFirstConnection() {
-        return firstConnection;
-    }
-
-    public void setFirstConnection(boolean firstConnection) {
-        this.firstConnection = firstConnection;
-    }
-
-    public String getTheme() {
-        return theme;
-    }
-
-    public void setTheme(String theme) {
-        this.theme = theme;
-    }
-
-    public Date getLastLoginDate() {
-        return lastLoginDate;
-    }
-
-    public void setLastLoginDate(Date lastLoginDate) {
-        this.lastLoginDate = lastLoginDate;
-    }
-
-    public Set<AuthenticationToken> getAuthenticationTokens() {
-        return authenticationTokens;
-    }
-
-    public void setAuthenticationTokens(Set<AuthenticationToken> authenticationTokens) {
-        this.authenticationTokens = authenticationTokens;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -249,3 +138,59 @@ public class User implements Serializable {
 
         public Builder password(String password) {
             this.password = password;
+        ```
+
+====FILE_DELIMITER====
+
+```java
+        public Builder email(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public Builder roleId(String roleId) {
+            this.roleId = roleId;
+            return this;
+        }
+
+        public Builder localeId(String localeId) {
+            this.localeId = localeId;
+            return this;
+        }
+
+        public Builder createDate(Date createDate) {
+            this.createDate = createDate;
+            return this;
+        }
+
+        public Builder modifiedDate(Date modifiedDate) {
+            this.modifiedDate = modifiedDate;
+            return this;
+        }
+
+        public Builder firstConnection(boolean firstConnection) {
+            this.firstConnection = firstConnection;
+            return this;
+        }
+
+        public Builder theme(String theme) {
+            this.theme = theme;
+            return this;
+        }
+
+        public Builder lastLoginDate(Date lastLoginDate) {
+            this.lastLoginDate = lastLoginDate;
+            return this;
+        }
+
+        public Builder authenticationTokens(Set<AuthenticationToken> authenticationTokens) {
+            this.authenticationTokens = authenticationTokens;
+            return this;
+        }
+
+        public User build() {
+            return new User(id, username, password, email, roleId, localeId, createDate, modifiedDate, firstConnection, theme, lastLoginDate, authenticationTokens);
+        }
+    }
+}
+```
