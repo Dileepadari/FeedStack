@@ -9,52 +9,22 @@ File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/Use
 Smells Found:
 [
   {
-    "type": "Data Class",
-    "category": "design",
-    "description": "`User` and `AuthenticationToken` are simple data classes with no behaviors.",
-    "files": [
-      "both"
-    ],
-    "fix": "Consider making them immutable and using a builder pattern for creating instances."
-  },
-  {
-    "type": "Lazy Initialization",
+    "type": "LongParameterList",
     "category": "code",
-    "description": "The `authenticationTokens` field in `User` is lazily initialized, which can lead to unexpected behavior.",
+    "description": "The constructor User has 8 parameters.",
     "files": [
-      "User.java"
+      "file1"
     ],
-    "fix": "Consider making the field eager-initialized."
+    "fix": "Extract a class to encapsulate some of the parameters."
   },
   {
-    "type": "Magic Numbers",
+    "type": "LongMethod",
     "category": "code",
-    "description": "The `@Column(length = 50)` and `@Column(length = 256)` annotations use magic numbers for the column lengths.",
+    "description": "The method toString has more than 15 lines.",
     "files": [
-      "User.java",
-      "AuthenticationToken.java"
+      "file1"
     ],
-    "fix": "Replace the magic numbers with meaningful constants."
-  },
-  {
-    "type": "Long Method",
-    "category": "code",
-    "description": "The `equals` and `hashCode` methods in both `User` and `AuthenticationToken` are too long and complex.",
-    "files": [
-      "User.java",
-      "AuthenticationToken.java"
-    ],
-    "fix": "Extract the common code into helper methods or use a library for generating equals and hashCode methods."
-  },
-  {
-    "type": "Nested Builder Class",
-    "category": "design",
-    "description": "The `Builder` classes in both `User` and `AuthenticationToken` are nested within the main class, which makes the code harder to read and maintain.",
-    "files": [
-      "User.java",
-      "AuthenticationToken.java"
-    ],
-    "fix": "Move the `Builder` classes to separate files."
+    "fix": "Extract some of the logic from the method into smaller helper methods."
   }
 ]
 

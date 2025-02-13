@@ -46,13 +46,17 @@ public class User implements Serializable {
     @Column(name = "first_connection", nullable = false)
     private boolean firstConnection;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    @OneToMany(mappedBy = "user")
     private Set<AuthenticationToken> authenticationTokens = new HashSet<>();
 
     public User() {
     }
 
-    private User(String id, String username, String password, String email, Date createDate, Date modifiedDate, boolean firstConnection, Set<AuthenticationToken> authenticationTokens) {
+    public User(String id, String username, String password, String email, Date createDate, Date modifiedDate, boolean firstConnection, Set<AuthenticationToken> authenticationTokens) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -158,17 +162,12 @@ public class User implements Serializable {
         return "User{" +
                 "id='" + id + '\'' +
                 ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
                 ", createDate=" + createDate +
                 ", modifiedDate=" + modifiedDate +
                 ", firstConnection=" + firstConnection +
                 ", authenticationTokens=" + authenticationTokens +
                 '}';
-    }
-
-    public static Builder builder() {
-        return new Builder();
     }
 
     public static class Builder {
@@ -231,8 +230,11 @@ public class User implements Serializable {
 ```java
 package com.sismics.reader.core.model.jpa;
 
+import com.sismics.reader.core.model.UserAuthenticationToken;
+
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -246,7 +248,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "authentication_tokens")
-public class AuthenticationToken implements Serializable {
+public class AuthenticationToken implements Serializable, UserAuthenticationToken {
 
     private static final int MAX_TOKEN_LENGTH = 256;
 
@@ -268,11 +270,8 @@ public class AuthenticationToken implements Serializable {
     public AuthenticationToken() {
     }
 
-    private AuthenticationToken(String id, String token, Date createDate, User user) {
+    public AuthenticationToken(String id, String token, Date createDate, User user) {
         this.id = id;
         this.token = token;
         this.createDate = createDate;
-        this.user = user;
-    }
-
-    public String getId
+        this
