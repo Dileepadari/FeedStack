@@ -1,5 +1,8 @@
 package com.sismics.reader.core.dao.jpa.mapper;
 
+import com.sismics.reader.core.dao.jpa.dto.CommentDto;
+import com.sismics.reader.core.dao.jpa.dto.EnclosureDto;
+import com.sismics.reader.core.dao.jpa.dto.ArticleDto;
 import com.sismics.reader.core.dao.jpa.dto.UserArticleDto;
 import com.sismics.util.jpa.ResultMapper;
 
@@ -25,17 +28,25 @@ public class UserArticleMapper extends ResultMapper<UserArticleDto> {
         dto.setFeedTitle(stringValue(o[i++]));
         dto.setFeedSubscriptionId(stringValue(o[i++]));
         dto.setFeedSubscriptionTitle(stringValue(o[i++]));
-        dto.setArticleId(stringValue(o[i++]));
-        dto.setArticleUrl(stringValue(o[i++]));
-        dto.setArticleGuid(stringValue(o[i++]));
-        dto.setArticleTitle(stringValue(o[i++]));
-        dto.setArticleCreator(stringValue(o[i++]));
-        dto.setArticleDescription(stringValue(o[i++]));
-        dto.setArticleCommentUrl(stringValue(o[i++]));
-        dto.setArticleCommentCount(intValue(o[i++]));
-        dto.setArticleEnclosureUrl(stringValue(o[i++]));
-        dto.setArticleEnclosureLength(intValue(o[i++]));
-        dto.setArticleEnclosureType(stringValue(o[i++]));
+        ArticleDto article = new ArticleDto();
+        article.setId(stringValue(o[i++]));
+        article.setUrl(stringValue(o[i++]));
+        article.setGuid(stringValue(o[i++]));
+        article.setTitle(stringValue(o[i++]));
+        article.setCreator(stringValue(o[i++]));
+        article.setDescription(stringValue(o[i++]));
+        CommentDto comment = new CommentDto();
+        comment.setUrl(stringValue(o[i++]));
+        comment.setCount(intValue(o[i++]));
+        article.setComment(comment);
+        EnclosureDto enclosure = new EnclosureDto();
+        enclosure.setUrl(stringValue(o[i++]));
+        enclosure.setCount(intValue(o[i++]));
+        enclosure.setType(stringValue(o[i++]));
+        article.setEnclosure(enclosure);
+        article.setPublicationDate(readTimestamp);
+        article.setCreateDate(readTimestamp);
+        dto.setArticle(article);
         dto.setArticlePublicationTimestamp(((Timestamp) o[i]).getTime());
 
         return dto;

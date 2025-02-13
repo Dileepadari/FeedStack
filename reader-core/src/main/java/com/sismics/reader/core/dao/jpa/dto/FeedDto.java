@@ -3,18 +3,33 @@ package com.sismics.reader.core.dao.jpa.dto;
 /**
  * Feed DTO.
  *
- * @author jtremeaux 
+ * @author jtremeaux
  */
 public class FeedDto {
     /**
      * Feed ID.
      */
     private String id;
-    
+
     /**
      * Feed RSS URL.
      */
     private String rssUrl;
+
+    /**
+     * Feed title.
+     */
+    private String title;
+
+    /**
+     * Feed URL.
+     */
+    private String url;
+
+    /**
+     * Feed description.
+     */
+    private String description;
 
     /**
      * Getter of id.
@@ -50,5 +65,59 @@ public class FeedDto {
      */
     public void setRssUrl(String rssUrl) {
         this.rssUrl = rssUrl;
+    }
+
+    /**
+     * Getter of title.
+     *
+     * @return title
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Setter of title.
+     *
+     * @param title title
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * Getter of url.
+     *
+     * @return url
+     */
+    public String getUrl() {
+        return url;
+    }
+
+    /**
+     * Setter of url.
+     *
+     * @param url url
+     */
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    /**
+     * Getter of description.
+     *
+     * @return description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Setter of description.
+     *
+     * @param description description
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

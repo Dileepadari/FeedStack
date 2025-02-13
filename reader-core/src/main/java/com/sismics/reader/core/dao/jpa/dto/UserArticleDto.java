@@ -1,17 +1,18 @@
 package com.sismics.reader.core.dao.jpa.dto;
 
+import java.util.Date;
 
 /**
  * User article DTO.
  *
- * @author jtremeaux 
+ * @author jtremeaux
  */
 public class UserArticleDto {
     /**
      * User article ID.
      */
     private String id;
-    
+
     /**
      * Date the user read this article.
      */
@@ -21,7 +22,7 @@ public class UserArticleDto {
      * Date the user star this article.
      */
     private Long starTimestamp;
-    
+
     /**
      * Feed title.
      */
@@ -31,66 +32,16 @@ public class UserArticleDto {
      * Feed subscription ID.
      */
     private String feedSubscriptionId;
-    
+
     /**
      * Feed subscription title.
      */
     private String feedSubscriptionTitle;
-    
-    /**
-     * Article ID.
-     */
-    private String articleId;
-    
-    /**
-     * Article URL.
-     */
-    private String articleUrl;
 
     /**
-     * Article GUID.
+     * Article.
      */
-    private String articleGuid;
-
-    /**
-     * Article title.
-     */
-    private String articleTitle;
-
-    /**
-     * Article creator.
-     */
-    private String articleCreator;
-
-    /**
-     * Article description.
-     */
-    private String articleDescription;
-
-    /**
-     * Comment URL.
-     */
-    private String articleCommentUrl;
-
-    /**
-     * Comment count.
-     */
-    private Integer articleCommentCount;
-
-   /**
-    * Enclosure URL.
-    */
-   private String articleEnclosureUrl;
-
-   /**
-    * Enclosure length in bytes.
-    */
-   private Integer articleEnclosureLength;
-
-   /**
-    * Enclosure MIME type.
-    */
-   private String articleEnclosureType;
+    private ArticleDto article;
 
     /**
      * Publication date.
@@ -132,7 +83,7 @@ public class UserArticleDto {
     public void setReadTimestamp(Long readTimestamp) {
         this.readTimestamp = readTimestamp;
     }
-    
+
     /**
      * Getter of starTimestamp.
      *
@@ -206,201 +157,21 @@ public class UserArticleDto {
     }
 
     /**
-     * Getter of articleId.
+     * Getter of article.
      *
-     * @return articleId
+     * @return article
      */
-    public String getArticleId() {
-        return articleId;
+    public ArticleDto getArticle() {
+        return article;
     }
 
     /**
-     * Setter of articleId.
+     * Setter of article.
      *
-     * @param articleId articleId
+     * @param article article
      */
-    public void setArticleId(String articleId) {
-        this.articleId = articleId;
-    }
-
-    /**
-     * Getter of articleUrl.
-     *
-     * @return articleUrl
-     */
-    public String getArticleUrl() {
-        return articleUrl;
-    }
-
-    /**
-     * Setter of articleUrl.
-     *
-     * @param articleUrl articleUrl
-     */
-    public void setArticleUrl(String articleUrl) {
-        this.articleUrl = articleUrl;
-    }
-
-    /**
-     * Getter of articleGuid.
-     *
-     * @return articleGuid
-     */
-    public String getArticleGuid() {
-        return articleGuid;
-    }
-
-    /**
-     * Setter of articleGuid.
-     *
-     * @param articleGuid articleGuid
-     */
-    public void setArticleGuid(String articleGuid) {
-        this.articleGuid = articleGuid;
-    }
-
-    /**
-     * Getter of articleTitle.
-     *
-     * @return articleTitle
-     */
-    public String getArticleTitle() {
-        return articleTitle;
-    }
-
-    /**
-     * Setter of articleTitle.
-     *
-     * @param articleTitle articleTitle
-     */
-    public void setArticleTitle(String articleTitle) {
-        this.articleTitle = articleTitle;
-    }
-
-    /**
-     * Getter of articleCreator.
-     *
-     * @return articleCreator
-     */
-    public String getArticleCreator() {
-        return articleCreator;
-    }
-
-    /**
-     * Setter of articleCreator.
-     *
-     * @param articleCreator articleCreator
-     */
-    public void setArticleCreator(String articleCreator) {
-        this.articleCreator = articleCreator;
-    }
-
-    /**
-     * Getter of articleDescription.
-     *
-     * @return articleDescription
-     */
-    public String getArticleDescription() {
-        return articleDescription;
-    }
-
-    /**
-     * Setter of articleDescription.
-     *
-     * @param articleDescription articleDescription
-     */
-    public void setArticleDescription(String articleDescription) {
-        this.articleDescription = articleDescription;
-    }
-
-    /**
-     * Getter of articleCommentUrl.
-     *
-     * @return articleCommentUrl
-     */
-    public String getArticleCommentUrl() {
-        return articleCommentUrl;
-    }
-
-    /**
-     * Setter of articleCommentUrl.
-     *
-     * @param articleCommentUrl articleCommentUrl
-     */
-    public void setArticleCommentUrl(String articleCommentUrl) {
-        this.articleCommentUrl = articleCommentUrl;
-    }
-
-    /**
-     * Getter of articleCommentCount.
-     *
-     * @return articleCommentCount
-     */
-    public Integer getArticleCommentCount() {
-        return articleCommentCount;
-    }
-
-    /**
-     * Setter of articleCommentCount.
-     *
-     * @param articleCommentCount articleCommentCount
-     */
-    public void setArticleCommentCount(Integer articleCommentCount) {
-        this.articleCommentCount = articleCommentCount;
-    }
-
-    /**
-     * Getter of articleEnclosureUrl.
-     *
-     * @return articleEnclosureUrl
-     */
-    public String getArticleEnclosureUrl() {
-        return articleEnclosureUrl;
-    }
-
-    /**
-     * Setter of articleEnclosureUrl.
-     *
-     * @param articleEnclosureUrl articleEnclosureUrl
-     */
-    public void setArticleEnclosureUrl(String articleEnclosureUrl) {
-        this.articleEnclosureUrl = articleEnclosureUrl;
-    }
-
-    /**
-     * Getter of articleEnclosureLength.
-     *
-     * @return articleEnclosureLength
-     */
-    public Integer getArticleEnclosureLength() {
-        return articleEnclosureLength;
-    }
-
-    /**
-     * Setter of articleEnclosureLength.
-     *
-     * @param articleEnclosureLength articleEnclosureLength
-     */
-    public void setArticleEnclosureLength(Integer articleEnclosureLength) {
-        this.articleEnclosureLength = articleEnclosureLength;
-    }
-
-    /**
-     * Getter of articleEnclosureType.
-     *
-     * @return articleEnclosureType
-     */
-    public String getArticleEnclosureType() {
-        return articleEnclosureType;
-    }
-
-    /**
-     * Setter of articleEnclosureType.
-     *
-     * @param articleEnclosureType articleEnclosureType
-     */
-    public void setArticleEnclosureType(String articleEnclosureType) {
-        this.articleEnclosureType = articleEnclosureType;
+    public void setArticle(ArticleDto article) {
+        this.article = article;
     }
 
     /**

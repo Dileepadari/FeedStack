@@ -19,7 +19,7 @@ import com.sismics.reader.core.event.ArticleCreatedAsyncEvent;
 import com.sismics.reader.core.event.ArticleDeletedAsyncEvent;
 import com.sismics.reader.core.event.ArticleUpdatedAsyncEvent;
 import com.sismics.reader.core.event.FaviconUpdateRequestedEvent;
-import com.sismics.reader.core.mediator.Mediator;
+import com.sismics.reader.core.model.context.AppContext;
 import com.sismics.reader.core.model.jpa.*;
 import com.sismics.reader.core.util.EntityManagerUtil;
 import com.sismics.reader.core.util.TransactionUtil;
@@ -50,20 +50,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * Feed service.
  *
- * @author jtremeaux 
+ * @author jtremeaux
  */
 public class FeedService extends AbstractScheduledService {
     /**
      * Logger.
      */
     private static final Logger log = LoggerFactory.getLogger(FeedService.class);
-
-    private Mediator mediator;
-
-    public FeedService(Mediator mediator) {
-        this.mediator = mediator;
-    }
-
 
     @Override
     protected void startUp() throws Exception {
@@ -75,20 +68,22 @@ public class FeedService extends AbstractScheduledService {
 
     @Override
     protected void runOneIteration() {
-        // Don't let Guava manage our exceptions, or they will be swallowed and the service will silently stop
+        // Don't let Guava manage our exceptions, or they will be swallowed and the
+        // service will silently stop
         try {
             TransactionUtil.handle(() -> synchronizeAllFeeds());
         } catch (Throwable t) {
             log.error("Error synchronizing feeds", t);
         }
     }
-    
+
     @Override
     protected Scheduler scheduler() {
-        // TODO Implement a better schedule strategy... Use update period specified in the feed if avail & use last update date from feed to backoff
+        // TODO Implement a better schedule strategy... Use update period specified in
+        // the feed if avail & use last update date from feed to backoff
         return Scheduler.newFixedDelaySchedule(0, 10, TimeUnit.MINUTES);
     }
-    
+
     /**
      * Synchronize all feeds.
      */
@@ -104,7 +99,7 @@ public class FeedService extends AbstractScheduledService {
             feedSynchronization.setFeedId(feed.getId());
             feedSynchronization.setSuccess(true);
             long startTime = System.currentTimeMillis();
-            
+
             try {
                 synchronize(feed.getRssUrl());
             } catch (Exception e) {
@@ -144,7 +139,7 @@ public class FeedService extends AbstractScheduledService {
      */
     public Feed synchronize(String url) throws Exception {
         long startTime = System.currentTimeMillis();
-        
+
         // Parse the feed
         RssReader rssReader = parseFeedOrPage(url, true);
         Feed newFeed = rssReader.getFeed();
@@ -161,30 +156,34 @@ public class FeedService extends AbstractScheduledService {
                 List<UserArticleDto> userArticleDtoList = new UserArticleDao()
                         .findByCriteria(new UserArticleCriteria()
                                 .setArticleId(article.getId())
-                                .setFetchAllFeedSubscription(true) // to test: subscribe another user, u2, read u1, not u2, u1 is decremented anyway
+                                .setFetchAllFeedSubscription(true) // to test: subscribe another user, u2, read u1, not
+                                                                   // u2, u1 is decremented anyway
                                 .setUnread(true));
 
                 for (UserArticleDto userArticleDto : userArticleDtoList) {
-                    FeedSubscriptionDto feedSubscriptionDto = new FeedSubscriptionDao().findFirstByCriteria(new FeedSubscriptionCriteria()
-                            .setId(userArticleDto.getFeedSubscriptionId()));
+                    FeedSubscriptionDto feedSubscriptionDto = new FeedSubscriptionDao()
+                            .findFirstByCriteria(new FeedSubscriptionCriteria()
+                                    .setId(userArticleDto.getFeedSubscriptionId()));
                     if (feedSubscriptionDto != null) {
-                        new FeedSubscriptionDao().updateUnreadCount(feedSubscriptionDto.getId(), feedSubscriptionDto.getUnreadUserArticleCount() - 1);
+                        new FeedSubscriptionDao().updateUnreadCount(feedSubscriptionDto.getId(),
+                                feedSubscriptionDto.getUnreadUserArticleCount() - 1);
                     }
                 }
             }
 
             // Delete articles that don't exist anymore
-            for (Article article: articleToRemove) {
+            for (Article article : articleToRemove) {
                 new ArticleDao().delete(article.getId());
             }
 
             // Removed articles from index
             ArticleDeletedAsyncEvent articleDeletedAsyncEvent = new ArticleDeletedAsyncEvent();
             articleDeletedAsyncEvent.setArticleList(articleToRemove);
-            mediator.notify(this, articleDeletedAsyncEvent);
+            AppContext.getInstance().getAsyncEventBus().post(articleDeletedAsyncEvent);
         }
 
-        // Create the feed if necessary (not created and currently in use by another user)
+        // Create the feed if necessary (not created and currently in use by another
+        // user)
         FeedDao feedDao = new FeedDao();
         String rssUrl = newFeed.getRssUrl();
         Feed feed = feedDao.getByRssUrl(rssUrl);
@@ -194,7 +193,9 @@ public class FeedService extends AbstractScheduledService {
             feed.setBaseUri(newFeed.getBaseUri());
             feed.setRssUrl(rssUrl);
             feed.setTitle(StringUtils.abbreviate(newFeed.getTitle(), 100));
-            feed.setLanguage(newFeed.getLanguage() != null && newFeed.getLanguage().length() <= 10 ? newFeed.getLanguage() : null);
+            feed.setLanguage(
+                    newFeed.getLanguage() != null && newFeed.getLanguage().length() <= 10 ? newFeed.getLanguage()
+                            : null);
             feed.setDescription(StringUtils.abbreviate(newFeed.getDescription(), 4000));
             feed.setLastFetchDate(new Date());
             feedDao.create(feed);
@@ -203,7 +204,7 @@ public class FeedService extends AbstractScheduledService {
             // Try to download the feed's favicon
             FaviconUpdateRequestedEvent faviconUpdateRequestedEvent = new FaviconUpdateRequestedEvent();
             faviconUpdateRequestedEvent.setFeed(feed);
-            mediator.notify(this, faviconUpdateRequestedEvent);
+            AppContext.getInstance().getAsyncEventBus().post(faviconUpdateRequestedEvent);
         } else {
             // Try to update the feed's favicon every week
             boolean updateFavicon = isFaviconUpdated(feed);
@@ -212,7 +213,9 @@ public class FeedService extends AbstractScheduledService {
             feed.setUrl(newFeed.getUrl());
             feed.setBaseUri(newFeed.getBaseUri());
             feed.setTitle(StringUtils.abbreviate(newFeed.getTitle(), 100));
-            feed.setLanguage(newFeed.getLanguage() != null && newFeed.getLanguage().length() <= 10 ? newFeed.getLanguage() : null);
+            feed.setLanguage(
+                    newFeed.getLanguage() != null && newFeed.getLanguage().length() <= 10 ? newFeed.getLanguage()
+                            : null);
             feed.setDescription(StringUtils.abbreviate(newFeed.getDescription(), 4000));
             feed.setLastFetchDate(new Date());
             feedDao.update(feed);
@@ -221,10 +224,10 @@ public class FeedService extends AbstractScheduledService {
             if (updateFavicon) {
                 FaviconUpdateRequestedEvent faviconUpdateRequestedEvent = new FaviconUpdateRequestedEvent();
                 faviconUpdateRequestedEvent.setFeed(feed);
-                mediator.notify(this, faviconUpdateRequestedEvent);
+                AppContext.getInstance().getAsyncEventBus().post(faviconUpdateRequestedEvent);
             }
         }
-        
+
         // Update existing articles
         Map<String, Article> articleMap = new HashMap<String, Article>();
         for (Article article : articleList) {
@@ -235,7 +238,7 @@ public class FeedService extends AbstractScheduledService {
         for (Article article : articleList) {
             guidIn.add(article.getGuid());
         }
-        
+
         ArticleSanitizer sanitizer = new ArticleSanitizer();
         ArticleDao articleDao = new ArticleDao();
         if (!guidIn.isEmpty()) {
@@ -246,7 +249,7 @@ public class FeedService extends AbstractScheduledService {
             List<Article> articleUpdatedList = new ArrayList<Article>();
             for (ArticleDto currentArticle : currentArticleDtoList) {
                 Article newArticle = articleMap.remove(currentArticle.getGuid());
-                
+
                 Article article = new Article();
                 article.setPublicationDate(currentArticle.getPublicationDate());
                 article.setId(currentArticle.getId());
@@ -263,28 +266,30 @@ public class FeedService extends AbstractScheduledService {
                 article.setEnclosureType(newArticle.getEnclosureType());
 
                 if (!Strings.nullToEmpty(currentArticle.getTitle()).equals(Strings.nullToEmpty(article.getTitle())) ||
-                        !Strings.nullToEmpty(currentArticle.getDescription()).equals(Strings.nullToEmpty(article.getDescription()))) {
+                        !Strings.nullToEmpty(currentArticle.getDescription())
+                                .equals(Strings.nullToEmpty(article.getDescription()))) {
                     articleDao.update(article);
                     articleUpdatedList.add(article);
                 }
             }
-            
+
             // Update indexed article
             if (!articleUpdatedList.isEmpty()) {
                 ArticleUpdatedAsyncEvent articleUpdatedAsyncEvent = new ArticleUpdatedAsyncEvent();
                 articleUpdatedAsyncEvent.setArticleList(articleUpdatedList);
-                mediator.notify(this, articleUpdatedAsyncEvent);
+                AppContext.getInstance().getAsyncEventBus().post(articleUpdatedAsyncEvent);
             }
         }
-        
+
         // Create new articles
         if (!articleMap.isEmpty()) {
             FeedSubscriptionCriteria feedSubscriptionCriteria = new FeedSubscriptionCriteria()
                     .setFeedId(feed.getId());
-            
+
             FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
-            List<FeedSubscriptionDto> feedSubscriptionList = feedSubscriptionDao.findByCriteria(feedSubscriptionCriteria);
-            
+            List<FeedSubscriptionDto> feedSubscriptionList = feedSubscriptionDao
+                    .findByCriteria(feedSubscriptionCriteria);
+
             UserArticleDao userArticleDao = new UserArticleDao();
             for (Article article : articleMap.values()) {
                 // Create the new article
@@ -294,7 +299,7 @@ public class FeedService extends AbstractScheduledService {
                 String baseUri = UrlUtil.getBaseUri(feed, article);
                 article.setDescription(sanitizer.sanitize(baseUri, article.getDescription()));
                 articleDao.create(article);
-    
+
                 // Create the user articles eagerly for users already subscribed
                 // FIXME count be optimized in 1 query instad of a*s
                 for (FeedSubscriptionDto feedSubscription : feedSubscriptionList) {
@@ -304,21 +309,23 @@ public class FeedService extends AbstractScheduledService {
                     userArticleDao.create(userArticle);
 
                     feedSubscription.setUnreadUserArticleCount(feedSubscription.getUnreadUserArticleCount() + 1);
-                    feedSubscriptionDao.updateUnreadCount(feedSubscription.getId(), feedSubscription.getUnreadUserArticleCount());
+                    feedSubscriptionDao.updateUnreadCount(feedSubscription.getId(),
+                            feedSubscription.getUnreadUserArticleCount());
                 }
             }
 
             // Add new articles to the index
             ArticleCreatedAsyncEvent articleCreatedAsyncEvent = new ArticleCreatedAsyncEvent();
             articleCreatedAsyncEvent.setArticleList(Lists.newArrayList(articleMap.values()));
-            mediator.notify(this, articleCreatedAsyncEvent);
+            AppContext.getInstance().getAsyncEventBus().post(articleCreatedAsyncEvent);
         }
 
         long endTime = System.currentTimeMillis();
         if (log.isInfoEnabled()) {
-            log.info(MessageFormat.format("Synchronized feed at URL {0} in {1}ms, {2} articles added, {3} deleted", url, endTime - startTime, articleMap.size(), articleToRemove.size()));
+            log.info(MessageFormat.format("Synchronized feed at URL {0} in {1}ms, {2} articles added, {3} deleted", url,
+                    endTime - startTime, articleMap.size(), articleToRemove.size()));
         }
-        
+
         return feed;
     }
 
@@ -343,7 +350,7 @@ public class FeedService extends AbstractScheduledService {
      */
     private List<Article> getArticleToRemove(List<Article> articleList) {
         List<Article> removedArticleList = new ArrayList<Article>();
-        
+
         // Check if the oldest article from stream was already synced
         Article oldestArticle = getOldestArticle(articleList);
         if (oldestArticle == null) {
@@ -370,11 +377,12 @@ public class FeedService extends AbstractScheduledService {
         // Delete articles removed from stream, and not too old
         Date dateMin = new DateTime().withFieldAdded(DurationFieldType.days(), -1).toDate();
         for (ArticleDto newerLocalArticle : newerLocalArticles) {
-            if (!newerArticleGuids.contains(newerLocalArticle.getGuid()) && newerLocalArticle.getCreateDate().after(dateMin)) {
+            if (!newerArticleGuids.contains(newerLocalArticle.getGuid())
+                    && newerLocalArticle.getCreateDate().after(dateMin)) {
                 removedArticleList.add(new Article(newerLocalArticle.getId()));
             }
         }
-        
+
         return removedArticleList;
     }
 
@@ -391,7 +399,8 @@ public class FeedService extends AbstractScheduledService {
     private Article getOldestArticle(List<Article> articleList) {
         Article oldestArticle = null;
         for (Article article : articleList) {
-            if (oldestArticle == null || article.getPublicationDate().before(oldestArticle.getPublicationDate())) { // check me
+            if (oldestArticle == null || article.getPublicationDate().before(oldestArticle.getPublicationDate())) { // check
+                                                                                                                    // me
                 oldestArticle = article;
             }
         }
@@ -414,15 +423,16 @@ public class FeedService extends AbstractScheduledService {
     /**
      * Parse a page containing a RSS or Atom feed, or HTML linking to a feed.
      * 
-     * @param url Url to parse
-     * @param parsePage If true, try to parse the resource as an HTML page linking to a feed
+     * @param url       Url to parse
+     * @param parsePage If true, try to parse the resource as an HTML page linking
+     *                  to a feed
      * @return Reader
      */
     private RssReader parseFeedOrPage(String url, boolean parsePage) throws Exception {
         try {
             final RssReader reader = new RssReader();
             new ReaderHttpClient() {
-                
+
                 @Override
                 public Void process(InputStream is) throws Exception {
                     reader.readRssFeed(is);
@@ -438,7 +448,7 @@ public class FeedService extends AbstractScheduledService {
                 try {
                     final RssExtractor extractor = new RssExtractor(url);
                     new ReaderHttpClient() {
-                        
+
                         @Override
                         public Void process(InputStream is) throws Exception {
                             extractor.readPage(is);
@@ -457,11 +467,11 @@ public class FeedService extends AbstractScheduledService {
             } else {
                 logParsingError(url, eRss);
             }
-            
+
             throw eRss;
         }
     }
-    
+
     private void logParsingError(String url, Exception e) {
         if (log.isWarnEnabled()) {
             if (e instanceof UnknownHostException ||
@@ -475,10 +485,11 @@ public class FeedService extends AbstractScheduledService {
     }
 
     /**
-     * Create the first batch of user articles when subscribing to a feed, so that the user has at least
+     * Create the first batch of user articles when subscribing to a feed, so that
+     * the user has at least
      * a few unread articles.
      * 
-     * @param userId User ID
+     * @param userId           User ID
      * @param feedSubscription Feed subscription
      */
     public void createInitialUserArticle(String userId, FeedSubscription feedSubscription) {
@@ -488,12 +499,13 @@ public class FeedService extends AbstractScheduledService {
                 .setFeedId(feedSubscription.getFeedId());
 
         UserArticleDao userArticleDao = new UserArticleDao();
-        PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(); //TODO we could fetch as many articles as in the feed, not 10
+        PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(); // TODO we could fetch as many articles
+                                                                               // as in the feed, not 10
         userArticleDao.findByCriteria(paginatedList, userArticleCriteria, null, null);
         for (UserArticleDto userArticleDto : paginatedList.getResultList()) {
             if (userArticleDto.getId() == null) {
                 UserArticle userArticle = new UserArticle();
-                userArticle.setArticleId(userArticleDto.getArticleId());
+                userArticle.setArticleId(userArticleDto.getArticle().getId());
                 userArticle.setUserId(userId);
                 userArticleDao.create(userArticle);
                 feedSubscription.setUnreadCount(feedSubscription.getUnreadCount() + 1);

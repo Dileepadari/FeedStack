@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Feed subscription DTO.
  *
- * @author jtremeaux 
+ * @author jtremeaux
  */
 public class FeedSubscriptionDto {
     /**
@@ -17,11 +17,11 @@ public class FeedSubscriptionDto {
      * Feed subscription title.
      */
     private String feedSubscriptionTitle;
-    
+
     /**
-     * Feed title.
+     * Feed Details.
      */
-    private String feedTitle;
+    private FeedDto feed;
 
     /**
      * User ID.
@@ -29,59 +29,24 @@ public class FeedSubscriptionDto {
     private String userId;
 
     /**
-     * Feed ID.
-     */
-    private String feedId;
-
-    /**
-     * Feed RSS URL.
-     */
-    private String feedRssUrl;
-
-    /**
-     * Feed URL.
-     */
-    private String feedUrl;
-
-    /**
-     * Feed description.
-     */
-    private String feedDescription;
-
-    /**
      * Number of unread articles by this user in this subscription.
      */
     private Integer unreadUserArticleCount;
-    
+
     /**
      * Number of synchronization fails recently.
      */
     private Integer synchronizationFailCount;
-    
+
     /**
      * Create date.
      */
     private Date createDate;
 
     /**
-     * Category ID.
+     * Category.
      */
-    private String categoryId;
-
-    /**
-     * Category parent Id.
-     */
-    private String categoryParentId;
-
-    /**
-     * Category name.
-     */
-    private String categoryName;
-
-    /**
-     * True if this category is folded in the subscriptions tree.
-     */
-    private boolean categoryFolded;
+    private CategoryDto category;
 
     /**
      * Getter of id.
@@ -138,75 +103,21 @@ public class FeedSubscriptionDto {
     }
 
     /**
-     * Getter of feedId.
+     * Getter of feed.
      *
-     * @return feedId
+     * @return feed
      */
-    public String getFeedId() {
-        return feedId;
+    public FeedDto getFeed() {
+        return feed;
     }
 
     /**
-     * Setter of feedId.
+     * Setter of feed.
      *
-     * @param feedId feedId
+     * @param feed feed
      */
-    public void setFeedId(String feedId) {
-        this.feedId = feedId;
-    }
-
-    /**
-     * Getter of feedRssUrl.
-     *
-     * @return feedRssUrl
-     */
-    public String getFeedRssUrl() {
-        return feedRssUrl;
-    }
-
-    /**
-     * Setter of feedRssUrl.
-     *
-     * @param feedRssUrl feedRssUrl
-     */
-    public void setFeedRssUrl(String feedRssUrl) {
-        this.feedRssUrl = feedRssUrl;
-    }
-
-    /**
-     * Getter of feedUrl.
-     *
-     * @return feedUrl
-     */
-    public String getFeedUrl() {
-        return feedUrl;
-    }
-
-    /**
-     * Setter of feedUrl.
-     *
-     * @param feedUrl feedUrl
-     */
-    public void setFeedUrl(String feedUrl) {
-        this.feedUrl = feedUrl;
-    }
-
-    /**
-     * Getter of feedDescription.
-     *
-     * @return feedDescription
-     */
-    public String getFeedDescription() {
-        return feedDescription;
-    }
-
-    /**
-     * Setter of feedDescription.
-     *
-     * @param feedDescription feedDescription
-     */
-    public void setFeedDescription(String feedDescription) {
-        this.feedDescription = feedDescription;
+    public void setFeed(FeedDto feed) {
+        this.feed = feed;
     }
 
     /**
@@ -228,97 +139,55 @@ public class FeedSubscriptionDto {
     }
 
     /**
-     * Getter of categoryId.
+     * Getter of category.
      *
-     * @return categoryId
+     * @return category
      */
-    public String getCategoryId() {
-        return categoryId;
+    public CategoryDto getCategory() {
+        return category;
     }
 
     /**
-     * Setter of categoryId.
+     * Setter of category.
      *
-     * @param categoryId categoryId
+     * @param category category
      */
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
+    public void setCategory(CategoryDto category) {
+        this.category = category;
     }
 
     /**
-     * Getter of categoryParentId.
+     * Getter of createDate.
      *
-     * @return categoryParentId
+     * @return createDate
      */
-    public String getCategoryParentId() {
-        return categoryParentId;
-    }
-
-    /**
-     * Setter of categoryParentId.
-     *
-     * @param categoryParentId categoryParentId
-     */
-    public void setCategoryParentId(String categoryParentId) {
-        this.categoryParentId = categoryParentId;
-    }
-
-    /**
-     * Getter of categoryName.
-     *
-     * @return categoryName
-     */
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    /**
-     * Setter of categoryName.
-     *
-     * @param categoryName categoryName
-     */
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
-    }
-
-    /**
-     * Getter of categoryFolded.
-     *
-     * @return categoryFolded
-     */
-    public boolean isCategoryFolded() {
-        return categoryFolded;
-    }
-
-    /**
-     * Setter of categoryFolded.
-     *
-     * @param categoryFolded categoryFolded
-     */
-    public void setCategoryFolded(boolean categoryFolded) {
-        this.categoryFolded = categoryFolded;
-    }
-
-    public String getFeedTitle() {
-        return feedTitle;
-    }
-
-    public void setFeedTitle(String feedTitle) {
-        this.feedTitle = feedTitle;
-    }
-
     public Date getCreateDate() {
         return createDate;
     }
 
+    /**
+     * Setter of createDate.
+     *
+     * @param createDate createDate
+     */
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
 
+    /**
+     * Getter of synchronizationFailCount.
+     *
+     * @return synchronizationFailCount
+     */
     public Integer getSynchronizationFailCount() {
         return synchronizationFailCount;
     }
 
+    /**
+     * Setter of synchronizationFailCount.
+     *
+     * @param synchronizationFailCount synchronizationFailCount
+     */
     public void setSynchronizationFailCount(Integer synchronizationFailCount) {
         this.synchronizationFailCount = synchronizationFailCount;
     }
