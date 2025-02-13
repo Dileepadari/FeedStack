@@ -1,71 +1,9 @@
 Analysis Summary:
 Total Java files: 30
-Files analyzed: 5
-Files skipped or errored: 25
+Files analyzed: 3
+Files skipped or errored: 27
 
 Detailed Analysis:
-Pair 1/11:
-Files:
-- ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/AllResource.java
-- ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/AppResource.java
-Smells Found:
-[
-  {
-    "type": "God Class",
-    "category": "design",
-    "description": "`AllResource` class has high number of methods and responsibilities.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Split the class into smaller, more manageable classes."
-  },
-  {
-    "type": "Feature Envy",
-    "category": "code",
-    "description": "Method `get` in `AllResource` class uses more code from `UserArticleDao` than `ArticleAssembler` class.",
-    "files": [
-      "file1"
-    ],
-    "fix": "Move logic to the `UserArticleDao` class."
-  },
-  {
-    "type": "Long Method",
-    "category": "code",
-    "description": "Method `get` in `AllResource` class contains more than 50 lines of code. ",
-    "files": [
-      "file1"
-    ],
-    "fix": "Extract the logic into helper methods."
-  },
-  {
-    "type": "God Class",
-    "category": "design",
-    "description": "`AppResource` class has high number of methods and responsibilities.",
-    "files": [
-      "file2"
-    ],
-    "fix": "Split the class into smaller, more manageable classes."
-  },
-  {
-    "type": "Feature Envy",
-    "category": "code",
-    "description": "Method `version` in `AppResource` class uses more code from `ConfigUtil` than `ResourceBundle` class.",
-    "files": [
-      "file2"
-    ],
-    "fix": "Move logic to the `ConfigUtil` class."
-  },
-  {
-    "type": "Long Method",
-    "category": "code",
-    "description": "Method `version` in `AppResource` class contains more than 50 lines of code. ",
-    "files": [
-      "file2"
-    ],
-    "fix": "Extract the logic into helper methods."
-  }
-]
-
 Pair 8/11:
 Files:
 - ./repository/reader-web-common/src/main/java/com/sismics/util/filter/SecurityFilter.java
@@ -73,31 +11,85 @@ Files:
 Smells Found:
 [
   {
+    "type": "InconsistentIndentation",
+    "category": "code",
+    "description": "Some lines are not indented consistently",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Use an auto-formatter to ensure consistent indentation"
+  },
+  {
+    "type": "MissingJavadoc",
+    "category": "code",
+    "description": "Some methods are missing JavaDoc comments",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Add JavaDoc comments to all methods"
+  },
+  {
+    "type": "GodClass",
+    "category": "design",
+    "description": "The class is too large and has too many responsibilities",
+    "files": [
+      "file1"
+    ],
+    "fix": "Split the class into smaller, more manageable classes"
+  },
+  {
+    "type": "CyclicDependency",
+    "category": "design",
+    "description": "The classes have a cyclic dependency, which can lead to problems when the classes are loaded",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Refactor the classes to remove the cyclic dependency"
+  }
+]
+
+Single File 4/8:
+File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/UserResource.java
+Smells Found:
+[
+  {
+    "type": "Large Class",
+    "category": "code",
+    "description": "The User class has 22 instance variables and 22 methods, which is more than the recommended limit of 10.",
+    "files": [
+      "both"
+    ],
+    "fix": "Consider refactoring the class into multiple smaller classes."
+  },
+  {
     "type": "God Class",
     "category": "design",
-    "description": "The `SecurityFilter` class does too much. It is responsible for user authentication, injecting users into requests, and handling expired tokens.",
+    "description": "The User class has a high number of responsibilities, including managing authentication tokens, setting user preferences, and handling login and logout functionality. This makes the class difficult to understand and maintain.",
     "files": [
-      "File 1"
+      "both"
     ],
-    "fix": "Split the `SecurityFilter` class into smaller, more focused classes. For example, create a separate class for user authentication, a separate class for injecting users into requests, and a separate class for handling expired tokens."
+    "fix": "Consider refactoring the class into multiple smaller classes, each with a more focused set of responsibilities."
   },
   {
-    "type": "Long Method",
-    "category": "code",
-    "description": "The `authenticate` method in the `TokenBasedSecurityFilter` class is too long. It contains over 50 lines of code.",
+    "type": "Cyclic Dependency",
+    "category": "design",
+    "description": "The User class has a circular dependency with the AuthenticationToken class. This means that changes to one class can have unintended consequences for the other class.",
     "files": [
-      "File 2"
+      "both"
     ],
-    "fix": "Break the `authenticate` method into smaller, more manageable methods."
+    "fix": "Consider refactoring the classes to remove the circular dependency."
   },
   {
-    "type": "Duplicate Code",
+    "type": "Data Class",
     "category": "code",
-    "description": "The `injectAuthenticatedUser` and `injectAnonymousUser` methods in the `SecurityFilter` class are very similar. They both inject a user into the request attributes. The only difference is that the `injectAuthenticatedUser` method adds some additional information to the request attributes.",
+    "description": "The User class is a data class, which means that it contains only data and no behavior. This makes the class difficult to reuse and extend.",
     "files": [
-      "File 1"
+      "both"
     ],
-    "fix": "Extract the common code between the `injectAuthenticatedUser` and `injectAnonymousUser` methods into a separate method."
+    "fix": "Consider refactoring the class to include some behavior, such as methods for managing authentication tokens or setting user preferences."
   }
 ]
 

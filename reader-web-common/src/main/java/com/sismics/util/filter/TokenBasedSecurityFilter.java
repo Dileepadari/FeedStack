@@ -37,8 +37,10 @@ public class TokenBasedSecurityFilter extends SecurityFilter {
      */
     public static final int TOKEN_SESSION_LIFETIME = 3600 * 24;
 
+
     @Override
     public User authenticate(HttpServletRequest request) {
+
         // Extract the authentication token from the request
         String authTokenId = extractAuthToken(request.getCookies());
         if (authTokenId == null) {
@@ -70,7 +72,9 @@ public class TokenBasedSecurityFilter extends SecurityFilter {
         return user;
     }
 
+
     private static String extractAuthToken(Cookie[] cookies) {
+
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (COOKIE_NAME.equals(cookie.getName()) && !cookie.getValue().isEmpty()) {
@@ -81,7 +85,9 @@ public class TokenBasedSecurityFilter extends SecurityFilter {
         return null;
     }
 
+
     private static boolean isTokenExpired(AuthenticationToken authenticationToken) {
+
         long now = new Date().getTime();
         long creationDate = authenticationToken.getCreationDate().getTime();
         if (authenticationToken.isLongLasted()) {
@@ -93,7 +99,9 @@ public class TokenBasedSecurityFilter extends SecurityFilter {
         }
     }
 
+
     private static void handleExpiredToken(AuthenticationTokenDao authenticationTokenDao, String authTokenId) {
+
         try {
             authenticationTokenDao.delete(authTokenId);
         } catch (Exception e) {

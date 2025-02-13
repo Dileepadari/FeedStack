@@ -11,6 +11,7 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -37,21 +38,23 @@ public abstract class SecurityFilter implements Filter {
      */
     public static final Logger LOG = LoggerFactory.getLogger(SecurityFilter.class);
 
+
     /**
-     * Returns the truth value of "the supplied request has an UserPrincipal".
+     * Determines if the request has an identified user.
      *
-     * @param request HTTP request
-     * @return T(the supplied request has an UserPrincipal)
+     * @param request The HTTP request.
+     * @return true if the request has an identified user.
      */
     protected static boolean hasIdentifiedUser(HttpServletRequest request) {
         return request.getAttribute(PRINCIPAL_ATTRIBUTE) instanceof UserPrincipal;
     }
 
+
     /**
      * Injects the given user into the request, with the appropriate authentication state.
      *
-     * @param request HTTP request
-     * @param user    nullable User to inject
+     * @param request The HTTP request.
+     * @param user     The user to inject.
      */
     protected static void injectUser(HttpServletRequest request, User user) {
         // Check if the user is still valid
@@ -62,52 +65,64 @@ public abstract class SecurityFilter implements Filter {
         }
     }
 
+
     /**
-     * Inject an authenticated user into the request attributes.
+     * Injects an authenticated user into the request attributes.
      *
-     * @param request HTTP request
-     * @param user    User to inject
+     * @param request     The HTTP request.
+     * @param authenticatedUser     The authenticated user to inject.
      */
-    protected static void injectAuthenticatedUser(HttpServletRequest request, User user) {
-        UserPrincipal userPrincipal = new UserPrincipal(user.getId(), user.getUsername());
+    protected static void injectAuthenticatedUser(HttpServletRequest request, User authenticatedUser) {
+
+        // Create a new user principal
+        UserPrincipal userPrincipal = new UserPrincipal(authenticatedUser.getId(), authenticatedUser.getUsername());
 
         // Add locale
-        Locale locale = LocaleUtil.getLocale(user.getLocaleId());
+        Locale locale = LocaleUtil.getLocale(authenticatedUser.getLocaleId());
         userPrincipal.setLocale(locale);
 
         // Add base functions
         RoleBaseFunctionDao userBaseFunction = new RoleBaseFunctionDao();
-        Set<String> baseFunctionSet = userBaseFunction.findByRoleId(user.getRoleId());
+        Set<String> baseFunctionSet = userBaseFunction.findByRoleId(authenticatedUser.getRoleId());
         userPrincipal.setBaseFunctionSet(baseFunctionSet);
 
         request.setAttribute(PRINCIPAL_ATTRIBUTE, userPrincipal);
     }
 
+
     /**
-     * Inject an anonymous user into the request attributes.
+     * Injects an anonymous user into the request attributes.
      *
-     * @param request HTTP request
+     * @param request The HTTP request.
      */
     protected static void injectAnonymousUser(HttpServletRequest request) {
+
+        // Create a new anonymous principal
         AnonymousPrincipal anonymousPrincipal = new AnonymousPrincipal();
+
+        // Set the locale and time zone
         anonymousPrincipal.setLocale(request.getLocale());
         anonymousPrincipal.setDateTimeZone(DateTimeZone.forID(DefaultConfig.DEFAULT_TIMEZONE_ID));
 
         request.setAttribute(PRINCIPAL_ATTRIBUTE, anonymousPrincipal);
     }
 
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        // NOP
+        // Do nothing
     }
+
 
     @Override
     public void destroy() {
-        // NOP
+        // Do nothing
     }
+
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+
         HttpServletRequest request = (HttpServletRequest) req;
 
         if (!hasIdentifiedUser(request)) {
@@ -118,11 +133,12 @@ public abstract class SecurityFilter implements Filter {
         filterChain.doFilter(request, response);
     }
 
+
     /**
      * Authenticates an user from the given request parameters.
      *
-     * @param request HTTP request
-     * @return nullable User
+     * @param request The HTTP request.
+     * @return The authenticated user, or null if the authentication failed.
      */
     protected abstract User authenticate(HttpServletRequest request);
 
