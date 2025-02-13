@@ -158,11 +158,12 @@ public class SubscriptionImportAsyncListener {
 
             JobEventDao jobEventDao = new JobEventDao();
 
-            JobEvent jobEvent = new JobEvent(job.getId(), ImportJobEvents.JOB_EVENT_FEED_COUNT, String.valueOf(outlineCount));
+            JobEvent jobEvent = new JobEvent(job.getId(), ImportJobEvents.JOB_EVENT_FEED_COUNT,
+                    String.valueOf(outlineCount));
             jobEventDao.create(jobEvent);
-            jobEvent = new JobEvent(job.getId(), Constants.JOB_EVENT_STARRED_ARTICLED_COUNT,
-                    String.valueOf(starredCount.get()));
 
+            jobEvent = new JobEvent(job.getId(), ImportJobEvents.JOB_EVENT_STARRED_ARTICLED_COUNT,
+                    String.valueOf(starredCount.get()));
             jobEventDao.create(jobEvent);
 
             return job;
@@ -245,10 +246,10 @@ public class SubscriptionImportAsyncListener {
                                 TransactionUtil.commit();
                                 try {
                                     importFeedFromStarred(user, event.getFeed(), event.getArticle());
-                                    JobEvent jobEvent = new JobEvent(job.getId(),
-                                            Constants.JOB_EVENT_STARRED_ARTICLE_IMPORT_SUCCESS,
-                                            event.getArticle().getTitle());
 
+                                    JobEvent jobEvent = new JobEvent(job.getId(),
+                                            ImportJobEvents.JOB_EVENT_STARRED_ARTICLE_IMPORT_SUCCESS,
+                                            event.getArticle().getTitle());
                                     jobEventDao.create(jobEvent);
                                 } catch (Exception e) {
                                     if (log.isErrorEnabled()) {
@@ -257,9 +258,8 @@ public class SubscriptionImportAsyncListener {
                                                 event.getArticle(), event.getFeed(), user.getId()), e);
                                     }
                                     JobEvent jobEvent = new JobEvent(job.getId(),
-                                            Constants.JOB_EVENT_STARRED_ARTICLE_IMPORT_FAILURE,
+                                            ImportJobEvents.JOB_EVENT_STARRED_ARTICLE_IMPORT_FAILURE,
                                             event.getArticle().getTitle());
-
                                     jobEventDao.create(jobEvent);
                                 }
                             });
@@ -385,9 +385,8 @@ public class SubscriptionImportAsyncListener {
                         log.info(MessageFormat.format("User {0} is already subscribed to the feed at URL {1}",
                                 user.getId(), feedUrl));
                     }
-                    JobEvent jobEvent = new JobEvent(job.getId(), Constants.JOB_EVENT_FEED_IMPORT_SUCCESS,
+                    JobEvent jobEvent = new JobEvent(job.getId(), ImportJobEvents.JOB_EVENT_FEED_IMPORT_SUCCESS,
                             feedSubscriptionList.iterator().next().getFeed().getRssUrl());
-
                     jobEventDao.create(jobEvent);
 
                     continue;
@@ -403,7 +402,8 @@ public class SubscriptionImportAsyncListener {
                         log.error(MessageFormat.format("Error importing the feed at URL {0} for user {1}", feedUrl,
                                 user.getId()), e);
                     }
-                    JobEvent jobEvent = new JobEvent(job.getId(), ImportJobEvents.JOB_EVENT_FEED_IMPORT_FAILURE, feedUrl);
+                    JobEvent jobEvent = new JobEvent(job.getId(), ImportJobEvents.JOB_EVENT_FEED_IMPORT_FAILURE,
+                            feedUrl);
                     jobEventDao.create(jobEvent);
                     continue;
                 }
@@ -425,7 +425,8 @@ public class SubscriptionImportAsyncListener {
                     EntityManagerUtil.flush();
                     feedService.createInitialUserArticle(user.getId(), feedSubscription);
 
-                    JobEvent jobEvent = new JobEvent(job.getId(), ImportJobEvents.JOB_EVENT_FEED_IMPORT_SUCCESS, feedUrl);
+                    JobEvent jobEvent = new JobEvent(job.getId(), ImportJobEvents.JOB_EVENT_FEED_IMPORT_SUCCESS,
+                            feedUrl);
                     jobEventDao.create(jobEvent);
                 } catch (Exception e) {
                     if (log.isErrorEnabled()) {
@@ -433,7 +434,8 @@ public class SubscriptionImportAsyncListener {
                                 "Error creating the subscription to the feed at URL {0} for user {1}", feedUrl,
                                 user.getId()), e);
                     }
-                    JobEvent jobEvent = new JobEvent(job.getId(), ImportJobEvents.JOB_EVENT_FEED_IMPORT_FAILURE, feedUrl);
+                    JobEvent jobEvent = new JobEvent(job.getId(), ImportJobEvents.JOB_EVENT_FEED_IMPORT_FAILURE,
+                            feedUrl);
                     jobEventDao.create(jobEvent);
                 }
             }

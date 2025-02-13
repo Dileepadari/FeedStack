@@ -56,7 +56,7 @@ public class IndexingService extends AbstractScheduledService {
      * Mediator.
      */
     private Mediator mediator;
-    
+
     /**
      * Lucene storage config.
      */
