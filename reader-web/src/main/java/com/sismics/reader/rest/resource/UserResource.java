@@ -1,172 +1,4 @@
-====FILE_DELIMITER====
-
-package com.sismics.reader.rest.resource;
-
-import com.sismics.reader.core.constant.BaseFunction;
-import com.sismics.reader.core.dao.jpa.*;
-import com.sismics.reader.core.dao.jpa.criteria.JobCriteria;
-import com.sismics.reader.core.dao.jpa.criteria.JobEventCriteria;
-import com.sismics.reader.core.dao.jpa.criteria.UserCriteria;
-import com.sismics.reader.core.dao.jpa.dto.JobDto;
-import com.sismics.reader.core.dao.jpa.dto.JobEventDto;
-import com.sismics.reader.core.dao.jpa.dto.UserDto;
-import com.sismics.reader.core.event.PasswordChangedEvent;
-import com.sismics.reader.core.event.UserCreatedEvent;
-import com.sismics.reader.core.event.UserUpdatedEvent;
-import com.sismics.reader.core.model.context.AppContext;
-import com.sismics.reader.core.model.jpa.AuthenticationToken;
-import com.sismics.reader.core.model.jpa.Category;
-import com.sismics.reader.core.model.jpa.User;
-import com.sismics.reader.core.util.jpa.PaginatedList;
-import com.sismics.reader.core.util.jpa.PaginatedLists;
-import com.sismics.reader.core.util.jpa.SortCriteria;
-import com.sismics.reader.rest.util.ValidationUtil;
-import com.sismics.security.UserPrincipal;
-import com.sismics.util.EnvironmentUtil;
-import com.sismics.util.LocaleUtil;
-import com.sismics.util.filter.TokenBasedSecurityFilter;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
-import javax.servlet.http.Cookie;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
-/**
- * User REST resources.
- *
- * @author jtremeaux
- */
-@Path("/user")
-public class UserResource extends BaseResource {
-
-    @PUT
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response register(JSONObject json) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        checkBaseFunction(BaseFunction.ADMIN);
-
-        String username = ValidationUtil.validateUsername(json.has("username") ? json.getString("username") : null, 3, 50);
-        String password = ValidationUtil.validatePassword(json.has("password") ? json.getString("password") : null, 8, 50);
-        String email = ValidationUtil.validateEmail(json.has("email") ? json.getString("email") : null, 3, 50);
-        String localeId = ValidationUtil.validateLocale(json.has("locale") ? json.getString("locale") : null, true);
-
-        User user = new User();
-        user.setRoleId(SecurityConfig.DEFAULT_USER_ROLE);
-        user.setUsername(username);
-        user.setPassword(password);
-        user.setEmail(email);
-        user.setDisplayTitleWeb(false);
-        user.setDisplayTitleMobile(true);
-        user.setDisplayUnreadWeb(true);
-        user.setDisplayUnreadMobile(true);
-        user.setCreateDate(new Date());
-        user.setLocaleId(localeId);
-
-        UserDao userDao = new UserDao();
-        String userId = null;
-        try {
-            userId = userDao.create(user);
-        } catch (Exception e) {
-            if ("AlreadyExistingUsername".equals(e.getMessage())) {
-                throw new ServerException("AlreadyExistingUsername", "Login already used", e);
-            } else {
-                throw new ServerException("UnknownError", "Unknown Server Error", e);
-            }
-        }
-
-        Category category = new Category();
-        category.setUserId(userId);
-        category.setOrder(0);
-
-        CategoryDao categoryDao = new CategoryDao();
-        categoryDao.create(category);
-
-        UserCreatedEvent userCreatedEvent = new UserCreatedEvent();
-        userCreatedEvent.setUser(user);
-        AppContext.getInstance().getMailEventBus().post(userCreatedEvent);
-
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
-    }
-
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response update(JSONObject json) throws JSONException {
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-
-        String password = ValidationUtil.validatePassword(json.has("password") ? json.getString("password") : null, 8, 50, true);
-        String email = ValidationUtil.validateEmail(json.has("email") ? json.getString("email") : null, 3, 50, true);
-        String themeId = ValidationUtil.validateTheme(EnvironmentUtil.isUnitTest() ? null : request.getServletContext(), json.has("theme") ? json.getString("theme") : null, "theme", true);
-        String localeId = ValidationUtil.validateLocale(json.has("locale") ? json.getString("locale") : null, true);
-        Boolean displayTitleWeb = json.has("display_title_web") ? json.getBoolean("display_title_web") : null;
-        Boolean displayTitleMobile = json.has("display_title_mobile") ? json.getBoolean("display_title_mobile") : null;
-        Boolean displayUnreadWeb = json.has("display_unread_web") ? json.getBoolean("display_unread_web") : null;
-        Boolean displayUnreadMobile = json.has("display_unread_mobile") ? json.getBoolean("display_unread_mobile") : null;
-        Boolean narrowArticle = json.has("narrow_article") ? json.getBoolean("narrow_article") : null;
-        Boolean firstConnection = json.has("first_connection") && hasBaseFunction(BaseFunction.ADMIN) ? json.getBoolean("first_connection") : null;
-
-        UserDao userDao = new UserDao();
-        User user = userDao.getActiveByUsername(principal.getName());
-        if (email != null) {
-            user.setEmail(email);
-        }
-        if (themeId != null) {
-            user.setTheme(themeId);
-        }
-        if (localeId != null) {
-            user.setLocaleId(localeId);
-        }
-        if (displayTitleWeb != null) {
-            user.setDisplayTitleWeb(displayTitleWeb);
-        }
-        if (displayTitleMobile != null) {
-            user.setDisplayTitleMobile(displayTitleMobile);
-        }
-        if (displayUnreadWeb != null) {
-            user.setDisplayUnreadWeb(displayUnreadWeb);
-        }
-        if (displayUnreadMobile != null) {
-            user.setDisplayUnreadMobile(displayUnreadMobile);
-        }
-        if (narrowArticle != null) {
-            user.setNarrowArticle(narrowArticle);
-        }
-        if (firstConnection != null) {
-            user.setFirstConnection(firstConnection);
-        }
-        user.setModifiedDate(new Date());
-        userDao.update(user);
-
-        if (password != null) {
-            PasswordChangedEvent passwordChangedEvent = new PasswordChangedEvent();
-            passwordChangedEvent.setUserId(user.getUserId());
-            AppContext.getInstance().getMailEventBus().post(passwordChangedEvent);
-        }
-
-        UserUpdatedEvent userUpdatedEvent = new UserUpdatedEvent();
-        userUpdatedEvent.setUser(user);
-        AppContext.getInstance().getMailEventBus().post(userUpdatedEvent);
-
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
-    }
-}
-====FILE_DELIMITER====
+```java
 package com.sismics.reader.core.model.jpa;
 
 import javax.persistence.*;
@@ -193,3 +25,322 @@ public class User implements Serializable {
     private String userId;
 
     /**
+     * Role ID.
+     */
+    @Column(name = "role_id", nullable = false)
+    private String roleId;
+
+    /**
+     * Username.
+     */
+    @Column(name = "username", nullable = false, length = 50)
+    private String username;
+
+    /**
+     * Password.
+     */
+    @Column(name = "password", nullable = false, length = 256)
+    private String password;
+
+    /**
+     * Email.
+     */
+    @Column(name = "email", nullable = false, length = 50)
+    private String email;
+
+    /**
+     * Locale ID.
+     */
+    @Column(name = "locale_id", length = 5)
+    private String localeId;
+
+    /**
+     * Display title for the web version.
+     */
+    @Column(name = "display_title_web", nullable = false)
+    private boolean displayTitleWeb;
+
+    /**
+     * Display title for the mobile version.
+     */
+    @Column(name = "display_title_mobile", nullable = false)
+    private boolean displayTitleMobile;
+
+    /**
+     * Display number of unread feeds for the web version.
+     */
+    @Column(name = "display_unread_web", nullable = false)
+    private boolean displayUnreadWeb;
+
+    /**
+     * Display number of unread feeds for the mobile version.
+     */
+    @Column(name = "display_unread_mobile", nullable = false)
+    private boolean displayUnreadMobile;
+
+    /**
+     * Narrow article.
+     */
+    @Column(name = "narrow_article", nullable = false)
+    private boolean narrowArticle;
+
+    /**
+     * Creation date.
+     */
+    @Column(name = "create_date", nullable = false)
+    private Date createDate;
+
+    /**
+     * Modified date.
+     */
+    @Column(name = "modified_date")
+    private Date modifiedDate;
+
+    /**
+     * First connection.
+     */
+    @Column(name = "first_connection", nullable = false)
+    private boolean firstConnection;
+
+    /**
+     * Theme.
+     */
+    @Column(name = "theme", length = 50)
+    private String theme;
+
+    /**
+     * Last login date.
+     */
+    @Column(name = "last_login_date")
+    private Date lastLoginDate;
+
+    /**
+     * Authentication tokens.
+     */
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    private Set<AuthenticationToken> authenticationTokens = new HashSet<>();
+
+    /**
+     * Get the user ID.
+     *
+     * @return The user ID.
+     */
+    public String getUserId() {
+        return userId;
+    }
+
+    /**
+     * Set the user ID.
+     *
+     * @param userId The user ID.
+     */
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    /**
+     * Get the role ID.
+     *
+     * @return The role ID.
+     */
+    public String getRoleId() {
+        return roleId;
+    }
+
+    /**
+     * Set the role ID.
+     *
+     * @param roleId The role ID.
+     */
+    public void setRoleId(String roleId) {
+        this.roleId = roleId;
+    }
+
+    /**
+     * Get the username.
+     *
+     * @return The username.
+     */
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * Set the username.
+     *
+     * @param username The username.
+     */
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    /**
+     * Get the password.
+     *
+     * @return The password.
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * Set the password.
+     *
+     * @param password The password.
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    /**
+     * Get the email.
+     *
+     * @return The email.
+     */
+    public String getEmail() {
+        return email;
+    }
+
+    /**
+     * Set the email.
+     *
+     * @param email The email.
+     */
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    /**
+     * Get the locale ID.
+     *
+     * @return The locale ID.
+     */
+    public String getLocaleId() {
+        return localeId;
+    }
+
+    /**
+     * Set the locale ID.
+     *
+     * @param localeId The locale ID.
+     */
+    public void setLocaleId(String localeId) {
+        this.localeId = localeId;
+    }
+
+    /**
+     * Is display title for the web version enabled?
+     *
+     * @return True if display title for the web version is enabled.
+     */
+    public boolean isDisplayTitleWeb() {
+        return displayTitleWeb;
+    }
+
+    /**
+     * Enable/disable display title for the web version.
+     *
+     * @param displayTitleWeb True to enable display title for the web version.
+     */
+    public void setDisplayTitleWeb(boolean displayTitleWeb) {
+        this.displayTitleWeb = displayTitleWeb;
+    }
+
+    /**
+     * Is display title for the mobile version enabled?
+     *
+     * @return True if display title for the mobile version is enabled.
+     */
+    public boolean isDisplayTitleMobile() {
+        return displayTitleMobile;
+    }
+
+    /**
+     * Enable/disable display title for the mobile version.
+     *
+     * @param displayTitleMobile True to enable display title for the mobile version.
+     */
+    public void setDisplayTitleMobile(boolean displayTitleMobile) {
+        this.displayTitleMobile = displayTitleMobile;
+    }
+
+    /**
+     * Is display number of unread feeds for the web version enabled?
+     *
+     * @return True if display number of unread feeds for the web version is enabled.
+     */
+    public boolean isDisplayUnreadWeb() {
+        return displayUnreadWeb;
+    }
+
+    /**
+     * Enable/disable display number of unread feeds for the web version.
+     *
+     * @param displayUnreadWeb True to enable display number of unread feeds for the web version.
+     */
+    public void setDisplayUnreadWeb(boolean displayUnreadWeb) {
+        this.displayUnreadWeb = displayUnreadWeb;
+    }
+
+    /**
+     * Is display number of unread feeds for the mobile version enabled?
+     *
+     * @return True if display number of unread feeds for the mobile version is enabled.
+     */
+    public boolean isDisplayUnreadMobile() {
+        return displayUnreadMobile;
+    }
+
+    /**
+     * Enable/disable display number of unread feeds for the mobile version.
+     *
+     * @param displayUnreadMobile True to enable display number of unread feeds for the mobile version.
+     */
+    public void setDisplayUnreadMobile(boolean displayUnreadMobile) {
+        this.displayUnreadMobile = displayUnreadMobile;
+    }
+
+    /**
+     * Is narrow article enabled?
+     *
+     * @return True if narrow article is enabled.
+     */
+    public boolean isNarrowArticle() {
+        return narrowArticle;
+    }
+
+    /**
+     * Enable/disable narrow article.
+     *
+     * @param narrowArticle True to enable narrow article.
+     */
+    public void setNarrowArticle(boolean narrowArticle) {
+        this.narrowArticle = narrowArticle;
+    }
+
+    /**
+     * Get the creation date.
+     *
+     * @return The creation date.
+     */
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    /**
+     * Set the creation date.
+     *
+     * @param createDate The creation date.
+     */
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+    /**
+     * Get the modified date.
+     *
+     * @return The modified date.
+     */
+    public Date getModifiedDate() {
+        return modifiedDate;
+    }
