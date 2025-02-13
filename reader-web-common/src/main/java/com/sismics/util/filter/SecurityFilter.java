@@ -1,3 +1,4 @@
+```java
 package com.sismics.util.filter;
 
 import com.sismics.reader.core.constant.DefaultConfig;
@@ -42,7 +43,7 @@ public abstract class SecurityFilter implements Filter {
      * @param request HTTP request
      * @return T(the supplied request has an UserPrincipal)
      */
-    private static boolean hasIdentifiedUser(HttpServletRequest request) {
+    protected static boolean hasIdentifiedUser(HttpServletRequest request) {
         return request.getAttribute(PRINCIPAL_ATTRIBUTE) instanceof UserPrincipal;
     }
 
@@ -52,7 +53,7 @@ public abstract class SecurityFilter implements Filter {
      * @param request HTTP request
      * @param user    nullable User to inject
      */
-    private static void injectUser(HttpServletRequest request, User user) {
+    protected static void injectUser(HttpServletRequest request, User user) {
         // Check if the user is still valid
         if (user != null && user.getDeleteDate() == null)
             injectAuthenticatedUser(request, user);
@@ -66,7 +67,7 @@ public abstract class SecurityFilter implements Filter {
      * @param request HTTP request
      * @param user    User to inject
      */
-    private static void injectAuthenticatedUser(HttpServletRequest request, User user) {
+    protected static void injectAuthenticatedUser(HttpServletRequest request, User user) {
         UserPrincipal userPrincipal = new UserPrincipal(user.getId(), user.getUsername());
 
         // Add locale
@@ -86,7 +87,7 @@ public abstract class SecurityFilter implements Filter {
      *
      * @param request HTTP request
      */
-    private static void injectAnonymousUser(HttpServletRequest request) {
+    protected static void injectAnonymousUser(HttpServletRequest request) {
         AnonymousPrincipal anonymousPrincipal = new AnonymousPrincipal();
         anonymousPrincipal.setLocale(request.getLocale());
         anonymousPrincipal.setDateTimeZone(DateTimeZone.forID(DefaultConfig.DEFAULT_TIMEZONE_ID));
@@ -125,3 +126,4 @@ public abstract class SecurityFilter implements Filter {
     protected abstract User authenticate(HttpServletRequest request);
 
 }
+```

@@ -1,18 +1,4 @@
-/* Copyright (c) 2008 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+```java
 package com.sismics.reader.core.dao.file.rss;
 
 import java.io.IOException;
@@ -31,7 +17,7 @@ import com.google.common.io.ByteStreams;
  * be used. This also has the side effect of removing the BOM from the input
  * stream (when present). If no BOM is present, the encoding will be searched
  * from the XML header.
- * 
+ *
  * @author bgamard
  */
 public class XmlReader extends Reader {
@@ -45,7 +31,7 @@ public class XmlReader extends Reader {
     private static final int HEADER_SIZE = 128;
 
     /**
-     * @param in Input stream
+     * @param in        Input stream
      * @param defaultEnc Default encoding
      * @throws IOException If an I/O error occurs
      */
@@ -55,8 +41,6 @@ public class XmlReader extends Reader {
         String encoding = defaultEnc;
         byte header[] = new byte[HEADER_SIZE];
         int n, unread;
-
-        
         PushbackInputStream pushbackStream = new PushbackInputStream(in, HEADER_SIZE);
         n = ByteStreams.read(in, header, 0, header.length);
 
@@ -90,7 +74,7 @@ public class XmlReader extends Reader {
                 }
             }
         }
-        
+
         if (unread > 0) {
             pushbackStream.unread(header, (n - unread), unread);
         } else if (unread < -1) {
@@ -111,3 +95,4 @@ public class XmlReader extends Reader {
         return internalInputStreamReader.read(cbuf, off, len);
     }
 }
+```

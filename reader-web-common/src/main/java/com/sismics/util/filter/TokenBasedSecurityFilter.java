@@ -1,3 +1,4 @@
+```java
 package com.sismics.util.filter;
 
 import com.sismics.reader.core.dao.jpa.AuthenticationTokenDao;
@@ -36,44 +37,49 @@ public class TokenBasedSecurityFilter extends SecurityFilter {
      */
     public static final int TOKEN_SESSION_LIFETIME = 3600 * 24;
 
-    /**
-     * Extracts and returns an authentication token from a cookie list.
-     *
-     * @param cookies Cookie list
-     * @return nullable auth token
-     */
-    private static String extractAuthToken(Cookie[] cookies) {
-        if (cookies != null)
-            for (Cookie cookie : cookies)
-                if (COOKIE_NAME.equals(cookie.getName()) && !cookie.getValue().isEmpty())
-                    return cookie.getValue();
+    @Override
+    protected User authenticate(HttpServletRequest request) {
+        // Get the value of the client authentication token
+        String authTokenID = extractAuthToken(request.getCookies());
+        if (authTokenID == null) {
+            return null;
+        }
 
+        // Get the corresponding server token
+        AuthenticationTokenDao authTokenDao = new AuthenticationTokenDao();
+        AuthenticationToken authToken = authTokenDao.get(authTokenID);
+        if (authToken == null) {
+            return null;
+        }
+
+        // Handle expired token
+        if (isTokenExpired(authToken)) {
+            handleExpiredToken(authTokenDao, authTokenID);
+            return null;
+        }
+
+        // Update last connection date
+        authTokenDao.updateLastConnectionDate(authToken.getId());
+
+        // Get the user
+        String userID = authToken.getUserId();
+        return new UserDao().getById(userID);
+    }
+
+    private static String extractAuthToken(Cookie[] cookies) {
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (COOKIE_NAME.equals(cookie.getName()) && !cookie.getValue().isEmpty()) {
+                    return cookie.getValue();
+                }
+            }
+        }
         return null;
     }
 
-    /**
-     * Deletes an expired authentication token.
-     *
-     * @param authTokenID auth token ID
-     */
-    private static void handleExpiredToken(AuthenticationTokenDao dao, String authTokenID) {
-        try {
-            dao.delete(authTokenID);
-        } catch (Exception e) {
-            if (LOG.isErrorEnabled())
-                LOG.error(MessageFormat.format("Error deleting authentication token {0} ", authTokenID), e);
-        }
-    }
-
-    /**
-     * Returns true if the token is expired.
-     *
-     * @param authenticationToken Authentication token
-     * @return Token expired
-     */
     private static boolean isTokenExpired(AuthenticationToken authenticationToken) {
-        final long now = new Date().getTime();
-        final long creationDate = authenticationToken.getCreationDate().getTime();
+        long now = new Date().getTime();
+        long creationDate = authenticationToken.getCreationDate().getTime();
         if (authenticationToken.isLongLasted()) {
             return now >= creationDate + ((long) TOKEN_LONG_LIFETIME) * 1000L;
         } else {
@@ -83,27 +89,14 @@ public class TokenBasedSecurityFilter extends SecurityFilter {
         }
     }
 
-    @Override
-    protected User authenticate(HttpServletRequest request) {
-        // Get the value of the client authentication token
-        String authTokenID = extractAuthToken(request.getCookies());
-        if (authTokenID == null)
-            return null;
-
-        // Get the corresponding server token
-        AuthenticationTokenDao authTokenDao = new AuthenticationTokenDao();
-        AuthenticationToken authToken = authTokenDao.get(authTokenID);
-        if (authToken == null)
-            return null;
-
-        if (isTokenExpired(authToken)) {
-            handleExpiredToken(authTokenDao, authTokenID);
-            return null;
+    private static void handleExpiredToken(AuthenticationTokenDao authTokenDao, String authTokenID) {
+        try {
+            authTokenDao.delete(authTokenID);
+        } catch (Exception e) {
+            if (LOG.isErrorEnabled()) {
+                LOG.error(MessageFormat.format("Error deleting authentication token {0} ", authTokenID), e);
+            }
         }
-
-        authTokenDao.updateLastConnectionDate(authToken.getId());
-        String userID = authToken.getUserId();
-        return (new UserDao()).getById(userID);
     }
-
 }
+```

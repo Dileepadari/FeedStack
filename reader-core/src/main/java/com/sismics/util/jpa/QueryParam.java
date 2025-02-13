@@ -1,3 +1,5 @@
+File 2:
+```java
 package com.sismics.util.jpa;
 
 import com.sismics.reader.core.util.jpa.SortCriteria;
@@ -6,85 +8,17 @@ import com.sismics.util.jpa.filter.FilterCriteria;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Query parameters.
- *
- * @author jtremeaux
- */
 public class QueryParam {
-
-    /**
-     * Query string.
-     */
-    private String queryString;
-
-    /**
-     * Query criteria.
-     */
-    private List<String> criteriaList;
-
-    /**
-     * Sort criteria.
-     */
-    private SortCriteria sortCriteria;
-
-    /**
-     * Query parameters.
-     */
-    private Map<String, Object> parameterMap;
-
-    /**
-     * Filter criteria.
-     */
-    private FilterCriteria filterCriteria;
-
-    /**
-     * Group by criteria.
-     */
-    private List<String> groupByList;
-
-    /**
-     * Result mapper for native queries.
-     */
-    private ResultMapper resultMapper;
-
-    /**
-     * Constructor of QueryParam.
-     *
-     * @param queryString Query string
-     * @param parameterMap Query parameters
-     * @param sortCriteria Sort criteria
-     * @param groupByList Group by criteria
-     */
-    public QueryParam(String queryString, List<String> criteriaList, Map<String, Object> parameterMap, SortCriteria sortCriteria, FilterCriteria filterCriteria, List<String> groupByList,
-                      ResultMapper resultMapper) {
-        this.queryString = queryString;
-        this.criteriaList = criteriaList;
-        this.parameterMap = parameterMap;
-        this.sortCriteria = sortCriteria;
-        this.filterCriteria = filterCriteria;
-        this.groupByList = groupByList;
-        this.resultMapper = resultMapper;
-    }
-
-    /**
-     * Constructor of QueryParam.
-     *
-     * @param queryString Query string
-     * @param parameterMap Query parameters
-     * @param sortCriteria Sort criteria
-     */
-    public QueryParam(String queryString, List<String> criteriaList, Map<String, Object> parameterMap, SortCriteria sortCriteria, FilterCriteria filterCriteria,
-                      ResultMapper resultMapper) {
-        this(queryString, criteriaList, parameterMap, sortCriteria, filterCriteria, null, resultMapper);
-    }
+    private final String queryString;
+    private final List<String> criteriaList;
+    private final Map<String, Object> parameterMap;
+    private final SortCriteria sortCriteria;
+    private final FilterCriteria filterCriteria;
+    private final List<String> groupByList;
+    private final ResultMapper resultMapper;
 
     public String getQueryString() {
         return queryString;
-    }
-
-    public void setQueryString(String queryString) {
-        this.queryString = queryString;
     }
 
     public SortCriteria getSortCriteria() {
@@ -111,7 +45,68 @@ public class QueryParam {
         return resultMapper;
     }
 
-    public void setSortCriteria(SortCriteria sortCriteria) {
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+        private String queryString;
+        private List<String> criteriaList;
+        private Map<String, Object> parameterMap;
+        private SortCriteria sortCriteria;
+        private FilterCriteria filterCriteria;
+        private List<String> groupByList;
+        private ResultMapper resultMapper;
+
+        public Builder withQueryString(String queryString) {
+            this.queryString = queryString;
+            return this;
+        }
+
+        public Builder withCriteriaList(List<String> criteriaList) {
+            this.criteriaList = criteriaList;
+            return this;
+        }
+
+        public Builder withParameterMap(Map<String, Object> parameterMap) {
+            this.parameterMap = parameterMap;
+            return this;
+        }
+
+        public Builder withSortCriteria(SortCriteria sortCriteria) {
+            this.sortCriteria = sortCriteria;
+            return this;
+        }
+
+        public Builder withFilterCriteria(FilterCriteria filterCriteria) {
+            this.filterCriteria = filterCriteria;
+            return this;
+        }
+
+        public Builder withGroupByList(List<String> groupByList) {
+            this.groupByList = groupByList;
+            return this;
+        }
+
+        public Builder withResultMapper(ResultMapper resultMapper) {
+            this.resultMapper = resultMapper;
+            return this;
+        }
+
+        public QueryParam build() {
+            return new QueryParam(queryString, criteriaList, parameterMap, sortCriteria, filterCriteria, groupByList, resultMapper);
+        }
+    }
+
+    private QueryParam(String queryString, List<String> criteriaList, Map<String, Object> parameterMap, SortCriteria sortCriteria, FilterCriteria filterCriteria, List<String> groupByList,
+                      ResultMapper resultMapper) {
+        this.queryString = queryString;
+        this.criteriaList = criteriaList;
+        this.parameterMap = parameterMap;
         this.sortCriteria = sortCriteria;
+        this.filterCriteria = filterCriteria;
+        this.groupByList = groupByList;
+        this.resultMapper = resultMapper;
     }
 }
+```

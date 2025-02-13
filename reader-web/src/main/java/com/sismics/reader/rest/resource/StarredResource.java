@@ -1,3 +1,4 @@
+```java
 package com.sismics.reader.rest.resource;
 
 import com.sismics.reader.core.dao.jpa.UserArticleDao;
@@ -31,6 +32,7 @@ import java.util.List;
  */
 @Path("/starred")
 public class StarredResource extends BaseResource {
+
     /**
      * Returns starred articles.
      *
@@ -144,7 +146,7 @@ public class StarredResource extends BaseResource {
         // Build the response
         JSONObject response = new JSONObject();
 
-        List<JSONObject> articles = new ArrayList<JSONObject>();
+        List<JSONObject> articles = new ArrayList<>();
         for (UserArticleDto userArticle : paginatedList.getResultList()) {
             articles.add(ArticleAssembler.asJson(userArticle));
         }

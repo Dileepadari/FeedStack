@@ -1,20 +1,4 @@
-/*
- * This file is part of Adblock Plus <http://adblockplus.org/>,
- * Copyright (C) 2006-2013 Eyeo GmbH
- *
- * Adblock Plus is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 3 as
- * published by the Free Software Foundation.
- *
- * Adblock Plus is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
- */
-
+```java
 package com.sismics.util;
 
 import com.google.common.base.Charsets;
@@ -36,75 +20,72 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class AdblockUtil {
-    
-    /**
-     * Logger.
-     */
+
     private static final Logger log = LoggerFactory.getLogger(AdblockUtil.class);
-    
-    private List<Subscription> subscriptions;
 
-    private JSEngine js;
-
+    private final List<Subscription> subscriptions;
+    private final JSEngine js;
     private boolean interactive;
-    
-    public void start() throws Exception {
-        interactive = false;
+
+    public static void main(String[] args) throws Exception {
+        AdblockUtil util = new AdblockUtil();
+        util.start();
+        util.startInteractive();
+
+        // Mock matches method
+        String url = "http://example.com";
+        String query = "foo=bar";
+        String reqHost = "example.com";
+        String refHost = "referrer.com";
+        String accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+        boolean matched = util.matches(url, query, reqHost, refHost, accept);
+        System.out.println("Matches: " + matched);
+
+        util.stopInteractive();
+    }
+
+    public AdblockUtil() {
+        subscriptions = new ArrayList<>();
         js = new JSEngine();
-        URL url = Resources.getResource("adblock" + File.separator + "js" + File.separator + "start.js");
+        interactive = false;
+    }
+
+    public void start() throws Exception {
         js.put("_locale", Locale.getDefault().toString());
         js.put("_datapath", "");
         js.put("_separator", File.separator);
         js.put("_version", "");
         js.put("Android", new Helper(js));
+        URL url = Resources.getResource("adblock" + File.separator + "js" + File.separator + "start.js");
         js.evaluate(Resources.toString(url, Charsets.UTF_8));
+        loadSubscriptions();
     }
-    
-    /**
-     * Returns list of known subscriptions.
-     */
-    public List<Subscription> getSubscriptions() {
-        if (subscriptions == null) {
-            subscriptions = new ArrayList<Subscription>();
 
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            SAXParser parser;
-            try {
-                parser = factory.newSAXParser();
-                parser.parse(AdblockUtil.class.getResourceAsStream("/adblock/subscriptions.xml"), new SubscriptionParser(subscriptions));
-            } catch (Exception e) {
-                log.error("Error parsing subscriptions", e);
-            }
-        }
+    private void loadSubscriptions() throws Exception {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParser parser = factory.newSAXParser();
+        parser.parse(AdblockUtil.class.getResourceAsStream("/adblock/subscriptions.xml"), new SubscriptionParser(subscriptions));
+    }
+
+    public List<Subscription> getSubscriptions() {
         return subscriptions;
     }
 
-    /**
-     * Returns subscription information.
-     * 
-     * @param url
-     *            subscription url
-     */
     public Subscription getSubscription(String url) {
-        List<Subscription> subscriptions = getSubscriptions();
-
         for (Subscription subscription : subscriptions) {
-            if (subscription.url.equals(url))
+            if (subscription.url.equals(url)) {
                 return subscription;
+            }
         }
         return null;
     }
 
-    /**
-     * Adds provided subscription and removes previous subscriptions if any.
-     * 
-     * @param subscription Subscription to add
-     */
     public void setSubscription(Subscription subscription) throws Exception {
         if (subscription != null) {
-            final JSONObject jsonSub = new JSONObject();
+            JSONObject jsonSub = new JSONObject();
             jsonSub.put("url", subscription.url);
             jsonSub.put("title", subscription.title);
             jsonSub.put("homepage", subscription.homepage);
@@ -113,25 +94,18 @@ public class AdblockUtil {
         }
     }
 
-    /**
-     * Forces subscriptions refresh.
-     */
     public void refreshSubscription() throws ScriptException {
         js.evaluate("refreshSubscriptions()");
     }
 
-    /**
-     * Selects which subscription to offer for the first time.
-     * 
-     * @return offered subscription
-     */
     public Subscription offerSubscription() {
         Subscription selectedItem = null;
         String selectedPrefix = null;
         int matchCount = 0;
-        for (Subscription subscription : getSubscriptions()) {
-            if (selectedItem == null)
+        for (Subscription subscription : subscriptions) {
+            if (selectedItem == null) {
                 selectedItem = subscription;
+            }
 
             String prefix = checkLocalePrefixMatch(subscription.prefixes);
             if (prefix != null) {
@@ -157,64 +131,76 @@ public class AdblockUtil {
         return selectedItem;
     }
 
-    /**
-     * Verifies that subscriptions are loaded and returns flag of subscription
-     * presence.
-     * 
-     * @return true if at least one subscription is present and downloaded
-     */
     public boolean verifySubscriptions() throws ScriptException {
         return (Boolean) js.evaluate("verifySubscriptions()");
     }
 
-    /**
-     * Checks if filters match request parameters.
-     * 
-     * @param url Request URL
-     * @param query Request query string
-     * @param reqHost Request host
-     * @param refHost Request referrer header
-     * @param accept Request accept header
-     * @return true if matched filter was found
-     */
     public Boolean matches(String url, String query, String reqHost, String refHost, String accept) throws Exception {
-        return (Boolean) js.evaluate("matchesAny('" 
-            + StringEscapeUtils.escapeJavaScript(url) + "', '" 
-            + StringEscapeUtils.escapeJavaScript(query) + "', '" 
-            + (reqHost != null ? StringEscapeUtils.escapeJavaScript(reqHost) : "") + "', '" 
-            + (refHost != null ? StringEscapeUtils.escapeJavaScript(refHost) : "") + "', '" 
+        return (Boolean) js.evaluate("matchesAny('"
+            + StringEscapeUtils.escapeJavaScript(url) + "', '"
+            + StringEscapeUtils.escapeJavaScript(query) + "', '"
+            + (reqHost != null ? StringEscapeUtils.escapeJavaScript(reqHost) : "") + "', '"
+            + (refHost != null ? StringEscapeUtils.escapeJavaScript(refHost) : "") + "', '"
             + (accept != null ? StringEscapeUtils.escapeJavaScript(accept) : "") + "');");
     }
 
-    /**
-     * Notifies JS code that application entered interactive mode.
-     */
     public void startInteractive() throws ScriptException {
         js.evaluate("startInteractive()");
         interactive = true;
     }
 
-    /**
-     * Notifies JS code that application quit interactive mode.
-     */
     public void stopInteractive() throws ScriptException {
         js.evaluate("stopInteractive()");
         interactive = false;
     }
 
-    /**
-     * Returns prefixes that match current user locale.
-     */
     public String checkLocalePrefixMatch(String[] prefixes) {
-        if (prefixes == null || prefixes.length == 0)
+        if (prefixes == null || prefixes.length == 0) {
             return null;
+        }
 
         String locale = Locale.getDefault().toString().toLowerCase();
 
-        for (int i = 0; i < prefixes.length; i++)
-            if (locale.startsWith(prefixes[i].toLowerCase()))
+        for (int i = 0; i < prefixes.length; i++) {
+            if (locale.startsWith(prefixes[i].toLowerCase())) {
                 return prefixes[i];
+            }
+        }
 
         return null;
+    }
+
+    private static class Subscription implements Comparable<Subscription> {
+        private final String url;
+        private final String title;
+        private final String homepage;
+        private final String[] prefixes;
+
+        public Subscription(String url, String title, String homepage, String[] prefixes) {
+            this.url = url;
+            this.title = title;
+            this.homepage = homepage;
+            this.prefixes = prefixes;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Subscription that = (Subscription) o;
+            return Objects.equals(url, that.url) &&
+                    Objects.equals(title, that.title) &&
+                    Objects.equals(homepage, that.homepage);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(url, title, homepage);
+        }
+
+        @Override
+        public int compareTo(Subscription other) {
+            return this.url.compareTo(other.url);
+        }
     }
 }

@@ -1,3 +1,4 @@
+```java
 package com.sismics.reader.core.model.jpa;
 
 import java.util.Date;
@@ -41,24 +42,6 @@ public class UserArticle {
      */
     @Column(name = "USA_CREATEDATE_D", nullable = false)
     private Date createDate;
-    
-    /**
-     * Read date of the article.
-     */
-    @Column(name = "USA_READDATE_D")
-    private Date readDate;
-    
-    /**
-     * Date the user starred this article.
-     */
-    @Column(name = "USA_STARREDDATE_D")
-    private Date starredDate;
-    
-    /**
-     * Deletion date.
-     */
-    @Column(name = "USA_DELETEDATE_D")
-    private Date deleteDate;
 
     /**
      * Getter of id.
@@ -132,60 +115,6 @@ public class UserArticle {
         this.createDate = createDate;
     }
 
-    /**
-     * Getter of readDate.
-     *
-     * @return readDate
-     */
-    public Date getReadDate() {
-        return readDate;
-    }
-
-    /**
-     * Setter of readDate.
-     *
-     * @param readDate readDate
-     */
-    public void setReadDate(Date readDate) {
-        this.readDate = readDate;
-    }
-
-    /**
-     * Getter of starredDate.
-     *
-     * @return starredDate
-     */
-    public Date getStarredDate() {
-        return starredDate;
-    }
-
-    /**
-     * Setter of starredDate.
-     *
-     * @param starredDate starredDate
-     */
-    public void setStarredDate(Date starredDate) {
-        this.starredDate = starredDate;
-    }
-
-    /**
-     * Getter of deleteDate.
-     *
-     * @return deleteDate
-     */
-    public Date getDeleteDate() {
-        return deleteDate;
-    }
-
-    /**
-     * Setter of deleteDate.
-     *
-     * @param deleteDate deleteDate
-     */
-    public void setDeleteDate(Date deleteDate) {
-        this.deleteDate = deleteDate;
-    }
-
     @Override
     public String toString() {
         return Objects.toStringHelper(this)
@@ -195,3 +124,4 @@ public class UserArticle {
                 .toString();
     }
 }
+```

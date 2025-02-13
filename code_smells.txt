@@ -1,143 +1,848 @@
-File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/SubscriptionResource.java
+Analysis Summary:
+Total Java files: 169
+Files analyzed: 36
+Files skipped or errored: 133
+
+Detailed Analysis:
+Pair 1/72:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/util/AdblockUtil.java
+- ./repository/reader-core/src/main/java/com/sismics/util/DateUtil.java
 Smells Found:
 [
   {
-    "type": "Spaghetti Code",
+    "type": "Long Parameter List",
     "category": "code",
-    "description": "Method list is more than 30 lines.",
-    "fix": "Consider refactoring into multiple smaller methods."
+    "description": "The `matches` method in `File 1` has 5 parameters, which is considered to be a long parameter list.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Consider refactoring the method to reduce the number of parameters."
   },
   {
-    "type": "Excessive Complexity",
+    "type": "Duplicate Code",
     "category": "code",
-    "description": "Cyclomatic complexity of the method is too high.",
-    "fix": "Extract logic into helper methods to reduce complexity."
+    "description": "The code to add a subscription in `File 1` is duplicated in the `setSubscription` and `offerSubscription` methods.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Extract the code to a separate method to avoid duplication."
+  },
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "`AdblockUtil` class has too many responsibilities. It interacts with the JS engine, manages subscriptions, and provides date utilities.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Consider breaking down the class into smaller, more focused classes."
+  },
+  {
+    "type": "Switch Statement",
+    "category": "code",
+    "description": "The `verifySubscriptions` method uses a switch statement to check for different values of a string. It would be more maintainable to use a map or a conditional statement.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Replace the switch statement with a map or a conditional statement."
+  },
+  {
+    "type": "Hard-Coded Data",
+    "category": "code",
+    "description": "The `TIMEZONE_CODE_MAP` in `File 2` contains hard-coded timezone codes and offsets. It would be more maintainable to load the data from a configuration file or a database.",
+    "files": [
+      "file2"
+    ],
+    "fix": "Load the timezone data from a configuration file or a database."
   }
 ]
 
-File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/StarredResource.java
+Pair 8/72:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/util/jpa/ManagedProvidedConnectionHelper.java
+- ./repository/reader-core/src/main/java/com/sismics/util/jpa/QueryParam.java
+Smells Found:
+[
+  {
+    "type": "LongParameterList",
+    "category": "code",
+    "description": "The `QueryParam` constructor has too many parameters (7). This makes the constructor difficult to read and maintain.",
+    "files": [
+      "file2"
+    ],
+    "fix": "Consider using a builder pattern to reduce the number of parameters in the constructor."
+  },
+  {
+    "type": "LargeClass",
+    "category": "design",
+    "description": "The `ManagedProviderConnectionHelper` class has over 50 lines of code, which makes it difficult to read and maintain.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Consider refactoring the class to break it into smaller, more manageable pieces."
+  },
+  {
+    "type": "GodClass",
+    "category": "design",
+    "description": "The `ManagedProviderConnectionHelper` class has too many responsibilities (it manages the connection, the service registry, and the connection provider).",
+    "files": [
+      "file1"
+    ],
+    "fix": "Consider refactoring the class to separate these responsibilities into different classes."
+  }
+]
+
+Pair 26/72:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/FeedDao.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/FeedSubscriptionDao.java
+Smells Found:
+[
+  {
+    "type": "Long Class",
+    "category": "code",
+    "description": "The class has more than 50 lines of code",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Split the class into multiple smaller classes"
+  },
+  {
+    "type": "God Class",
+    "category": "code",
+    "description": "The class has more than 10 methods",
+    "files": [
+      "file1"
+    ],
+    "fix": "Extract some of the methods into separate classes"
+  },
+  {
+    "type": "Circular Dependency",
+    "category": "design",
+    "description": "The class A depends on class B, and class B depends on class A",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Refactor the code to remove the circular dependency"
+  }
+]
+
+Pair 31/72:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/dto/FeedSubscriptionDto.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/dto/JobDto.java
+Smells Found:
+[
+  {
+    "type": "Long Parameter List",
+    "category": "code",
+    "description": "The FeedSubscriptionDto class has 15 public fields, which is considered a long parameter list.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Consider splitting the class into multiple smaller classes or using a builder pattern to reduce the number of parameters."
+  },
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "The FeedSubscriptionDto class has a large number of responsibilities, including getters and setters for each field, which makes it difficult to maintain and understand.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Consider refactoring the class into multiple smaller classes, each with a single responsibility."
+  },
+  {
+    "type": "Data Class",
+    "category": "design",
+    "description": "The JobDto class is a simple data class with only getters and setters, which is considered a code smell.",
+    "files": [
+      "file2"
+    ],
+    "fix": "Consider adding behavior to the class to make it more useful."
+  }
+]
+
+Pair 39/72:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/lucene/ArticleDao.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/lucene/ReaderStandardAnalyzer.java
+Smells Found:
+[
+  {
+    "type": "Long method",
+    "category": "code",
+    "description": "The `search` method in `File 1` is too long (114 lines).",
+    "files": [
+      "file1"
+    ],
+    "fix": "Split the method into smaller, more manageable pieces."
+  },
+  {
+    "type": "Complex conditionals",
+    "category": "code",
+    "description": "The `search` method in `File 1` contains several complex conditional statements that are difficult to understand and maintain.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Refactor the code to use simpler conditional statements or to use a more appropriate data structure."
+  },
+  {
+    "type": "Duplicate code",
+    "category": "code",
+    "description": "The code for building the Lucene document in the `getDocumentFromArticle` method in `File 1` is duplicated in the `createComponents` method in `File 2`.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Extract the code to a common method that can be reused in both places."
+  },
+  {
+    "type": "Overuse of static methods",
+    "category": "design",
+    "description": "The `File 2` class contains several static methods that are not related to the core functionality of the class.",
+    "files": [
+      "file2"
+    ],
+    "fix": "Move the static methods to a separate class or package that is more appropriate for their functionality."
+  }
+]
+
+Pair 54/72:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/Article.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/AuthenticationToken.java
+Smells Found:
+[
+  {
+    "type": "Long Method",
+    "category": "code",
+    "description": "The `Article` class has a method with more than 10 lines of code.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Extract the code into a separate method."
+  },
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "The `Article` class has more than 20 methods.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Split the class into smaller, more focused classes."
+  },
+  {
+    "type": "Duplicate Code",
+    "category": "code",
+    "description": "The `Article` and `AuthenticationToken` classes have several methods with duplicate code.",
+    "files": [
+      "both"
+    ],
+    "fix": "Extract the duplicate code into a shared method."
+  }
+]
+
+Pair 57/72:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/FeedSubscription.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/FeedSynchronization.java
+Smells Found:
+[
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "Class with too many responsibilities. Consider breaking it down into smaller, more manageable classes.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Refactor the class into smaller, more focused classes."
+  },
+  {
+    "type": "Long Method",
+    "category": "code",
+    "description": "Method with too many lines of code. Consider breaking it down into smaller, more manageable methods.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Refactor the method into smaller, more focused methods."
+  },
+  {
+    "type": "Feature Envy",
+    "category": "design",
+    "description": "Method that accesses too many attributes of another class. Consider moving the method to the other class.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Move the method to the class that it accesses the most attributes of."
+  },
+  {
+    "type": "Data Clump",
+    "category": "design",
+    "description": "Set of attributes that are always used together. Consider creating a new class to represent the data clump.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Create a new class to represent the data clump."
+  },
+  {
+    "type": "Duplicate Code",
+    "category": "code",
+    "description": "Code that is repeated in multiple places. Consider extracting the duplicate code into a new method or class.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Extract the duplicate code into a new method or class."
+  },
+  {
+    "type": "Switch Statement",
+    "category": "code",
+    "description": "Switch statement with too many cases. Consider using a more object-oriented approach, such as polymorphism or a strategy pattern.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Use a more object-oriented approach, such as polymorphism or a strategy pattern."
+  },
+  {
+    "type": "Nested Conditional",
+    "category": "code",
+    "description": "Conditional statement with too many nested levels. Consider refactoring the code to use a more structured approach, such as the guard clause pattern.",
+    "files": [
+      "file1",
+      "file2"
+    ],
+    "fix": "Refactor the code to use a more structured approach, such as the guard clause pattern."
+  }
+]
+
+Pair 58/72:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/Job.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/JobEvent.java
+Smells Found:
+[
+  {
+    "type": "LongParameterList",
+    "category": "code",
+    "description": "The constructor `JobEvent` has too many parameters (6).",
+    "files": [
+      "file2"
+    ],
+    "fix": "Consider using a builder pattern or reducing the number of parameters."
+  },
+  {
+    "type": "DuplicateCode",
+    "category": "code",
+    "description": "The fields `id`, `jobId`, `name`, `value`, `createDate`, and `deleteDate` are duplicated in both `Job` and `JobEvent` classes.",
+    "files": [
+      "both"
+    ],
+    "fix": "Consider creating a base class for `Job` and `JobEvent` to avoid duplication."
+  },
+  {
+    "type": "LackOfEncapsulation",
+    "category": "design",
+    "description": "The fields in both `Job` and `JobEvent` are public, which violates encapsulation principles.",
+    "files": [
+      "both"
+    ],
+    "fix": "Make the fields private and provide getter and setter methods."
+  }
+]
+
+Pair 60/72:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/RoleBaseFunction.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/User.java
+Smells Found:
+[
+  {
+    "type": "Long Parameter List",
+    "category": "code",
+    "description": "The constructor of `RoleBaseFunction` class has 9 parameters, which makes it difficult to read and understand.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Split the constructor into multiple lines, and consider using a builder pattern."
+  },
+  {
+    "type": "Too Many Fields",
+    "category": "code",
+    "description": "The `User` class has 20 fields, which makes it difficult to read and understand.",
+    "files": [
+      "file2"
+    ],
+    "fix": "Consider splitting the class into multiple smaller classes."
+  },
+  {
+    "type": "Data Clumps",
+    "category": "code",
+    "description": "The `User` class has multiple groups of related fields, such as `displayTitleWeb`, `displayTitleMobile`, `displayUnreadWeb`, and `displayUnreadMobile`. These fields should be grouped together in a separate class or object.",
+    "files": [
+      "file2"
+    ],
+    "fix": "Create a separate class or object to hold these related fields."
+  },
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "The `User` class has a large number of responsibilities, such as managing user preferences, authentication, and authorization. This makes it difficult to maintain and understand.",
+    "files": [
+      "file2"
+    ],
+    "fix": "Split the class into multiple smaller classes, each responsible for a specific set of related tasks."
+  }
+]
+
+Pair 61/72:
+Files:
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/service/FeedService.java
+- ./repository/reader-core/src/main/java/com/sismics/reader/core/service/IndexingService.java
+Smells Found:
+[
+  {
+    "type": "Empty catch block",
+    "category": "code",
+    "description": "The catch block in `FeedService#synchronizeAllFeeds` is empty",
+    "files": [
+      "file1"
+    ],
+    "fix": "Add code to handle the exception or rethrow it"
+  },
+  {
+    "type": "Exception not propagated",
+    "category": "code",
+    "description": "The exception thrown in `FeedService#synchronize` is not propagated",
+    "files": [
+      "file1"
+    ],
+    "fix": "Propagate the exception up the call chain or handle it in the current method"
+  },
+  {
+    "type": "Duplicate code",
+    "category": "code",
+    "description": "The code to update the status of synchronized feeds is repeated in `FeedService#synchronizeAllFeeds`",
+    "files": [
+      "file1"
+    ],
+    "fix": "Extract the code to a separate method and call it from both places"
+  },
+  {
+    "type": "God class",
+    "category": "design",
+    "description": "The `FeedService` class is too large and has too many responsibilities",
+    "files": [
+      "file1"
+    ],
+    "fix": "Refactor the class into smaller, more manageable classes"
+  },
+  {
+    "type": "Lack of cohesion",
+    "category": "design",
+    "description": "The `FeedService` class has methods that are not related to each other",
+    "files": [
+      "file1"
+    ],
+    "fix": "Move unrelated methods to separate classes or modules"
+  }
+]
+
+Pair 62/72:
+Files:
+- ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/AllResource.java
+- ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/AppResource.java
+Smells Found:
+[
+  {
+    "type": "parameter_pollution",
+    "category": "code",
+    "description": "The `get` function contains 6 parameters. The function should have no more than 4 parameters.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Pass a `UserArticleCriteria` object to the function."
+  }
+]
+
+Pair 66/72:
+Files:
+- ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/StarredResource.java
+- ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/SubscriptionResource.java
 Smells Found:
 [
   {
     "type": "Duplicated code",
     "category": "code",
-    "description": "The code to get the user article and update the article is duplicated in the star and unstar methods.",
-    "fix": "Extract this code to a separate method."
+    "description": "The method getUserArticles appears twice, once in the first file and once in the second file.",
+    "files": [
+      "File 1",
+      "File 2"
+    ],
+    "fix": "Refactor the code to remove the duplication."
   },
   {
-    "type": "Exception catching",
+    "type": "Long method",
     "category": "code",
-    "description": "The method `get` catches all exceptions and treats them as ClientExceptions. This makes it hard to debug the real cause of the exception.",
-    "fix": "Catch only the exceptions that are relevant to the method's functionality and rethrow the rest."
+    "description": "The method getUserArticles is very long and complex.",
+    "files": [
+      "File 1"
+    ],
+    "fix": "Refactor the method to make it shorter and easier to understand."
   },
   {
-    "type": "Lack of separation of concerns",
+    "type": "Lack of cohesion",
     "category": "design",
-    "description": "The resource class is responsible for both getting and modifying user articles. This makes the class hard to understand and maintain.",
-    "fix": "Move the methods for modifying user articles to a separate class."
+    "description": "The class StarredResource contains methods that are not related to starred articles, such as the method get.",
+    "files": [
+      "File 1"
+    ],
+    "fix": "Refactor the class to separate the different concerns."
   }
 ]
 
-File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/AppResource.java
+Pair 69/72:
+Files:
+- ./repository/reader-web-common/src/main/java/com/sismics/util/filter/SecurityFilter.java
+- ./repository/reader-web-common/src/main/java/com/sismics/util/filter/TokenBasedSecurityFilter.java
+Smells Found:
+[
+  {
+    "type": "Cognitive Complexity",
+    "category": "code",
+    "description": "The method authenticate() has a high Cyclomatic Complexity of 5.",
+    "files": [
+      "file2"
+    ],
+    "fix": "Reduce the number of conditional statements and loops in the method."
+  }
+]
+
+Single File 2/25:
+File: ./repository/reader-core/src/main/java/com/sismics/util/log4j/MemoryAppender.java
 Smells Found:
 [
   {
     "type": "God Class",
     "category": "design",
-    "description": "The `AppResource` class has too many responsibilities, including versioning, logging, indexing, and port mapping.",
-    "fix": "Refactor the class into smaller, more cohesive units."
+    "description": "The `MemoryAppender` class has too many responsibilities and does too many things. It is responsible for appending log entries to a queue, filtering log entries based on level, tag, and message, and returning a paginated list of log entries. This violates the Single Responsibility Principle.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Split the `MemoryAppender` class into multiple smaller classes, each with a single responsibility. For example, create a `LogAppender` class to handle appending log entries to a queue, a `LogFilter` class to handle filtering log entries, and a `LogList` class to handle returning a paginated list of log entries."
   },
   {
     "type": "Long Method",
     "category": "code",
-    "description": "The `log` method is over 50 lines long and performs multiple distinct tasks.",
-    "fix": "Break the method into smaller, more manageable pieces."
+    "description": "The `find` method in the `MemoryAppender` class is too long and does too many things. It iterates through the entire log queue, filters the log entries based on level, tag, and message, and then returns a paginated list of log entries. This method should be broken down into smaller, more manageable methods.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Break the `find` method into smaller, more manageable methods. For example, create a `filterLogEntries` method to handle filtering the log entries, and a `getPaginatedList` method to handle returning a paginated list of log entries."
   },
   {
-    "type": "Error Handling",
-    "category": "code",
-    "description": "The `log` method uses a broad `catch` block to handle all exceptions, which can make it difficult to determine the cause of an error.",
-    "fix": "Use more specific `catch` blocks to handle different types of exceptions."
+    "type": "Large Class",
+    "category": "design",
+    "description": "The `MemoryAppender` class is too large and has too many lines of code. This makes it difficult to read and understand the code, and it increases the risk of bugs.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Split the `MemoryAppender` class into multiple smaller classes, each with a single responsibility. This will make the code more readable and maintainable."
   }
 ]
 
-File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/AllResource.java
+Single File 8/25:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/UserDao.java
 Smells Found:
 [
   {
-    "type": "UnhandledException",
+    "type": "Excessive Query Parameters",
     "category": "code",
-    "description": "The `get` method can throw a `JSONException` exception which is not handled",
-    "fix": "Add a `try-catch` block to handle the exception and return an appropriate error response."
+    "description": "The getQueryParam() method has a lot of parameters (11). This can make the method difficult to read and maintain.",
+    "files": [
+      "UserDao.java"
+    ],
+    "fix": "Consider refactoring the method to reduce the number of parameters."
   },
   {
-    "type": "UnnecessaryInstantiation",
+    "type": "Instance Variable Mutability",
     "category": "code",
-    "description": "The `UserArticleDao` and `FeedSubscriptionDao` instances are created in every request",
-    "fix": "Move the instantiation of these DAOs to a singleton or a request scope to avoid unnecessary object creation."
+    "description": "The 'user' variable in the 'create()' method is modified after it is assigned.",
+    "files": [
+      "UserDao.java"
+    ],
+    "fix": "Consider making the 'user' variable final or using an immutable class."
+  },
+  {
+    "type": "Long Method",
+    "category": "code",
+    "description": "The 'create()' method has more than 25 lines of code.",
+    "files": [
+      "UserDao.java"
+    ],
+    "fix": "Consider refactoring the method to extract some of the functionality into smaller methods."
+  },
+  {
+    "type": "Complex Class",
+    "category": "design",
+    "description": "The UserDao class has more than 10 methods.",
+    "files": [
+      "UserDao.java"
+    ],
+    "fix": "Consider splitting the class into multiple smaller classes."
   }
 ]
 
-File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/ArticleResource.java
+Single File 9/25:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/jpa/dto/UserDto.java
 Smells Found:
 [
+  {
+    "type": "LongField",
+    "category": "code",
+    "description": "The field 'createTimestamp' is of type 'Long', which is discouraged. Use a dedicated date/time library instead.",
+    "files": [
+      "UserDto.java"
+    ],
+    "fix": "Refactor the 'createTimestamp' field to use a dedicated date/time library such as Joda-Time or Java 8's java.time package."
+  }
+]
+
+Single File 12/25:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/file/json/StarredReader.java
+Smells Found:
+[
+  {
+    "type": "Data Clumps",
+    "category": "design",
+    "description": "The class has multiple methods that operate on related data, suggesting that the data should be encapsulated in an object.",
+    "files": [
+      "StarredReader.java"
+    ],
+    "fix": "Extract the related data into a separate object and pass it to the methods that need it."
+  },
+  {
+    "type": "Long Method",
+    "category": "code",
+    "description": "The `read` method is too long and contains over 100 lines of code, making it difficult to read and maintain.",
+    "files": [
+      "StarredReader.java"
+    ],
+    "fix": "Break the `read` method into smaller, more manageable methods."
+  },
+  {
+    "type": "Magic Numbers",
+    "category": "code",
+    "description": "The `read` method uses the magic number `1000` to convert milliseconds to seconds. Magic numbers are difficult to understand and can lead to errors.",
+    "files": [
+      "StarredReader.java"
+    ],
+    "fix": "Replace the magic number with a named constant."
+  }
+]
+
+Single File 14/25:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/dao/file/rss/XmlReader.java
+Smells Found:
+[
+  {
+    "type": "EmptyCatchBlock",
+    "category": "code",
+    "description": "The try-catch block has an empty catch block.  This can be removed to make the code more concise.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Remove the empty catch block."
+  },
+  {
+    "type": "DuplicateCaseLabel",
+    "category": "code",
+    "description": "The switch statement has a duplicate case label.",
+    "files": [
+      "file2"
+    ],
+    "fix": "Remove the duplicate case label."
+  },
+  {
+    "type": "NestedTryStatement",
+    "category": "design",
+    "description": "The try statement is nested inside another try statement.  It would be better to use a single try statement.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Refactor the code to use a single try statement."
+  }
+]
+
+Single File 16/25:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/model/jpa/UserArticle.java
+Smells Found:
+[
+  {
+    "type": "Lazy Initialization",
+    "category": "code",
+    "description": "The `UserArticle` class has fields that are not initialized until the object is accessed. This can lead to performance problems if the object is accessed frequently.",
+    "files": [
+      "UserArticle.java"
+    ],
+    "fix": "Initialize the fields in the constructor or use a lazy initialization library."
+  },
   {
     "type": "God Class",
     "category": "design",
-    "description": "This class has too many responsibilities and knows too much about the system.",
-    "fix": "Split the class into smaller, more focused classes."
-  },
-  {
-    "type": "Duplicated Code",
-    "category": "code",
-    "description": "The code to update the subscriptions is duplicated in the `read` and `unread` methods.",
-    "fix": "Extract the code to update the subscriptions into a separate method."
+    "description": "The `UserArticle` class has too many responsibilities. It would be better to break it up into smaller, more manageable classes.",
+    "files": [
+      "UserArticle.java"
+    ],
+    "fix": "Refactor the class into smaller, more manageable classes."
   }
 ]
 
+Single File 17/25:
+File: ./repository/reader-core/src/main/java/com/sismics/reader/core/model/context/AppContext.java
+Smells Found:
+[
+  {
+    "type": "Long Class",
+    "category": "design",
+    "description": "This class has more than 200 lines of code, which makes it difficult to read and maintain.",
+    "files": [
+      "AppContext.java"
+    ],
+    "fix": "Split the class into multiple smaller classes."
+  },
+  {
+    "type": "God Class",
+    "category": "design",
+    "description": "This class has too many responsibilities, which makes it difficult to understand and change.",
+    "files": [
+      "AppContext.java"
+    ],
+    "fix": "Move some of the responsibilities to other classes."
+  },
+  {
+    "type": "Shotgun Surgery",
+    "category": "code",
+    "description": "This class has methods that do too many different things, which makes it difficult to understand and change.",
+    "files": [
+      "AppContext.java"
+    ],
+    "fix": "Split the methods into smaller, more focused methods."
+  },
+  {
+    "type": "Feature Envy",
+    "category": "code",
+    "description": "This class has methods that are more interested in other classes than in itself, which makes it difficult to understand and change.",
+    "files": [
+      "AppContext.java"
+    ],
+    "fix": "Move the methods to the classes that they are more interested in."
+  },
+  {
+    "type": "Data Clumps",
+    "category": "code",
+    "description": "This class has data that is grouped together in a way that makes it difficult to understand and change.",
+    "files": [
+      "AppContext.java"
+    ],
+    "fix": "Move the data to a separate class."
+  },
+  {
+    "type": "Lazy Class",
+    "category": "design",
+    "description": "This class has no methods, which makes it difficult to understand its purpose.",
+    "files": [],
+    "fix": "Delete the class."
+  }
+]
+
+Single File 21/25:
 File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/UserResource.java
 Smells Found:
 [
   {
-    "type": "Long Method",
+    "type": "Long Parameter List",
     "category": "code",
-    "description": "The `register` method is too long (100+ lines)",
-    "fix": "Split the method into smaller, more manageable functions."
+    "description": "The `update()` method has too many parameters.",
+    "files": [
+      "both"
+    ],
+    "fix": "Consider using a DTO or a request body to reduce the number of parameters."
   },
   {
-    "type": "Excessive Parameters",
+    "type": "Excessive Comments",
     "category": "code",
-    "description": "The `register` method has too many parameters (10+)",
-    "fix": "Consider using a data transfer object (DTO) to group the parameters."
+    "description": "The `register()` method has too many comments.",
+    "files": [
+      "both"
+    ],
+    "fix": "Consider removing unnecessary comments or moving them to a separate location."
+  },
+  {
+    "type": "Magic Strings",
+    "category": "code",
+    "description": "The `update()` method has a magic string `null`.",
+    "files": [
+      "both"
+    ],
+    "fix": "Replace the magic string with a constant or a better descriptive value."
+  },
+  {
+    "type": "Long Method",
+    "category": "code",
+    "description": "The `register()` method is too long.",
+    "files": [
+      "both"
+    ],
+    "fix": "Consider refactoring the method into smaller methods."
   },
   {
     "type": "God Class",
     "category": "design",
-    "description": "The `UserResource` class is responsible for too many different tasks",
-    "fix": "Split the class into smaller, more focused classes."
+    "description": "The `UserResource` class has too many responsibilities.",
+    "files": [
+      "both"
+    ],
+    "fix": "Consider refactoring the class into smaller classes."
   }
 ]
 
-File: ./repository/reader-web/src/main/java/com/sismics/reader/rest/resource/CategoryResource.java
+Single File 25/25:
+File: ./repository/reader-web-common/src/main/java/com/sismics/security/UserPrincipal.java
 Smells Found:
 [
   {
-    "type": "God Class",
+    "type": "Large Class",
     "category": "design",
-    "description": "CategoryResource has too many responsibilities.",
-    "fix": "Extract responsibilities into separate classes."
+    "description": "The UserPrincipal class has 10 attributes and 12 methods, which makes it large and difficult to maintain.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Refactor the class to make it smaller and more manageable."
   },
   {
     "type": "Long Method",
     "category": "code",
-    "description": "The `get` method has over 50 lines of code.",
-    "fix": "Refactor the method into smaller, more manageable methods."
+    "description": "The UserPrincipal constructor has 11 lines of code, which makes it long and difficult to read.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Refactor the constructor to make it shorter and more concise."
   },
   {
-    "type": "Repeated Code",
+    "type": "Duplicate Code",
     "category": "code",
-    "description": "The `update` method has a lot of repeated code for updating the category.",
-    "fix": "Extract the repeated code into a separate method."
+    "description": "The UserPrincipal class has two methods, getId() and getName(), that both return the same value.",
+    "files": [
+      "file1"
+    ],
+    "fix": "Refactor the class to eliminate the duplicate code."
   }
 ]
 

@@ -1,3 +1,4 @@
+```java
 package com.sismics.reader.core.dao.jpa;
 
 import com.sismics.reader.core.constant.DefaultConfig;
@@ -18,38 +19,37 @@ import java.util.*;
 
 /**
  * User DAO.
- * 
+ *
  * @author jtremeaux
  */
 public class UserDao extends BaseDao<UserDto, UserCriteria> {
 
     @Override
     protected QueryParam getQueryParam(UserCriteria criteria, FilterCriteria filterCriteria) {
-        List<String> criteriaList = new ArrayList<String>();
-        Map<String, Object> parameterMap = new HashMap<String, Object>();
-
-        StringBuilder sb = new StringBuilder("select u.USE_ID_C as c0, u.USE_USERNAME_C as c1, u.USE_EMAIL_C as c2, u.USE_CREATEDATE_D as c3, u.USE_IDLOCALE_C as c4")
-                .append(" from T_USER u ");
+        Map<String, Object> parameterMap = new HashMap<>();
+        List<String> criteriaList = new ArrayList<>();
+        StringBuilder query = new StringBuilder("select u.id as id, u.username as username, u.email as email, u.created_date as created_date, u.id_locale as id_locale")
+                .append(" from User u ");
 
         // Add search criterias
-        criteriaList.add("u.USE_DELETEDATE_D is null");
+        criteriaList.add("u.delete_date is null");
 
-        return new QueryParam(sb.toString(), criteriaList, parameterMap, null, filterCriteria, new UserMapper());
+        return new QueryParam(query.toString(), criteriaList, parameterMap, null, filterCriteria, new UserMapper());
     }
 
     /**
      * Authenticates an user.
-     * 
+     *
      * @param username User login
      * @param password User password
      * @return ID of the authenticated user or null
      */
     public String authenticate(String username, String password) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        Query q = em.createQuery("select u from User u where u.username = :username and u.deleteDate is null")
-                .setParameter("username", username);
         try {
-            User user = (User) q.getSingleResult();
+            Query query = em.createQuery("select u from User u where u.username = :username and u.delete_date is null")
+                    .setParameter("username", username);
+            User user = (User) query.getSingleResult();
             if (!BCrypt.checkpw(password, user.getPassword())) {
                 return null;
             }
@@ -58,84 +58,84 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
             return null;
         }
     }
-    
+
     /**
      * Creates a new user.
-     * 
+     *
      * @param user User to create
      * @return User ID
      */
     public String create(User user) throws Exception {
         // Create the user UUID
         user.setId(UUID.randomUUID().toString());
-        
+
         // Checks for user unicity
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        Query q = em.createQuery("select u from User u where u.username = :username and u.deleteDate is null")
+        Query query = em.createQuery("select u from User u where u.username = :username and u.delete_date is null")
                 .setParameter("username", user.getUsername());
-        List<?> l = q.getResultList();
-        if (l.size() > 0) {
+        List<?> resultList = query.getResultList();
+        if (!resultList.isEmpty()) {
             throw new Exception("AlreadyExistingUsername");
         }
-        
-        user.setCreateDate(new Date());
+
+        user.setCreated_date(new Date());
         user.setPassword(hashPassword(user.getPassword()));
         user.setTheme(DefaultConfig.DEFAULT_THEME_ID);
         em.persist(user);
-        
+
         return user.getId();
     }
-    
+
     /**
      * Updates a user.
-     * 
+     *
      * @param user User to update
      * @return Updated user
      */
     public User update(User user) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        
+
         // Get the user
-        Query q = em.createQuery("select u from User u where u.id = :id and u.deleteDate is null")
+        Query query = em.createQuery("select u from User u where u.id = :id and u.delete_date is null")
                 .setParameter("id", user.getId());
-        User userFromDb = (User) q.getSingleResult();
+        User userFromDb = (User) query.getSingleResult();
 
         // Update the user
-        userFromDb.setLocaleId(user.getLocaleId());
+        userFromDb.setId_locale(user.getId_locale());
         userFromDb.setEmail(user.getEmail());
         userFromDb.setTheme(user.getTheme());
-        userFromDb.setDisplayTitleWeb(user.isDisplayTitleWeb());
-        userFromDb.setDisplayTitleMobile(user.isDisplayTitleMobile());
-        userFromDb.setDisplayUnreadWeb(user.isDisplayUnreadWeb());
-        userFromDb.setDisplayUnreadMobile(user.isDisplayUnreadMobile());
-        userFromDb.setFirstConnection(user.isFirstConnection());
-        
+        userFromDb.setDisplay_title_web(user.isDisplay_title_web());
+        userFromDb.setDisplay_title_mobile(user.isDisplay_title_mobile());
+        userFromDb.setDisplay_unread_web(user.isDisplay_unread_web());
+        userFromDb.setDisplay_unread_mobile(user.isDisplay_unread_mobile());
+        userFromDb.setFirst_connection(user.isFirst_connection());
+
         return user;
     }
-    
+
     /**
      * Update the user password.
-     * 
+     *
      * @param user User to update
      * @return Updated user
      */
     public User updatePassword(User user) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        
+
         // Get the user
-        Query q = em.createQuery("select u from User u where u.id = :id and u.deleteDate is null")
+        Query query = em.createQuery("select u from User u where u.id = :id and u.delete_date is null")
                 .setParameter("id", user.getId());
-        User userFromDb = (User) q.getSingleResult();
+        User userFromDb = (User) query.getSingleResult();
 
         // Update the user
         userFromDb.setPassword(hashPassword(user.getPassword()));
-        
+
         return user;
     }
 
     /**
      * Gets a user by its ID.
-     * 
+     *
      * @param id User ID
      * @return User
      */
@@ -147,74 +147,74 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
             return null;
         }
     }
-    
+
     /**
      * Gets an active user by its username.
-     * 
+     *
      * @param username User's username
      * @return User
      */
     public User getActiveByUsername(String username) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
         try {
-            Query q = em.createQuery("select u from User u where u.username = :username and u.deleteDate is null")
+            Query query = em.createQuery("select u from User u where u.username = :username and u.delete_date is null")
                     .setParameter("username", username);
-            return (User) q.getSingleResult();
+            return (User) query.getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
     }
-    
+
     /**
      * Gets an active user by its password recovery token.
-     * 
+     *
      * @param passwordResetKey Password recovery token
      * @return User
      */
     public User getActiveByPasswordResetKey(String passwordResetKey) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
         try {
-            Query q = em.createQuery("select u from User u where u.passwordResetKey = :passwordResetKey and u.deleteDate is null")
+            Query query = em.createQuery("select u from User u where u.password_reset_key = :passwordResetKey and u.delete_date is null")
                     .setParameter("passwordResetKey", passwordResetKey);
-            return (User) q.getSingleResult();
+            return (User) query.getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
     }
-    
+
     /**
      * Deletes a user.
-     * 
+     *
      * @param username User's username
      */
     public void delete(String username) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-            
+
         // Get the user
-        User userFromDb = (User) em.createQuery("select u from User u where u.username = :username and u.deleteDate is null")
+        User userFromDb = (User) em.createQuery("select u from User u where u.username = :username and u.delete_date is null")
                 .setParameter("username", username)
                 .getSingleResult();
-        
+
         // Delete the user
         Date dateNow = new Date();
-        userFromDb.setDeleteDate(dateNow);
+        userFromDb.setDelete_date(dateNow);
 
         // Delete linked data
-        em.createQuery("delete from AuthenticationToken at where at.userId = :userId")
+        em.createQuery("delete from AuthenticationToken at where at.user_id = :userId")
                 .setParameter("userId", userFromDb.getId())
                 .executeUpdate();
 
-        em.createQuery("update UserArticle ua set ua.deleteDate = :dateNow where ua.userId = :userId and ua.deleteDate is null")
-                .setParameter("userId", userFromDb.getId())
-                .setParameter("dateNow", dateNow)
-                .executeUpdate();
-
-        em.createQuery("update FeedSubscription fs set fs.deleteDate = :dateNow where fs.userId = :userId and fs.deleteDate is null")
+        em.createQuery("update UserArticle ua set ua.delete_date = :dateNow where ua.user_id = :userId and ua.delete_date is null")
                 .setParameter("userId", userFromDb.getId())
                 .setParameter("dateNow", dateNow)
                 .executeUpdate();
 
-        em.createQuery("update Category c set c.deleteDate = :dateNow where c.userId = :userId and c.deleteDate is null")
+        em.createQuery("update FeedSubscription fs set fs.delete_date = :dateNow where fs.user_id = :userId and fs.delete_date is null")
+                .setParameter("userId", userFromDb.getId())
+                .setParameter("dateNow", dateNow)
+                .executeUpdate();
+
+        em.createQuery("update Category c set c.delete_date = :dateNow where c.user_id = :userId and c.delete_date is null")
                 .setParameter("userId", userFromDb.getId())
                 .setParameter("dateNow", dateNow)
                 .executeUpdate();
@@ -222,11 +222,8 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
 
     /**
      * Hash the user's password.
-     * 
+     *
      * @param password Clear password
      * @return Hashed password
      */
-    protected String hashPassword(String password) {
-        return BCrypt.hashpw(password, BCrypt.gensalt());
-    }
-}
+    protected String hashPassword(

@@ -1,4 +1,4 @@
-
+```java
 package com.sismics.reader.rest.resource;
 
 import com.sismics.reader.core.constant.BaseFunction;
@@ -18,11 +18,7 @@ import com.sismics.reader.core.model.jpa.User;
 import com.sismics.reader.core.util.jpa.PaginatedList;
 import com.sismics.reader.core.util.jpa.PaginatedLists;
 import com.sismics.reader.core.util.jpa.SortCriteria;
-import com.sismics.reader.rest.constant.BaseFunction;
-import com.sismics.rest.exception.ClientException;
-import com.sismics.rest.exception.ForbiddenClientException;
-import com.sismics.rest.exception.ServerException;
-import com.sismics.rest.util.ValidationUtil;
+import com.sismics.reader.rest.util.ValidationUtil;
 import com.sismics.security.UserPrincipal;
 import com.sismics.util.EnvironmentUtil;
 import com.sismics.util.LocaleUtil;
@@ -44,40 +40,32 @@ import java.util.Set;
 
 /**
  * User REST resources.
- * 
+ *
  * @author jtremeaux
  */
 @Path("/user")
 public class UserResource extends BaseResource {
+
     /**
      * Creates a new user.
-     * 
-     * @param username User's username
-     * @param password Password
-     * @param localeId Locale ID
-     * @param email E-Mail
+     *
+     * @param json Request JSON object
      * @return Response
      */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
-    public Response register(
-        @FormParam("username") String username,
-        @FormParam("password") String password,
-        @FormParam("locale") String localeId,
-        @FormParam("email") String email) throws JSONException {
-
+    public Response register(JSONObject json) throws JSONException {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
         checkBaseFunction(BaseFunction.ADMIN);
-        
+
         // Validate the input data
-        username = ValidationUtil.validateLength(username, "username", 3, 50);
-        ValidationUtil.validateAlphanumeric(username, "username");
-        password = ValidationUtil.validateLength(password, "password", 8, 50);
-        email = ValidationUtil.validateLength(email, "email", 3, 50);
-        ValidationUtil.validateEmail(email, "email");
-        
+        String username = ValidationUtil.validateUsername(json.has("username") ? json.getString("username") : null, 3, 50);
+        String password = ValidationUtil.validatePassword(json.has("password") ? json.getString("password") : null, 8, 50);
+        String email = ValidationUtil.validateEmail(json.has("email") ? json.getString("email") : null, 3, 50);
+        String localeId = ValidationUtil.validateLocale(json.has("locale") ? json.getString("locale") : null, true);
+
         // Create the user
         User user = new User();
         user.setRoleId(SecurityConfig.DEFAULT_USER_ROLE);
@@ -89,13 +77,8 @@ public class UserResource extends BaseResource {
         user.setDisplayUnreadWeb(true);
         user.setDisplayUnreadMobile(true);
         user.setCreateDate(new Date());
-
-        if (localeId == null) {
-            // Set the locale from the HTTP headers
-            localeId = LocaleUtil.getLocaleIdFromAcceptLanguage(request.getHeader("Accept-Language"));
-        }
         user.setLocaleId(localeId);
-        
+
         // Create the user
         UserDao userDao = new UserDao();
         String userId;
@@ -108,15 +91,15 @@ public class UserResource extends BaseResource {
                 throw new ServerException("UnknownError", "Unknown Server Error", e);
             }
         }
-        
+
         // Create the root category for this user
         Category category = new Category();
         category.setUserId(userId);
         category.setOrder(0);
-        
+
         CategoryDao categoryDao = new CategoryDao();
         categoryDao.create(category);
-        
+
         // Raise a user creation event
         UserCreatedEvent userCreatedEvent = new UserCreatedEvent();
         userCreatedEvent.setUser(user);
@@ -130,42 +113,29 @@ public class UserResource extends BaseResource {
 
     /**
      * Updates user informations.
-     * 
-     * @param password Password
-     * @param email E-Mail
-     * @param themeId Theme
-     * @param localeId Locale ID
-     * @param displayTitleWeb Display only article titles (web application).
-     * @param displayTitleMobile Display only article titles (mobile application).
-     * @param displayUnreadWeb Display only unread titles (web application).
-     * @param displayUnreadMobile Display only unread titles (mobile application).
-     * @param firstConnection True if the user hasn't acknowledged the first connection wizard yet.
+     *
+     * @param json Request JSON object
      * @return Response
      */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Response update(
-        @FormParam("password") String password,
-        @FormParam("email") String email,
-        @FormParam("theme") String themeId,
-        @FormParam("locale") String localeId,
-        @FormParam("display_title_web") Boolean displayTitleWeb,
-        @FormParam("display_title_mobile") Boolean displayTitleMobile,
-        @FormParam("display_unread_web") Boolean displayUnreadWeb,
-        @FormParam("display_unread_mobile") Boolean displayUnreadMobile,
-        @FormParam("narrow_article") Boolean narrowArticle,
-        @FormParam("first_connection") Boolean firstConnection) throws JSONException {
-        
+    public Response update(JSONObject json) throws JSONException {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
-        
+
         // Validate the input data
-        password = ValidationUtil.validateLength(password, "password", 8, 50, true);
-        email = ValidationUtil.validateLength(email, "email", null, 100, true);
-        localeId = com.sismics.reader.rest.util.ValidationUtil.validateLocale(localeId, "locale", true);
-        themeId = com.sismics.reader.rest.util.ValidationUtil.validateTheme(EnvironmentUtil.isUnitTest() ? null : request.getServletContext(), themeId, "theme", true);
-        
+        String password = ValidationUtil.validatePassword(json.has("password") ? json.getString("password") : null, 8, 50, true);
+        String email = ValidationUtil.validateEmail(json.has("email") ? json.getString("email") : null, 3, 50, true);
+        String themeId = ValidationUtil.validateTheme(EnvironmentUtil.isUnitTest() ? null : request.getServletContext(), json.has("theme") ? json.getString("theme") : null, "theme", true);
+        String localeId = ValidationUtil.validateLocale(json.has("locale") ? json.getString("locale") : null, true);
+        Boolean displayTitleWeb = json.has("display_title_web") ? json.getBoolean("display_title_web") : null;
+        Boolean displayTitleMobile = json.has("display_title_mobile") ? json.getBoolean("display_title_mobile") : null;
+        Boolean displayUnreadWeb = json.has("display_unread_web") ? json.getBoolean("display_unread_web") : null;
+        Boolean displayUnreadMobile = json.has("display_unread_mobile") ? json.getBoolean("display_unread_mobile") : null;
+        Boolean narrowArticle = json.has("narrow_article") ? json.getBoolean("narrow_article") : null;
+        Boolean firstConnection = json.has("first_connection") && hasBaseFunction(BaseFunction.ADMIN) ? json.getBoolean("first_connection") : null;
+
         // Update the user
         UserDao userDao = new UserDao();
         User user = userDao.getActiveByUsername(principal.getName());
@@ -193,6 +163,28 @@ public class UserResource extends BaseResource {
         if (narrowArticle != null) {
             user.setNarrowArticle(narrowArticle);
         }
-        if (firstConnection != null && hasBaseFunction(BaseFunction.ADMIN)) {
+        if (firstConnection != null) {
             user.setFirstConnection(firstConnection);
         }
+        user.setModifiedDate(new Date());
+        userDao.update(user);
+
+        if (password != null) {
+            // Update the password
+            PasswordChangedEvent passwordChangedEvent = new PasswordChangedEvent();
+            passwordChangedEvent.setUserId(user.getUserId());
+            AppContext.getInstance().getMailEventBus().post(passwordChangedEvent);
+        }
+
+        // Raise a user update event
+        UserUpdatedEvent userUpdatedEvent = new UserUpdatedEvent();
+        userUpdatedEvent.setUser(user);
+        AppContext.getInstance().getMailEventBus().post(userUpdatedEvent);
+
+        // Always return OK
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        return Response.ok().entity(response).build();
+    }
+}
+```

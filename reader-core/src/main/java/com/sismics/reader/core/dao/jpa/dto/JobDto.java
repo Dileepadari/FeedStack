@@ -1,3 +1,4 @@
+```java
 package com.sismics.reader.core.dao.jpa.dto;
 
 /**
@@ -24,17 +25,17 @@ public class JobDto {
     /**
      * Creation date.
      */
-    private Long createTimestamp;
+    private Date createDate;
 
     /**
      * Start date.
      */
-    private Long startTimestamp;
+    private Date startDate;
 
     /**
      * End date.
      */
-    private Long endTimestamp;
+    private Date endDate;
 
 
     /**
@@ -92,56 +93,57 @@ public class JobDto {
     }
 
     /**
-     * Getter of createTimestamp.
+     * Getter of createDate.
      *
-     * @return createTimestamp
+     * @return createDate
      */
-    public Long getCreateTimestamp() {
-        return createTimestamp;
+    public Date getCreateDate() {
+        return createDate;
     }
 
     /**
-     * Setter of createTimestamp.
+     * Setter of createDate.
      *
-     * @param createTimestamp createTimestamp
+     * @param createDate createDate
      */
-    public void setCreateTimestamp(Long createTimestamp) {
-        this.createTimestamp = createTimestamp;
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
     }
 
     /**
-     * Getter of startTimestamp.
+     * Getter of startDate.
      *
-     * @return startTimestamp
+     * @return startDate
      */
-    public Long getStartTimestamp() {
-        return startTimestamp;
+    public Date getStartDate() {
+        return startDate;
     }
 
     /**
-     * Setter of startTimestamp.
+     * Setter of startDate.
      *
-     * @param startTimestamp startTimestamp
+     * @param startDate startDate
      */
-    public void setStartTimestamp(Long startTimestamp) {
-        this.startTimestamp = startTimestamp;
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
     }
 
     /**
-     * Getter of endTimestamp.
+     * Getter of endDate.
      *
-     * @return endTimestamp
+     * @return endDate
      */
-    public Long getEndTimestamp() {
-        return endTimestamp;
+    public Date getEndDate() {
+        return endDate;
     }
 
     /**
-     * Setter of endTimestamp.
+     * Setter of endDate.
      *
-     * @param endTimestamp endTimestamp
+     * @param endDate endDate
      */
-    public void setEndTimestamp(Long endTimestamp) {
-        this.endTimestamp = endTimestamp;
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
     }
 }
+```

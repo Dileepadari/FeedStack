@@ -1,6 +1,5 @@
+```java
 package com.sismics.reader.core.model.jpa;
-
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,7 +11,7 @@ import com.google.common.base.Objects;
 
 /**
  * Synchronization of a feed.
- * 
+ *
  * @author bgamard
  */
 @Entity
@@ -24,19 +23,19 @@ public class FeedSynchronization {
     @Id
     @Column(name = "FSY_ID_C", length = 36)
     private String id;
-    
+
     /**
      * Feed ID.
      */
     @Column(name = "FSY_IDFEED_C", nullable = false, length = 36)
     private String feedId;
-    
+
     /**
      * Success status.
      */
     @Column(name = "FSY_SUCCESS_B", nullable = false)
     private boolean success;
-    
+
     /**
      * Message.
      */
@@ -55,54 +54,8 @@ public class FeedSynchronization {
      */
     @Column(name = "FSY_CREATEDATE_D", nullable = false)
     private Date createDate;
-    
-    public String getId() {
-        return id;
-    }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getFeedId() {
-        return feedId;
-    }
-
-    public void setFeedId(String feedId) {
-        this.feedId = feedId;
-    }
-
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public Integer getDuration() {
-        return duration;
-    }
-
-    public void setDuration(Integer duration) {
-        this.duration = duration;
-    }
-
-    public Date getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
+    // getters and setters
 
     @Override
     public String toString() {
@@ -113,3 +66,4 @@ public class FeedSynchronization {
                 .toString();
     }
 }
+```
