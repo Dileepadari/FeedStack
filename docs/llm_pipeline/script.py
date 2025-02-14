@@ -15,8 +15,8 @@ import requests
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 # Load environment variables and configure API
-load_dotenv("tokens.env")
-GITHUB_TOKEN = os.getenv("GITHUB_API_TOKEN")
+load_dotenv()
+GITHUB_TOKEN = os.getenv("GIT_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 USERNAME = os.getenv("USERNAME")
 genai.configure(api_key=GEMINI_API_KEY)

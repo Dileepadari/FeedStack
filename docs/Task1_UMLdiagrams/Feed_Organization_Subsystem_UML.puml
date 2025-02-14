@@ -1,0 +1,386 @@
+@startuml
+
+class AppContext{
+    - {static} instance : AppContext
+    - eventBus : EventBus
+    - asyncEventBus : EventBus
+    - mailEventBus : EventBus
+    - importEventBus : EventBus
+    - feedService : FeedService
+    - indexingService : IndexingService
+    - asyncExecutorList : List<ExecutorService>
+    - AppContext()
+    - resetEventBus() : void
+    + {static} getInstance() : AppContext
+    + waitForAsync() : void
+    - newAsyncEventBus() : EventBus
+    + getEventBus() : EventBus
+    + getAsyncEventBus() : EventBus
+    + getMailEventBus() : EventBus
+    + getImportEventBus() : EventBus
+    + getFeedService() : FeedService
+    + getIndexingService() : IndexingService
+}
+
+class Feed{
+    - id : String
+    - rssUrl : String
+    - url : String
+    - baseUri : String
+    - title : String
+    - language : String
+    - description : String
+    - createDate : Date
+    - lastFetchDate : Date
+    - deleteDate : Date
+    + Feed()
+    + Feed(id : String)
+    + getId() : String
+    + setId(id : String) : void
+    + getRssUrl() : String
+    + setRssUrl(rssUrl : String) : void
+    + getUrl() : String
+    + setUrl(url : String) : void
+    + getBaseUri() : String
+    + setBaseUri(baseUri : String) : void
+    + getTitle() : String
+    + setTitle(title : String) : void
+    + getLanguage() : String
+    + setLanguage(language : String) : void
+    + getDescription() : String
+    + setDescription(description : String) : void
+    + getCreateDate() : Date
+    + setCreateDate(createDate : Date) : void
+    + getLastFetchDate() : Date
+    + setLastFetchDate(lastFetchDate : Date) : void
+    + getDeleteDate() : Date
+    + setDeleteDate(deleteDate : Date) : void
+    + toString() : String
+}
+
+class FeedService{
+    - {static} log : Logger
+    # startUp() : void
+    # shutDown() : void
+    # runOneIteration() : void
+    # scheduler() : Scheduler
+    + synchronizeAllFeeds() : void
+    + synchronize(url : String) : Feed
+    - completeArticleList(articleList : List<Article>) : void
+    - getArticleToRemove(articleList : List<Article>) : List<Article>
+    - getNewerArticleList(articleList : List<Article>, oldestArticle : Article) : List<Article>
+    - getOldestArticle(articleList : List<Article>) : Article
+    - isFaviconUpdated(feed : Feed) : boolean
+    - parseFeedOrPage(url : String, parsePage : boolean) : RssReader
+    - logParsingError(url : String, e : Exception) : void
+    + createInitialUserArticle(userId : String, feedSubscription : FeedSubscription) : void
+}
+
+class IndexingService{
+    - {static} log : Logger
+    - directory : Directory
+    - directoryReader : DirectoryReader
+    - luceneStorageConfig : String
+    + IndexingService(luceneStorageConfig : String)
+    # startUp() : void
+    # shutDown() : void
+    # runOneIteration() : void
+    # scheduler() : Scheduler
+    + searchArticles() : PaginatedList<UserArticleDto>
+    + rebuildIndex() : void
+    + getDirectory() : Directory
+    + getDirectoryReader() : DirectoryReader
+}
+
+class FeedSynchronizationDao{
+    + create(feedSynchronization : FeedSynchronization) : String
+    + deleteOldFeedSynchronization(feedId : String, minutes : int) : void
+    + findByFeedId(feedId : String) : List<FeedSynchronization>
+}
+
+class Article{
+    - id : String
+    - feedId : String
+    - url : String
+    - baseUri : String
+    - guid : String
+    - title : String
+    - creator : String
+    - description : String
+    - commentUrl : String
+    - commentCount : Integer
+    - enclosureUrl : String
+    - enclosureLength : Integer
+    - enclosureType : String
+    - publicationDate : Date
+    - createDate : Date
+    - deleteDate : Date
+    + Article()
+    + Article(id : String)
+    + getId() : String
+    + setId(id : String) : void
+    + getFeedId() : String
+    + setFeedId(feedId : String) : void
+    + getUrl() : String
+    + setUrl(url : String) : void
+    + getBaseUri() : String
+    + setBaseUri(baseUri : String) : void
+    + getGuid() : String
+    + setGuid(guid : String) : void
+    + getTitle() : String
+    + setTitle(title : String) : void
+    + getCreator() : String
+    + setCreator(creator : String) : void
+    + getDescription() : String
+    + setDescription(description : String) : void
+    + getCommentUrl() : String
+    + setCommentUrl(commentUrl : String) : void
+    + getCommentCount() : Integer
+    + setCommentCount(commentCount : Integer) : void
+    + getEnclosureUrl() : String
+    + setEnclosureUrl(enclosureUrl : String) : void
+    + getEnclosureLength() : Integer
+    + setEnclosureLength(enclosureLength : Integer) : void
+    + getEnclosureType() : String
+    + setEnclosureType(enclosureType : String) : void
+    + getPublicationDate() : Date
+    + setPublicationDate(publicationDate : Date) : void
+    + getCreateDate() : Date
+    + setCreateDate(createDate : Date) : void
+    + getDeleteDate() : Date
+    + setDeleteDate(deleteDate : Date) : void
+    + toString() : String
+}
+
+class FeedDao{
+    # getQueryParam(criteria : FeedCriteria, filterCriteria : FilterCriteria) : QueryParam
+    + create(feed : Feed) : String
+    + delete(id : String) : void
+    + getByRssUrl(rssUrl : String) : Feed
+    + update(feed : Feed) : Feed
+}
+
+class RssReader{
+    - {static} log : Logger
+    + {static} DF_RSS : DateTimeFormatter
+    + {static} DF_ATOM : DateTimeFormatter
+    + {static} DF_DC : DateTimeFormatter
+    - content : String
+    - feed : Feed
+    - article : Article
+    - articleList : List<Article>
+    - atomLinkList : List<AtomLink>
+    - atomArticleLinkList : List<AtomLink>
+    - fatalErrorCount : int
+    - {static} URI_XML : String
+    - {static} URI_ATOM : String
+    - {static} URI_RDF : String
+    - {static} URI_SLASH : String
+    - {static} URI_DC : String
+    - {static} URI_CONTENT : String
+    - {static} URI_THREAD : String
+    - {static} FATAL_ERROR_MAX : int
+    - currentElement : Element
+    - elementStack : Stack<Element>
+    - feedType : FeedType
+    + RssReader()
+    + readRssFeed(is : InputStream) : void
+    + startElement(uri : String, localName : String, qName : String, attributes : Attributes) : void
+    + endElement(uri : String, localName : String, qName : String) : void
+    - initFeed() : void
+    - pushElement(newElement : Element) : void
+    - popElement() : void
+    - validateFeed() : void
+    - fixGuid() : void
+    + characters(ch : char[], start : int, length : int) : void
+    + fatalError(e : SAXParseException) : void
+    - getContent() : String
+    + getFeed() : Feed
+    + getArticleList() : List<Article>
+}
+
+class UserArticle{
+    - id : String
+    - userId : String
+    - articleId : String
+    - createDate : Date
+    - readDate : Date
+    - starredDate : Date
+    - deleteDate : Date
+    + getId() : String
+    + setId(id : String) : void
+    + getUserId() : String
+    + setUserId(userId : String) : void
+    + getArticleId() : String
+    + setArticleId(articleId : String) : void
+    + getCreateDate() : Date
+    + setCreateDate(createDate : Date) : void
+    + getReadDate() : Date
+    + setReadDate(readDate : Date) : void
+    + getStarredDate() : Date
+    + setStarredDate(starredDate : Date) : void
+    + getDeleteDate() : Date
+    + setDeleteDate(deleteDate : Date) : void
+    + toString() : String
+}
+
+class Category{
+    - id : String
+    - userId : String
+    - parentId : String
+    - name : String
+    - order : Integer
+    - folded : boolean
+    - createDate : Date
+    - deleteDate : Date
+    + getId() : String
+    + setId(id : String) : void
+    + getUserId() : String
+    + setUserId(userId : String) : void
+    + getParentId() : String
+    + setParentId(parentId : String) : void
+    + getName() : String
+    + setName(name : String) : void
+    + getOrder() : Integer
+    + setOrder(order : Integer) : void
+    + isFolded() : boolean
+    + setFolded(folded : boolean) : void
+    + getCreateDate() : Date
+    + setCreateDate(createDate : Date) : void
+    + getDeleteDate() : Date
+    + setDeleteDate(deleteDate : Date) : void
+    + toString() : String
+}
+
+class FeedSubscription{
+    - id : String
+    - userId : String
+    - feedId : String
+    - categoryId : String
+    - title : String
+    - order : Integer
+    - unreadCount : Integer
+    - createDate : Date
+    - deleteDate : Date
+    + getId() : String
+    + setId(id : String) : void
+    + getUserId() : String
+    + setUserId(userId : String) : void
+    + getFeedId() : String
+    + setFeedId(feedId : String) : void
+    + getCategoryId() : String
+    + setCategoryId(categoryId : String) : void
+    + getTitle() : String
+    + setTitle(title : String) : void
+    + getOrder() : Integer
+    + setOrder(order : Integer) : void
+    + getUnreadCount() : Integer
+    + setUnreadCount(unreadCount : Integer) : void
+    + getCreateDate() : Date
+    + setCreateDate(createDate : Date) : void
+    + getDeleteDate() : Date
+    + setDeleteDate(deleteDate : Date) : void
+    + toString() : String
+}
+
+class ArticleSanitizer{
+    - {static} log : Logger
+    - {static} INTEGER_POLICY : AttributePolicy
+    + sanitize(baseUri : String, html : String) : String
+}
+
+class TextSanitizer{
+    - {static} policy : PolicyFactory
+    - {static} TAG_PATTERN : Pattern
+    + {static} sanitize(html : String) : String
+}
+
+class FeedSynchronizationDao{
+    + create(feedSynchronization : FeedSynchronization) : String
+    + deleteOldFeedSynchronization(feedId : String, minutes : int) : void
+    + findByFeedId(feedId : String) : List<FeedSynchronization>
+}
+
+class BaseDao{
+    + findByCriteria(list : PaginatedList<T>, criteria : C, sortCriteria : SortCriteria, filterCriteria : FilterCriteria) : void
+    + findByCriteria(criteria : C, sortCriteria : SortCriteria, filterCriteria : FilterCriteria) : List<T>
+    + findByCriteria(criteria : C) : List<T>
+    + findFirstByCriteria(criteria : C) : T
+    # {abstract} getQueryParam(criteria : C, filterCriteria : FilterCriteria) : QueryParam
+}
+
+class QueryParam{
+    - queryString : String
+    - criteriaList : List<String>
+    - sortCriteria : SortCriteria
+    - parameterMap : Map<String,Object>
+    - filterCriteria : FilterCriteria
+    - groupByList : List<String>
+    - resultMapper : ResultMapper
+    + QueryParam()
+    + QueryParam()
+    + getQueryString() : String
+    + setQueryString(queryString : String) : void
+    + getSortCriteria() : SortCriteria
+    + getCriteriaList() : List<String>
+    + getParameterMap() : Map<String,Object>
+    + getFilterCriteria() : FilterCriteria
+    + getGroupByList() : List<String>
+    + getResultMapper() : ResultMapper
+    + setSortCriteria(sortCriteria : SortCriteria) : void
+}
+
+class FilterCriteria{
+    - filterColumnList : List<FilterColumn>
+    + FilterCriteria(filterColumnList : List<FilterColumn>)
+    + getFilterColumnList() : List<FilterColumn>
+}
+
+AppContext -- FeedService
+AppContext -- IndexingService
+
+FeedService --> FeedDao
+FeedService --> RssReader
+FeedService --> FeedSynchronizationDao
+FeedService --> IndexingService
+FeedService --> FaviconUpdateRequestedEvent
+
+IndexingService --> ArticleDao
+Feed "1" --> "*" Article
+UserArticle "*" --> "1" Article
+FeedSubscription "*" --> "1" Feed
+FeedSubscription "*" --> "1" Category
+
+RssReader --> ArticleSanitizer
+ArticleSanitizer --> TextSanitizer
+
+BaseDao <|-- FeedDao
+BaseDao <|-- ArticleDao
+BaseDao <|-- UserArticleDao
+
+FeedSynchronizationDao --> FeedSynchronization
+
+QueryParam --> FilterCriteria
+FilterCriteria --> FilterColumn
+
+IndexingService --> Directory
+IndexingService -- QueryParam
+
+UserArticleDao --> UserArticle
+
+ArticleDao --> Article
+
+FeedService ..> FeedDto
+FeedService ..> FeedMapper
+FeedService ..> Constants
+
+ArticleDao ..> ArticleDto
+ArticleDao ..> ArticleMapper
+ArticleDao ..> Constants
+
+UserArticleDao ..> UserArticleMapper
+UserArticleDao ..> Constants
+
+RssReader ..> DirectoryUtil
+
+@enduml

@@ -540,23 +540,132 @@ I will provide code, type of design smell. Justify the reason why that happens, 
 
 While the refactoring is correct, There could be an additional layer of abstraction (ThemeService) to make it more modular and easier to maintain.
 
+
 ### 6. Wide Hierarchy
 **Location:** `com.sismics.reader.rest.resource.BaseResource`
 
-**Problem:**
+**Problems:**
 - Too many direct subclasses
-- Missing intermediate abstractions
-- Poor organization of endpoints
+- Lack of intermediate abstractions
+- Poor organization of endpoint responsibilities
 
 **Solution:**
-1. Create intermediate abstract classes
-2. Group related functionality
-3. Reorganize inheritance hierarchy
+1. Introduce intermediate abstract classes to group related functionality.
+2. Organize resources based on concerns (e.g., authentication, pagination, validation).
+3. Standardize response handling and error management.
 
 **Quality Impact:**
-- Maintainability: Inconsistent patterns
-- Reliability: Inconsistent error handling
-- Security: Varying authentication implementations
+- **Maintainability:** More consistent and predictable code structure.
+- **Reliability:** Unified error handling improves robustness.
+- **Security:** Consistent authentication mechanisms enhance security.
+
+---
+
+## Code Refactoring
+### Before Refactoring (Code Duplication & Inefficiencies)
+![Before Refactoring](./llm_responses/smell-5-6/beforerefactoring.png)
+```java
+public Response read(@PathParam("id") String id) throws JSONException {
+    if (!authenticate()) {
+        throw new ForbiddenClientException();
+    }
+    
+    // Fetch article
+    UserArticleDao userArticleDao = new UserArticleDao();
+    UserArticle userArticle = userArticleDao.getUserArticle(id, principal.getId());
+    if (userArticle == null) {
+        throw new ClientException("ArticleNotFound", MessageFormat.format("Article not found: {0}", id));
+    }
+    
+    if (userArticle.getReadDate() == null) {
+        // Mark article as read
+        userArticle.setReadDate(new Date());
+        userArticleDao.update(userArticle);
+        
+        // Update unread count
+        FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
+        for (FeedSubscriptionDto feedSubscription : feedSubscriptionDao.findByCriteria(
+            new FeedSubscriptionCriteria().setFeedId(userArticle.getArticleId()).setUserId(principal.getId()))) {
+            feedSubscriptionDao.updateUnreadCount(feedSubscription.getId(), feedSubscription.getUnreadUserArticleCount() - 1);
+        }
+    }
+    
+    // Return response
+    JSONObject response = new JSONObject();
+    response.put("status", "ok");
+    return Response.ok().entity(response).build();
+}
+```
+
+### After Refactoring (Simplified & Modularized Code)
+![After Refactoring](./llm_responses/smell-5-6/afterRefactoring.png)
+```java
+public Response read(@PathParam("id") String id) throws JSONException {
+    validateAuthentication();
+    updateReadStatus(id, true);
+    return Response.ok().entity(buildOkResponse()).build();
+}
+```
+
+**Refactored Enhancements:**
+- **`validateAuthentication()`**: Centralized authentication logic (used in 40+ instances).
+- **`updateReadStatus(id, true)`**: Modularized logic for marking articles as read.
+- **`buildOkResponse()`**: Standardized JSON response format.
+
+---
+
+## Structural Improvements
+
+### Before Refactoring
+- All resource classes directly inherited from `BaseResource`.
+- Redundant authentication, pagination, and error handling in multiple classes.
+
+### After Refactoring
+- Introduced intermediate abstract classes for common functionality.
+- Reduced code duplication by centralizing repetitive operations.
+- Standardized authentication, response building, and error handling.
+
+## Key Benefits
+### 1. **Reduced Code Duplication**
+✅ Centralized authentication logic  
+✅ Shared pagination handling  
+✅ Unified validation and response building  
+
+### 2. **Better Organization**
+✅ Clear separation of concerns  
+✅ Logical grouping of related functionalities  
+✅ Consistent method structuring  
+
+### 3. **Enhanced Maintainability**
+✅ Smaller, focused classes  
+✅ Reduced method complexity  
+✅ Easier testing and debugging  
+✅ Simplified feature addition  
+
+### 4. **Standardized Operations**
+✅ Consistent validation patterns  
+✅ Uniform error handling  
+✅ Standardized response formats  
+✅ Reusable utility methods  
+
+## Common Operations in the Refactored Hierarchy
+- **Authentication validation**: Centralized authentication checks.
+- **Article pagination**: Standardized pagination for article retrieval.
+- **Response building**: Consistent JSON response format.
+- **Error handling**: Unified error-handling mechanisms.
+- **Category & subscription management**: Reusable methods for managing categories and subscriptions.
+
+---
+
+## Conclusion
+The refactoring of `BaseResource` and its subclasses has significantly improved code maintainability, readability, and security. By introducing intermediate abstract classes and standardizing key operations, we have:
+- Eliminated unnecessary code duplication.
+- Established a clear and modular structure.
+- Strengthened authentication and error-handling consistency.
+- Made future enhancements and testing easier.
+
+This structured approach ensures long-term scalability and a cleaner architecture for the `com.sismics.reader.rest.resource` package.
+
 
 ### 7. Feature Envy
 
@@ -676,6 +785,5 @@ I will provide code, type of design smell. Justify the reason why that happens, 
 ![ChatGPT](llm_responses/smell-7/image_copy.png)
 
 It gave the same solution as I did. However, I did not consider the setPassword method in the User class.
-
 
 
