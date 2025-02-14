@@ -1,6 +1,7 @@
 package com.sismics.reader.rest.resource;
 
 import com.sismics.reader.rest.dao.ThemeDao;
+import com.sismics.rest.exception.ForbiddenClientException;
 import com.sismics.rest.exception.ServerException;
 import com.sismics.util.EnvironmentUtil;
 import org.codehaus.jettison.json.JSONException;
@@ -20,28 +21,34 @@ import java.util.List;
  * @author jtremeaux
  */
 @Path("/theme")
-public class ThemeResource extends BaseResource {
+public class ThemeResource extends AuthenticatedResource {
+    private final ThemeService themeService;
+
+    public ThemeResource() {
+        this.themeService = new ThemeService();
+    }
+
     /**
      * Returns the list of all themes.
-     * 
-     * @return Response
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response list() throws JSONException {
-        ThemeDao themeDao = new ThemeDao();
-        List<String> themeList;
-        try {
-            themeList = themeDao.findAll(EnvironmentUtil.isUnitTest() ? null : request.getServletContext());
-        } catch (Exception e) {
-            throw new ServerException("UnknownError", "Error getting theme list", e);
+        // Only authenticate if needed
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
         }
+
+        // Get themes using service
+        List<String> themeList = themeService.getThemes(
+                EnvironmentUtil.isUnitTest() ? null : request.getServletContext()
+        );
+
+        // Format response
         JSONObject response = new JSONObject();
-        List<JSONObject> items = new ArrayList<JSONObject>();
+        List<JSONObject> items = new ArrayList<>();
         for (String theme : themeList) {
-            JSONObject item = new JSONObject();
-            item.put("id", theme);
-            items.add(item);
+            items.add(new JSONObject().put("id", theme));
         }
         response.put("themes", items);
         return Response.ok().entity(response).build();
