@@ -29,76 +29,51 @@ public class AppContext {
      */
     private static AppContext instance;
 
-    /**
-     * Event bus.
-     */
-    private EventBus eventBus;
+    private ServiceManager serviceManager;
 
-    /**
-     * Generic asynchronous event bus.
-     */
-    private EventBus asyncEventBus;
+    private EventBusManager eventBusManager;
 
-    /**
-     * Asynchronous event bus for emails.
-     */
-    private EventBus mailEventBus;
+    // /**
+    //  * Event bus.
+    //  */
+    // private EventBus eventBus;
 
-    /**
-     * Asynchronous event bus for mass imports.
-     */
-    private EventBus importEventBus;
+    // /**
+    //  * Generic asynchronous event bus.
+    //  */
+    // private EventBus asyncEventBus;
 
-    /**
-     * Feed service.
-     */
-    private FeedService feedService;
+    // /**
+    //  * Asynchronous event bus for emails.
+    //  */
+    // private EventBus mailEventBus;
 
-    /**
-     * Indexing service.
-     */
-    private IndexingService indexingService;
+    // /**
+    //  * Asynchronous event bus for mass imports.
+    //  */
+    // private EventBus importEventBus;
 
-    /**
-     * Asynchronous executors.
-     */
-    private List<ExecutorService> asyncExecutorList;
+    // /**
+    //  * Feed service.
+    //  */
+    // private FeedService feedService;
+
+    // /**
+    //  * Indexing service.
+    //  */
+    // private IndexingService indexingService;
+
+    // /**
+    //  * Asynchronous executors.
+    //  */
+    // private List<ExecutorService> asyncExecutorList;
 
     /**
      * Private constructor.
      */
     private AppContext() {
-        resetEventBus();
-
-        feedService = new FeedService();
-        feedService.startAndWait();
-
-        ConfigDao configDao = new ConfigDao();
-        Config luceneStorageConfig = configDao.getById(ConfigType.LUCENE_DIRECTORY_STORAGE);
-        indexingService = new IndexingService(luceneStorageConfig != null ? luceneStorageConfig.getValue() : null);
-        indexingService.startAndWait();
-    }
-
-    /**
-     * (Re)-initializes the event buses.
-     */
-    private void resetEventBus() {
-        eventBus = new EventBus();
-        eventBus.register(new DeadEventListener());
-
-        asyncExecutorList = new ArrayList<ExecutorService>();
-
-        asyncEventBus = newAsyncEventBus();
-        asyncEventBus.register(new ArticleCreatedAsyncListener());
-        asyncEventBus.register(new ArticleUpdatedAsyncListener());
-        asyncEventBus.register(new ArticleDeletedAsyncListener());
-        asyncEventBus.register(new RebuildIndexAsyncListener());
-        asyncEventBus.register(new FaviconUpdateRequestedAsyncListener());
-
-        mailEventBus = newAsyncEventBus();
-
-        importEventBus = newAsyncEventBus();
-        importEventBus.register(new SubscriptionImportAsyncListener());
+        serviceManager = new ServiceManager();
+        eventBusManager = new EventBusManager();
     }
 
     /**
@@ -113,98 +88,11 @@ public class AppContext {
         return instance;
     }
 
-    /**
-     * Wait for termination of all asynchronous events.
-     * /!\ Must be used only in unit tests and never a multi-user environment.
-     */
-    public void waitForAsync() {
-        if (EnvironmentUtil.isUnitTest()) {
-            return;
-        }
-        try {
-            for (ExecutorService executor : asyncExecutorList) {
-                // Shutdown executor, don't accept any more tasks (can cause error with nested
-                // events)
-                try {
-                    executor.shutdown();
-                    executor.awaitTermination(60, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    // NOP
-                }
-            }
-        } finally {
-            resetEventBus();
-        }
+    public ServiceManager getServiceManager() {
+        return serviceManager;
     }
 
-    /**
-     * Creates a new asynchronous event bus.
-     * 
-     * @return Async event bus
-     */
-    private EventBus newAsyncEventBus() {
-        if (EnvironmentUtil.isUnitTest()) {
-            return new EventBus();
-        } else {
-            ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1,
-                    0L, TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<Runnable>());
-            asyncExecutorList.add(executor);
-            return new AsyncEventBus(executor);
-        }
-    }
-
-    /**
-     * Getter of eventBus.
-     *
-     * @return eventBus
-     */
-    public EventBus getEventBus() {
-        return eventBus;
-    }
-
-    /**
-     * Getter of asyncEventBus.
-     *
-     * @return asyncEventBus
-     */
-    public EventBus getAsyncEventBus() {
-        return asyncEventBus;
-    }
-
-    /**
-     * Getter of mailEventBus.
-     *
-     * @return mailEventBus
-     */
-    public EventBus getMailEventBus() {
-        return mailEventBus;
-    }
-
-    /**
-     * Getter of importEventBus.
-     *
-     * @return importEventBus
-     */
-    public EventBus getImportEventBus() {
-        return importEventBus;
-    }
-
-    /**
-     * Getter of feedService.
-     *
-     * @return feedService
-     */
-    public FeedService getFeedService() {
-        return feedService;
-    }
-
-    /**
-     * Getter of indexingService.
-     *
-     * @return indexingService
-     */
-    public IndexingService getIndexingService() {
-        return indexingService;
-    }
+    public EventBusManager getEventBusManager() {
+        return eventBusManager;
+    }   
 }

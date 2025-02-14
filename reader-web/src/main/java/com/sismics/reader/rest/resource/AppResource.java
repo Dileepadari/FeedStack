@@ -123,7 +123,8 @@ public class AppResource extends BaseResource {
         
         JSONObject response = new JSONObject();
         try {
-            AppContext.getInstance().getIndexingService().rebuildIndex();
+            // AppContext.getInstance().getIndexingService().rebuildIndex();
+            AppContext.getInstance().getServiceManager().getIndexingService().rebuildIndex();
         } catch (Exception e) {
             throw new ServerException("IndexingError", "Error rebuilding index", e);
         }

@@ -394,7 +394,8 @@ public class SubscriptionImportAsyncListener {
 
                 // Synchronize feed and articles
                 Feed feed = null;
-                final FeedService feedService = AppContext.getInstance().getFeedService();
+                // final FeedService feedService = AppContext.getInstance().getFeedService();
+                final FeedService feedService = AppContext.getInstance().getServiceManager().getFeedService();
                 try {
                     feed = feedService.synchronize(feedUrl);
                 } catch (Exception e) {
@@ -456,7 +457,9 @@ public class SubscriptionImportAsyncListener {
         String rssUrl = feed.getRssUrl();
         FeedDao feedDao = new FeedDao();
         Feed feedFromDb = feedDao.getByRssUrl(rssUrl.toString());
-        final FeedService feedService = AppContext.getInstance().getFeedService();
+        // final FeedService feedService = AppContext.getInstance().getFeedService();
+        final FeedService feedService = AppContext.getInstance().getServiceManager().getFeedService();
+
         if (feedFromDb == null) {
             try {
                 feedFromDb = feedService.synchronize(rssUrl);
@@ -503,7 +506,8 @@ public class SubscriptionImportAsyncListener {
             // Add new articles to the index
             ArticleCreatedAsyncEvent articleCreatedAsyncEvent = new ArticleCreatedAsyncEvent();
             articleCreatedAsyncEvent.setArticleList(Lists.newArrayList(article));
-            AppContext.getInstance().getAsyncEventBus().post(articleCreatedAsyncEvent);
+            // AppContext.getInstance().getAsyncEventBus().post(articleCreatedAsyncEvent);
+            AppContext.getInstance().getEventBusManager().getAsyncEventBus().post(articleCreatedAsyncEvent);
         }
 
         // Check if the user is already subscribed to this article

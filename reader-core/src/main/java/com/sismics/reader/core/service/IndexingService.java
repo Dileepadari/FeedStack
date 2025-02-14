@@ -170,7 +170,8 @@ public class IndexingService extends AbstractScheduledService {
      */
     public void rebuildIndex() throws Exception {
         RebuildIndexAsyncEvent rebuildIndexAsyncEvent = new RebuildIndexAsyncEvent();
-        AppContext.getInstance().getAsyncEventBus().post(rebuildIndexAsyncEvent);
+        // AppContext.getInstance().getAsyncEventBus().post(rebuildIndexAsyncEvent);
+        AppContext.getInstance().getEventBusManager().getAsyncEventBus().post(rebuildIndexAsyncEvent);
     }
 
     /**
