@@ -130,7 +130,14 @@ This subsystem enables seamless subscription management, efficient feed processi
 ---
 
 ### **Assumptions**  
-- **DAO, DTOImplementations**: DAO and DTO are assumed to be common classes for many classes, so ignored them in the class diagram. 
+1. About Dao's, Dto's, Criteria and Entity's
+    - For the sake of clear visbility and clear representation. We have not represented the relation of main classes like **FeedService**, **RssReader**, **RssExtractor**, **ArticleCreatedAsyncEvent**, **ArticleUpdatedAsyncEvent** and **ArticleDeletedAsyncEvent** etc... with Dao's, Dto's, criteria and Entity's.
+
+    - But in actual implementation, these classes are related to each other and are used to perform operations like creating, updating, deleting and reading the data from the database.
+
+    - But we represented relations among Dao's, Dto's, criteria and Entity's.
+
+2. Many of the external packages like **EntityManager**, **TransactionUtil**, **DocumentBuilderFcatory** etc... are not shown in UML diagram.
 
 ---
 

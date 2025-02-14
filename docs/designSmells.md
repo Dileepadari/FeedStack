@@ -786,4 +786,522 @@ I will provide code, type of design smell. Justify the reason why that happens, 
 
 It gave the same solution as I did. However, I did not consider the setPassword method in the User class.
 
+### 8. God Object
+**Location:**
+- `com.sismics.reader.core.model.context.AppContext.java`
 
+**Problem:**
+- The AppContext class is handling too many responsibilities, including managing services, event buses, and configuration. This violates the Single Responsibility Principle.
+
+**Solution:**
+- Break down AppContext into smaller, more focused classes that handle specific responsibilities, such as a dedicated service manager or event bus manager.
+
+**Code changes:**
+Before Refactoring step:
+```java
+package com.sismics.reader.core.model.context;
+
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.EventBus;
+import com.sismics.reader.core.constant.ConfigType;
+import com.sismics.reader.core.dao.jpa.ConfigDao;
+import com.sismics.reader.core.listener.async.*;
+import com.sismics.reader.core.listener.sync.DeadEventListener;
+import com.sismics.reader.core.model.jpa.Config;
+import com.sismics.reader.core.service.FeedService;
+import com.sismics.reader.core.service.IndexingService;
+import com.sismics.util.EnvironmentUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Global application context.
+ *
+ * @author jtremeaux
+ */
+public class AppContext {
+    /**
+     * Singleton instance.
+     */
+    private static AppContext instance;
+
+    /**
+     * Event bus.
+     */
+    private EventBus eventBus;
+
+    /**
+     * Generic asynchronous event bus.
+     */
+    private EventBus asyncEventBus;
+
+    /**
+     * Asynchronous event bus for emails.
+     */
+    private EventBus mailEventBus;
+
+    /**
+     * Asynchronous event bus for mass imports.
+     */
+    private EventBus importEventBus;
+
+    /**
+     * Feed service.
+     */
+    private FeedService feedService;
+
+    /**
+     * Indexing service.
+     */
+    private IndexingService indexingService;
+
+    /**
+     * Asynchronous executors.
+     */
+    private List<ExecutorService> asyncExecutorList;
+
+    /**
+     * Private constructor.
+     */
+    private AppContext() {
+        resetEventBus();
+
+        feedService = new FeedService();
+        feedService.startAndWait();
+
+        ConfigDao configDao = new ConfigDao();
+        Config luceneStorageConfig = configDao.getById(ConfigType.LUCENE_DIRECTORY_STORAGE);
+        indexingService = new IndexingService(luceneStorageConfig != null ? luceneStorageConfig.getValue() : null);
+        indexingService.startAndWait();
+    }
+
+    /**
+     * (Re)-initializes the event buses.
+     */
+    private void resetEventBus() {
+        eventBus = new EventBus();
+        eventBus.register(new DeadEventListener());
+
+        asyncExecutorList = new ArrayList<ExecutorService>();
+
+        asyncEventBus = newAsyncEventBus();
+        asyncEventBus.register(new ArticleCreatedAsyncListener());
+        asyncEventBus.register(new ArticleUpdatedAsyncListener());
+        asyncEventBus.register(new ArticleDeletedAsyncListener());
+        asyncEventBus.register(new RebuildIndexAsyncListener());
+        asyncEventBus.register(new FaviconUpdateRequestedAsyncListener());
+
+        mailEventBus = newAsyncEventBus();
+
+        importEventBus = newAsyncEventBus();
+        importEventBus.register(new SubscriptionImportAsyncListener());
+    }
+
+    /**
+     * Returns a single instance of the application context.
+     * 
+     * @return Application context
+     */
+    public static AppContext getInstance() {
+        if (instance == null) {
+            instance = new AppContext();
+        }
+        return instance;
+    }
+
+    /**
+     * Wait for termination of all asynchronous events.
+     * /!\ Must be used only in unit tests and never a multi-user environment.
+     */
+    public void waitForAsync() {
+        if (EnvironmentUtil.isUnitTest()) {
+            return;
+        }
+        try {
+            for (ExecutorService executor : asyncExecutorList) {
+                // Shutdown executor, don't accept any more tasks (can cause error with nested
+                // events)
+                try {
+                    executor.shutdown();
+                    executor.awaitTermination(60, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    // NOP
+                }
+            }
+        } finally {
+            resetEventBus();
+        }
+    }
+
+    /**
+     * Creates a new asynchronous event bus.
+     * 
+     * @return Async event bus
+     */
+    private EventBus newAsyncEventBus() {
+        if (EnvironmentUtil.isUnitTest()) {
+            return new EventBus();
+        } else {
+            ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1,
+                    0L, TimeUnit.MILLISECONDS,
+                    new LinkedBlockingQueue<Runnable>());
+            asyncExecutorList.add(executor);
+            return new AsyncEventBus(executor);
+        }
+    }
+
+    /**
+     * Getter of eventBus.
+     *
+     * @return eventBus
+     */
+    public EventBus getEventBus() {
+        return eventBus;
+    }
+
+    /**
+     * Getter of asyncEventBus.
+     *
+     * @return asyncEventBus
+     */
+    public EventBus getAsyncEventBus() {
+        return asyncEventBus;
+    }
+
+    /**
+     * Getter of mailEventBus.
+     *
+     * @return mailEventBus
+     */
+    public EventBus getMailEventBus() {
+        return mailEventBus;
+    }
+
+    /**
+     * Getter of importEventBus.
+     *
+     * @return importEventBus
+     */
+    public EventBus getImportEventBus() {
+        return importEventBus;
+    }
+
+    /**
+     * Getter of feedService.
+     *
+     * @return feedService
+     */
+    public FeedService getFeedService() {
+        return feedService;
+    }
+
+    /**
+     * Getter of indexingService.
+     *
+     * @return indexingService
+     */
+    public IndexingService getIndexingService() {
+        return indexingService;
+    }
+}
+```
+
+After Refactoring step:
+1. **EventBusManager.java**
+```java
+package com.sismics.reader.core.model.context;
+
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.EventBus;
+import com.sismics.reader.core.constant.ConfigType;
+import com.sismics.reader.core.dao.jpa.ConfigDao;
+import com.sismics.reader.core.listener.async.*;
+import com.sismics.reader.core.listener.sync.DeadEventListener;
+import com.sismics.reader.core.model.jpa.Config;
+import com.sismics.reader.core.service.FeedService;
+import com.sismics.reader.core.service.IndexingService;
+import com.sismics.util.EnvironmentUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+public class EventBusManager {
+    /**
+     * Event bus.
+     */
+    private EventBus eventBus;
+
+    /**
+     * Generic asynchronous event bus.
+     */
+    private EventBus asyncEventBus;
+
+    /**
+     * Asynchronous event bus for emails.
+     */
+    private EventBus mailEventBus;
+
+    /**
+     * Asynchronous event bus for mass imports.
+     */
+    private EventBus importEventBus;
+
+    /**
+     * Asynchronous executors.
+     */
+    private List<ExecutorService> asyncExecutorList;
+
+    public EventBusManager() {
+        resetEventBus();
+    }
+
+    private void resetEventBus() {
+        eventBus = new EventBus();
+        eventBus.register(new DeadEventListener());
+
+        asyncExecutorList = new ArrayList<ExecutorService>();
+
+        asyncEventBus = newAsyncEventBus();
+        asyncEventBus.register(new ArticleCreatedAsyncListener());
+        asyncEventBus.register(new ArticleUpdatedAsyncListener());
+        asyncEventBus.register(new ArticleDeletedAsyncListener());
+        asyncEventBus.register(new RebuildIndexAsyncListener());
+        asyncEventBus.register(new FaviconUpdateRequestedAsyncListener());
+
+        mailEventBus = newAsyncEventBus();
+
+        importEventBus = newAsyncEventBus();
+        importEventBus.register(new SubscriptionImportAsyncListener());
+    }
+
+    /**
+     * Wait for termination of all asynchronous events.
+     * /!\ Must be used only in unit tests and never a multi-user environment.
+     */
+    public void waitForAsync() {
+        if (EnvironmentUtil.isUnitTest()) {
+            return;
+        }
+        try {
+            for (ExecutorService executor : asyncExecutorList) {
+                // Shutdown executor, don't accept any more tasks (can cause error with nested
+                // events)
+                try {
+                    executor.shutdown();
+                    executor.awaitTermination(60, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    // NOP
+                }
+            }
+        } finally {
+            resetEventBus();
+        }
+    }
+
+    /**
+     * Creates a new asynchronous event bus.
+     * 
+     * @return Async event bus
+     */
+    private EventBus newAsyncEventBus() {
+        if (EnvironmentUtil.isUnitTest()) {
+            return new EventBus();
+        } else {
+            ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1,
+                    0L, TimeUnit.MILLISECONDS,
+                    new LinkedBlockingQueue<Runnable>());
+            asyncExecutorList.add(executor);
+            return new AsyncEventBus(executor);
+        }
+    }
+
+    /**
+     * Getter of eventBus.
+     *
+     * @return eventBus
+     */
+    public EventBus getEventBus() {
+        return eventBus;
+    }
+
+    /**
+     * Getter of asyncEventBus.
+     *
+     * @return asyncEventBus
+     */
+    public EventBus getAsyncEventBus() {
+        return asyncEventBus;
+    }
+
+    /**
+     * Getter of mailEventBus.
+     *
+     * @return mailEventBus
+     */
+    public EventBus getMailEventBus() {
+        return mailEventBus;
+    }
+
+    /**
+     * Getter of importEventBus.
+     *
+     * @return importEventBus
+     */
+    public EventBus getImportEventBus() {
+        return importEventBus;
+    }
+}
+```
+
+2. **ServiceManager.java**
+```java
+package com.sismics.reader.core.model.context;
+
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.EventBus;
+import com.sismics.reader.core.constant.ConfigType;
+import com.sismics.reader.core.dao.jpa.ConfigDao;
+import com.sismics.reader.core.listener.async.*;
+import com.sismics.reader.core.listener.sync.DeadEventListener;
+import com.sismics.reader.core.model.jpa.Config;
+import com.sismics.reader.core.service.FeedService;
+import com.sismics.reader.core.service.IndexingService;
+import com.sismics.util.EnvironmentUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+
+public class ServiceManager {
+    private FeedService feedService;
+    private IndexingService indexingService;
+
+    public ServiceManager() {
+
+        feedService = new FeedService();
+        feedService.startAndWait();
+
+        ConfigDao configDao = new ConfigDao();
+        Config luceneStorageConfig = configDao.getById(ConfigType.LUCENE_DIRECTORY_STORAGE);
+        indexingService = new IndexingService(luceneStorageConfig != null ? luceneStorageConfig.getValue() : null);
+        indexingService.startAndWait();
+    }
+
+    /**
+     * Getter of feedService.
+     *
+     * @return feedService
+     */
+    public FeedService getFeedService() {
+        return feedService;
+    }
+
+    /**
+     * Getter of indexingService.
+     *
+     * @return indexingService
+     */
+    public IndexingService getIndexingService() {
+        return indexingService;
+    }
+
+
+}
+```
+
+3. **AppContext.java**
+```java
+package com.sismics.reader.core.model.context;
+
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.EventBus;
+import com.sismics.reader.core.constant.ConfigType;
+import com.sismics.reader.core.dao.jpa.ConfigDao;
+import com.sismics.reader.core.listener.async.*;
+import com.sismics.reader.core.listener.sync.DeadEventListener;
+import com.sismics.reader.core.model.jpa.Config;
+import com.sismics.reader.core.service.FeedService;
+import com.sismics.reader.core.service.IndexingService;
+import com.sismics.util.EnvironmentUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Global application context.
+ *
+ * @author jtremeaux
+ */
+public class AppContext {
+    /**
+     * Singleton instance.
+     */
+    private static AppContext instance;
+
+    private ServiceManager serviceManager;
+
+    private EventBusManager eventBusManager;
+
+        /**
+     * Private constructor.
+     */
+    private AppContext() {
+        serviceManager = new ServiceManager();
+        eventBusManager = new EventBusManager();
+    }
+
+    /**
+     * Returns a single instance of the application context.
+     * 
+     * @return Application context
+     */
+    public static AppContext getInstance() {
+        if (instance == null) {
+            instance = new AppContext();
+        }
+        return instance;
+    }
+
+    public ServiceManager getServiceManager() {
+        return serviceManager;
+    }
+    public EventBusManager getEventBusManager() {
+        return eventBusManager;
+    }   
+}
+```
+
+**LLM Suggestions:**
+
+Prompt:
+```bash
+How to remove this design smell(God Object) for AppContext?
+```
+
+- ChatGPT-4o:
+![ChatGPT](llm_responses/smell-8/smell8_1.png)
+![ChatGPT](llm_responses/smell-8/smell8_2.png)
+
+**Quality Impact:**
+1. Improved Maintainability: By breaking down a God Object into smaller, focused classes, the code becomes easier to understand and maintain. Each class can be modified independently.
+2. Enhanced Testability: Smaller classes with single responsibilities are easier to test. Unit tests can be written for each class in isolation, leading to more reliable tests.
+3. Better Code Reusability: When classes are focused on specific tasks, they can often be reused in different contexts without modification.
+4. Increased Flexibility: With reduced coupling, changes in one part of the system are less likely to impact other parts, making the system more adaptable to change.
+5. Clearer Design: Refactoring God Objects leads to a clearer design, making it easier for new developers to understand the system and for existing developers to navigate the codebase.
