@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Global application context.
  *
- * @author jtremeaux 
+ * @author jtremeaux
  */
 public class AppContext {
     /**
@@ -33,7 +33,7 @@ public class AppContext {
      * Event bus.
      */
     private EventBus eventBus;
-    
+
     /**
      * Generic asynchronous event bus.
      */
@@ -43,7 +43,7 @@ public class AppContext {
      * Asynchronous event bus for emails.
      */
     private EventBus mailEventBus;
-    
+
     /**
      * Asynchronous event bus for mass imports.
      */
@@ -53,7 +53,7 @@ public class AppContext {
      * Feed service.
      */
     private FeedService feedService;
-    
+
     /**
      * Indexing service.
      */
@@ -63,31 +63,31 @@ public class AppContext {
      * Asynchronous executors.
      */
     private List<ExecutorService> asyncExecutorList;
-    
+
     /**
      * Private constructor.
      */
     private AppContext() {
         resetEventBus();
-        
+
         feedService = new FeedService();
         feedService.startAndWait();
-        
+
         ConfigDao configDao = new ConfigDao();
         Config luceneStorageConfig = configDao.getById(ConfigType.LUCENE_DIRECTORY_STORAGE);
         indexingService = new IndexingService(luceneStorageConfig != null ? luceneStorageConfig.getValue() : null);
         indexingService.startAndWait();
     }
-    
+
     /**
      * (Re)-initializes the event buses.
      */
     private void resetEventBus() {
         eventBus = new EventBus();
         eventBus.register(new DeadEventListener());
-        
+
         asyncExecutorList = new ArrayList<ExecutorService>();
-        
+
         asyncEventBus = newAsyncEventBus();
         asyncEventBus.register(new ArticleCreatedAsyncListener());
         asyncEventBus.register(new ArticleUpdatedAsyncListener());
@@ -112,10 +112,10 @@ public class AppContext {
         }
         return instance;
     }
-    
+
     /**
      * Wait for termination of all asynchronous events.
-     * /!\ Must be used only in unit tests and never a multi-user environment. 
+     * /!\ Must be used only in unit tests and never a multi-user environment.
      */
     public void waitForAsync() {
         if (EnvironmentUtil.isUnitTest()) {
@@ -123,7 +123,8 @@ public class AppContext {
         }
         try {
             for (ExecutorService executor : asyncExecutorList) {
-                // Shutdown executor, don't accept any more tasks (can cause error with nested events)
+                // Shutdown executor, don't accept any more tasks (can cause error with nested
+                // events)
                 try {
                     executor.shutdown();
                     executor.awaitTermination(60, TimeUnit.SECONDS);
@@ -197,7 +198,7 @@ public class AppContext {
     public FeedService getFeedService() {
         return feedService;
     }
-    
+
     /**
      * Getter of indexingService.
      *

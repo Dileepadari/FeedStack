@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Article DTO.
  *
- * @author jtremeaux 
+ * @author jtremeaux
  */
 public class ArticleDto {
     /**
@@ -39,35 +39,20 @@ public class ArticleDto {
     private String description;
 
     /**
-     * Comment URL.
+     * Comment Dto.
      */
-    private String commentUrl;
+    private CommentDto comment;
 
     /**
-     * Comment count.
+     * Enclosure Dto.
      */
-    private Integer commentCount;
-
-    /**
-     * Enclosure URL.
-     */
-    private String enclosureUrl;
-
-    /**
-     * Enclosure size in bytes.
-     */
-    private Integer enclosureCount;
-
-    /**
-     * Enclosure MIME type.
-     */
-    private String enclosureType;
+    private EnclosureDto enclosure;
 
     /**
      * Publication date.
      */
     private Date publicationDate;
-    
+
     /**
      * Creation date.
      */
@@ -187,39 +172,21 @@ public class ArticleDto {
     }
 
     /**
-     * Getter of commentUrl.
+     * Getter of comment.
      *
-     * @return commentUrl
+     * @return comment
      */
-    public String getCommentUrl() {
-        return commentUrl;
+    public CommentDto getComment() {
+        return comment;
     }
 
     /**
-     * Setter of commentUrl.
+     * Setter of comment.
      *
-     * @param commentUrl commentUrl
+     * @param comment comment
      */
-    public void setCommentUrl(String commentUrl) {
-        this.commentUrl = commentUrl;
-    }
-
-    /**
-     * Getter of commentCount.
-     *
-     * @return commentCount
-     */
-    public Integer getCommentCount() {
-        return commentCount;
-    }
-
-    /**
-     * Setter of commentCount.
-     *
-     * @param commentCount commentCount
-     */
-    public void setCommentCount(Integer commentCount) {
-        this.commentCount = commentCount;
+    public void setComment(CommentDto comment) {
+        this.comment = comment;
     }
 
     /**
@@ -249,57 +216,21 @@ public class ArticleDto {
     }
 
     /**
-     * Getter of enclosureUrl.
+     * Getter of enclosure.
      *
-     * @return enclosureUrl
+     * @return enclosure
      */
-    public String getEnclosureUrl() {
-        return enclosureUrl;
+    public EnclosureDto getEnclosure() {
+        return enclosure;
     }
 
     /**
-     * Setter of enclosureUrl.
+     * Setter of enclosure.
      *
-     * @param enclosureUrl enclosureUrl
+     * @param enclosure enclosure
      */
-    public void setEnclosureUrl(String enclosureUrl) {
-        this.enclosureUrl = enclosureUrl;
-    }
-
-    /**
-     * Getter of enclosureCount.
-     *
-     * @return enclosureCount
-     */
-    public Integer getEnclosureCount() {
-        return enclosureCount;
-    }
-
-    /**
-     * Setter of enclosureCount.
-     *
-     * @param enclosureCount enclosureCount
-     */
-    public void setEnclosureCount(Integer enclosureCount) {
-        this.enclosureCount = enclosureCount;
-    }
-
-    /**
-     * Getter of enclosureType.
-     *
-     * @return enclosureType
-     */
-    public String getEnclosureType() {
-        return enclosureType;
-    }
-
-    /**
-     * Setter of enclosureType.
-     *
-     * @param enclosureType enclosureType
-     */
-    public void setEnclosureType(String enclosureType) {
-        this.enclosureType = enclosureType;
+    public void setEnclosure(EnclosureDto enclosure) {
+        this.enclosure = enclosure;
     }
 
     /**

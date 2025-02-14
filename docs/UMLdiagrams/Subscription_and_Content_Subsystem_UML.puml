@@ -1,0 +1,343 @@
+@startuml : Subscription and Content Subsystem
+
+class BaseResource{
+    # request : HttpServletRequest
+    # appKey : String
+    # principal : IPrincipal
+    # authenticate() : boolean
+    # checkBaseFunction(baseFunction : BaseFunction) : void
+    # hasBaseFunction(baseFunction : BaseFunction) : boolean
+}
+
+class SubscriptionResource{
+    + list(unread : boolean) : Response
+    + get(id : String, unread : boolean, limit : Integer, afterArticle : String) : Response
+    + getSynchronization(id : String) : Response
+    + add(url : String, title : String) : Response
+    + update(id : String, title : String, categoryId : String, order : Integer) : Response
+    + favicon(id : String) : Response
+    + read(id : String) : Response
+    + delete(id : String) : Response
+    + importFile(fileBodyPart : FormDataBodyPart) : Response
+    + export() : Response
+}
+
+class AppContext{
+    - {static} instance : AppContext
+    - eventBus : EventBus
+    - asyncEventBus : EventBus
+    - mailEventBus : EventBus
+    - importEventBus : EventBus
+    - feedService : FeedService
+    - indexingService : IndexingService
+    - asyncExecutorList : List<ExecutorService>
+    - AppContext()
+    - resetEventBus() : void
+    + {static} getInstance() : AppContext
+    + waitForAsync() : void
+    - newAsyncEventBus() : EventBus
+    + getEventBus() : EventBus
+    + getAsyncEventBus() : EventBus
+    + getMailEventBus() : EventBus
+    + getImportEventBus() : EventBus
+    + getFeedService() : FeedService
+    + getIndexingService() : IndexingService
+}
+
+class FeedService{
+    - {static} log : Logger
+    # startUp() : void
+    # shutDown() : void
+    # runOneIteration() : void
+    # scheduler() : Scheduler
+    + synchronizeAllFeeds() : void
+    + synchronize(url : String) : Feed
+    - completeArticleList(articleList : List<Article>) : void
+    - getArticleToRemove(articleList : List<Article>) : List<Article>
+    - getNewerArticleList(articleList : List<Article>, oldestArticle : Article) : List<Article>
+    - getOldestArticle(articleList : List<Article>) : Article
+    - isFaviconUpdated(feed : Feed) : boolean
+    - parseFeedOrPage(url : String, parsePage : boolean) : RssReader
+    - logParsingError(url : String, e : Exception) : void
+    + createInitialUserArticle(userId : String, feedSubscription : FeedSubscription) : void
+}
+
+class IndexingService{
+    - {static} log : Logger
+    - directory : Directory
+    - directoryReader : DirectoryReader
+    - luceneStorageConfig : String
+    + IndexingService(luceneStorageConfig : String)
+    # startUp() : void
+    # shutDown() : void
+    # runOneIteration() : void
+    # scheduler() : Scheduler
+    + searchArticles(userId : String, searchQuery : String, offset : Integer, limit : Integer) : PaginatedList<UserArticleDto>
+    + rebuildIndex() : void
+    + getDirectory() : Directory
+    + getDirectoryReader() : DirectoryReader
+}
+
+class SubscriptionImportAsyncListener{
+    - {static} log : Logger
+    - {static} FILE_STARRED_JSON : String
+    - {static} FILE_SUBSCRIPTIONS_XML : String
+    + onSubscriptionImport(subscriptionImportedEvent : SubscriptionImportedEvent) : void
+    - createJob(user : User, importFile : File) : Job
+    - getFeedCount(outlineList : List<Outline>) : long
+    - processImportFile(user : User, importFile : File, job : Job) : void
+    - importOutline(user : User, outlineList : List<Outline>, job : Job) : void
+    - importFeedFromStarred(user : User, feed : Feed, article : Article) : void
+}
+
+class StarredArticleImportedEvent{
+    - feed : Feed
+    - article : Article
+    + getFeed() : Feed
+    + setFeed(feed : Feed) : void
+    + getArticle() : Article
+    + setArticle(article : Article) : void
+    + toString() : String
+}
+
+class OpmlReader{
+    - {static} log : Logger
+    - content : String
+    - rootOutline : Outline
+    - currentOutline : Outline
+    - currentElement : Element
+    - elementStack : Stack<Element>
+    - outlineStack : Stack<Outline>
+    + OpmlReader()
+    + read(is : InputStream) : void
+    + startElement(uri : String, localName : String, qName : String, attributes : Attributes) : void
+    + endElement(uri : String, localName : String, qName : String) : void
+    - pushElement(newElement : Element) : void
+    - popElement() : void
+    + characters(ch : char[], start : int, length : int) : void
+    + getOutlineList() : List<Outline>
+}
+
+class OpmlFlattener{
+    + {static} flatten(outlineList : List<Outline>) : Map<String,List<Outline>>
+    - {static} flatten(outlineTree : List<Outline>, outlineMap : Map<String,List<Outline>>, prefix : String) : void
+    - {static} getPrefix(outline : Outline, prefix : String) : String
+}
+
+class StarredReader{
+    - {static} log : Logger
+    - starredArticleImportedListener : StarredArticleImportedListener
+    + read(is : InputStream) : void
+    + setStarredArticleListener(starredArticleListener : StarredArticleImportedListener) : void
+}
+
+class Outline{
+    - text : String
+    - title : String
+    - type : String
+    - xmlUrl : String
+    - htmlUrl : String
+    - outlineList : List<Outline>
+    + Outline()
+    + getText() : String
+    + setText(text : String) : void
+    + getTitle() : String
+    + setTitle(title : String) : void
+    + getType() : String
+    + setType(type : String) : void
+    + getXmlUrl() : String
+    + setXmlUrl(xmlUrl : String) : void
+    + getHtmlUrl() : String
+    + setHtmlUrl(htmlUrl : String) : void
+    + getOutlineList() : List<Outline>
+}
+
+class RssReader{
+    - {static} log : Logger
+    + {static} DF_RSS : DateTimeFormatter
+    + {static} DF_ATOM : DateTimeFormatter
+    + {static} DF_DC : DateTimeFormatter
+    - content : String
+    - feed : Feed
+    - article : Article
+    - articleList : List<Article>
+    - atomLinkList : List<AtomLink>
+    - atomArticleLinkList : List<AtomLink>
+    - fatalErrorCount : int
+    - {static} URI_XML : String
+    - {static} URI_ATOM : String
+    - {static} URI_RDF : String
+    - {static} URI_SLASH : String
+    - {static} URI_DC : String
+    - {static} URI_CONTENT : String
+    - {static} URI_THREAD : String
+    - {static} FATAL_ERROR_MAX : int
+    - currentElement : Element
+    - elementStack : Stack<Element>
+    - feedType : FeedType
+    + RssReader()
+    + readRssFeed(is : InputStream) : void
+    + startElement(uri : String, localName : String, qName : String, attributes : Attributes) : void
+    + endElement(uri : String, localName : String, qName : String) : void
+    - initFeed() : void
+    - pushElement(newElement : Element) : void
+    - popElement() : void
+    - validateFeed() : void
+    - fixGuid() : void
+    + characters(ch : char[], start : int, length : int) : void
+    + fatalError(e : SAXParseException) : void
+    - getContent() : String
+    + getFeed() : Feed
+    + getArticleList() : List<Article>
+}
+
+class XmlReader{
+    - internalInputStreamReader : InputStreamReader
+    - {static} HEADER_SIZE : int
+    + XmlReader(in : InputStream, defaultEnc : String)
+    + close() : void
+    + read(cbuf : char[], off : int, len : int) : int
+}
+
+class RssExtractor{
+    - {static} log : Logger
+    - url : URL
+    - feedList : List<String>
+    + RssExtractor(url : String)
+    + readPage(is : InputStream) : void
+    + startElement(uri : String, localName : String, qName : String, attributes : Attributes) : void
+    + getFeedList() : List<String>
+}
+
+class ReaderHttpClient{
+    - {static} USER_AGENT : String
+    - {static} sslSocketFactory : SSLSocketFactory
+    - timeout : int
+    + open(url : URL) : T
+    - buildHttpConnection(url : URL) : HttpURLConnection
+    + {abstract} process(is : InputStream) : T
+    + setTimeout(timeout : int) : void
+}
+
+class PaginatedLists{
+    - {static} DEFAULT_PAGE_SIZE : int
+    - {static} MAX_PAGE_SIZE : int
+    + {static} create(pageSize : Integer, offset : Integer) : PaginatedList<E>
+    + {static} create() : PaginatedList<E>
+    + {static} executeQuery(queryParam : QueryParam) : List<E>
+    - {static} getQueryString(queryParam : QueryParam) : String
+    - {static} executeCountQuery(paginatedList : PaginatedList<E>, queryParam : QueryParam) : void
+    - {static} getNativeCountQuery(queryParam : QueryParam) : String
+    - {static} executeResultQuery(paginatedList : PaginatedList<E>, queryParam : QueryParam) : void
+    + {static} executePaginatedQuery(paginatedList : PaginatedList<E>, queryParam : QueryParam, sortCriteria : SortCriteria) : void
+    - {static} getOrderByClause(sortCriteria : SortCriteria) : String
+    - {static} mapQueryParam(query : Query, queryParam : QueryParam) : void
+    - {static} mapFilterColumn(query : Query, queryParam : QueryParam) : void
+}
+
+class PaginatedList{
+    - limit : int
+    - offset : int
+    - resultCount : int
+    - resultList : List<T>
+    + PaginatedList(pageSize : int, offset : int)
+    + getResultCount() : int
+    + setResultCount(resultCount : int) : void
+    + getResultList() : List<T>
+    + setResultList(resultList : List<T>) : void
+    + getLimit() : int
+    + getOffset() : int
+}
+
+class ArticleCreatedAsyncEvent{
+    - articleList : List<Article>
+    + getArticleList() : List<Article>
+    + setArticleList(articleList : List<Article>) : void
+    + toString() : String
+}
+
+class ArticleUpdatedAsyncEvent{
+    - articleList : List<Article>
+    + getArticleList() : List<Article>
+    + setArticleList(articleList : List<Article>) : void
+    + toString() : String
+}
+
+class ArticleDeletedAsyncEvent{
+    - articleList : List<Article>
+    + getArticleList() : List<Article>
+    + setArticleList(articleList : List<Article>) : void
+    + toString() : String
+}
+
+SubscriptionResource ..> PaginatedLists
+SubscriptionResource ..> PaginatedList
+SubscriptionResource ..> SubscriptionImportEvent
+SubscriptionResource ..> FeedService
+SubscriptionResource ..> DocumentBuilderFactory
+BaseResource <|-- SubscriptionResource
+AppContext ..> SubscriptionImportAsyncListener
+AppContext ..> ArticleCreatedAsyncListener
+AppContext ..> ArticleUpdatedAsyncListener
+AppContext ..> ArticleDeletedAsyncListener
+AppContext o-- FeedService
+AppContext o-- IndexingService
+
+SubscriptionImportAsyncListener ..> SubscriptionImportEvent
+SubscriptionImportAsyncListener ..> ArticleCreatedAsyncEvent
+
+
+SubscriptionImportAsyncListener ..> OpmlReader
+SubscriptionImportAsyncListener ..> OpmlFlattener
+SubscriptionImportAsyncListener ..> StarredReader
+SubscriptionImportAsyncListener ..> FeedService
+
+JobDao ..> JobDto
+JobDao ..> JobCriteria
+JobEventDao ..> JobEventDto
+JobEventDao ..> JobEventCriteria
+FeedSubscriptionDao ..> FeedSubscriptionDto
+FeedSubscriptionDao ..> FeedSubscriptionCriteria
+FeedDao ..> FeedDto
+FeedDao ..> FeedCriteria
+ArticleDao ..> ArticleDto
+ArticleDao ..> ArticleCriteria
+UserArticleDao ..> UserArticleDto
+UserArticleDao ..> UserArticleCriteria
+UserDao ..> UserDto
+UserDao ..> UserCriteria
+
+BaseDao <|-- JobDao
+BaseDao <|-- JobEventDao
+BaseDao <|-- FeedSubscriptionDao
+BaseDao <|-- FeedDao
+BaseDao <|-- ArticleDao
+BaseDao <|-- UserArticleDao
+BaseDao <|-- UserDao
+
+BaseDao ..> PaginatedList
+BaseDao ..> PaginatedLists
+PaginatedLists ..> PaginatedList
+
+OpmlReader --> Outline
+OpmlFlattener --> Outline
+
+StarredReader o-- StarredArticleImportedListener
+StarredReader ..> StarredArticleImportedEvent
+StarredArticleImportedListener ..> StarredArticleImportedEvent
+
+FeedService ..> RssReader
+FeedService ..> RssExtractor
+FeedService ..> ArticleCreatedAsyncEvent
+FeedService ..> ArticleUpdatedAsyncEvent
+FeedService ..> ArticleDeletedAsyncEvent
+FeedService ..> PaginatedLists
+FeedService ..> PaginatedList
+
+ArticleCreatedAsyncListener ..> ArticleCreatedAsyncEvent
+ArticleUpdatedAsyncListener ..> ArticleUpdatedAsyncEvent
+ArticleDeletedAsyncListener ..> ArticleDeletedAsyncEvent
+RssReader <|-- XmlReader
+
+
+@enduml

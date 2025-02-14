@@ -42,17 +42,15 @@ public class CategoryResource extends CategoryBaseResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response list() throws JSONException {
-//        if (!authenticate()) {
-//            throw new ForbiddenClientException();
-//        }
         validateAuthentication();
+
         // Get the root category
         CategoryDao categoryDao = new CategoryDao();
         Category rootCategory = categoryDao.getRootCategory(principal.getId());
-        
+
         // Get the subcategories
         List<Category> categoryList = categoryDao.findSubCategory(rootCategory.getId(), principal.getId());
-        
+
         // Build the response
         List<JSONObject> rootCategories = new ArrayList<JSONObject>();
 
@@ -62,24 +60,21 @@ public class CategoryResource extends CategoryBaseResource {
 
         List<JSONObject> categoriesJson = new ArrayList<JSONObject>();
         for (Category category : categoryList) {
-//            JSONObject categoryJson = new JSONObject();
-//            categoryJson.put("id", category.getId());
-//            categoryJson.put("name", category.getName());
             categoriesJson.add(buildCategoryJson(category));
         }
         rootCategoryJson.put("categories", categoriesJson);
-        
+
         JSONObject response = new JSONObject();
         response.put("categories", rootCategories);
         return Response.ok().entity(response).build();
     }
-    
+
     /**
      * Returns all articles in a category.
      * 
-     * @param id Category ID
-     * @param unread Returns only unread articles
-     * @param limit Page limit
+     * @param id           Category ID
+     * @param unread       Returns only unread articles
+     * @param limit        Page limit
      * @param afterArticle Start the list after this article
      * @return Response
      */
@@ -91,18 +86,12 @@ public class CategoryResource extends CategoryBaseResource {
             @QueryParam("unread") boolean unread,
             @QueryParam("limit") Integer limit,
             @QueryParam("after_article") String afterArticle) throws JSONException {
-//        if (!authenticate()) {
-//            throw new ForbiddenClientException();
-//        }
+
         validateAuthentication();
+      
         // Get the category
 //        CategoryDao categoryDao = new CategoryDao();
         Category category = validateCategory(id);
-//        try {
-//            category = categoryDao.getCategory(id, principal.getId());
-//        } catch (NoResultException e) {
-//            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
-//        }
 
         // Get the articles
         UserArticleDao userArticleDao = new UserArticleDao();
@@ -116,35 +105,9 @@ public class CategoryResource extends CategoryBaseResource {
         }
         PaginatedList<UserArticleDto> paginatedList = getPaginatedArticles(userArticleCriteria,limit, afterArticle);
 
-//        if (afterArticle != null) {
-//            // Paginate after this user article
-//            UserArticleCriteria afterArticleCriteria = new UserArticleCriteria()
-//                    .setUserArticleId(afterArticle)
-//                    .setUserId(principal.getId());
-//            List<UserArticleDto> userArticleDtoList = userArticleDao.findByCriteria(afterArticleCriteria);
-//            if (userArticleDtoList.isEmpty()) {
-//                throw new ClientException("ArticleNotFound", MessageFormat.format("Can't find user article {0}", afterArticle));
-//            }
-//            UserArticleDto userArticleDto = userArticleDtoList.iterator().next();
-//
-//            userArticleCriteria.setArticlePublicationDateMax(new Date(userArticleDto.getArticlePublicationTimestamp()));
-//            userArticleCriteria.setArticleIdMax(userArticleDto.getArticleId());
-//        }
-//        PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(limit, null);
-//        userArticleDao.findByCriteria(paginatedList, userArticleCriteria, null, null);
-//
-//        // Build the response
-//        JSONObject response = new JSONObject();
-//
-//        List<JSONObject> articles = new ArrayList<JSONObject>();
-//        for (UserArticleDto userArticle : paginatedList.getResultList()) {
-//            articles.add(ArticleAssembler.asJson(userArticle));
-//        }
-//        response.put("articles", articles);
-
         return buildArticleListResponse(paginatedList);
     }
-    
+
     /**
      * Creates a new category.
      * 
@@ -155,10 +118,9 @@ public class CategoryResource extends CategoryBaseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response add(
             @FormParam("name") String name) throws JSONException {
-//        if (!authenticate()) {
-//            throw new ForbiddenClientException();
-//        }
+
         validateAuthentication();
+
         // Validate input data
 
         name = ValidationUtil.validateLength(name, "name", 1, 100, false);
@@ -166,10 +128,10 @@ public class CategoryResource extends CategoryBaseResource {
         // Get the root category
         CategoryDao categoryDao = new CategoryDao();
         Category rootCategory = categoryDao.getRootCategory(principal.getId());
-        
+
         // Get the display order
         int displayOrder = categoryDao.getCategoryCount(rootCategory.getId(), principal.getId());
-        
+
         // Create the category
         Category category = new Category();
         category.setUserId(principal.getId());
@@ -177,7 +139,7 @@ public class CategoryResource extends CategoryBaseResource {
         category.setName(name);
         category.setOrder(displayOrder);
         String categoryId = categoryDao.create(category);
-        
+
         JSONObject response = new JSONObject();
         response.put("id", categoryId);
         return Response.ok().entity(response).build();
@@ -200,12 +162,7 @@ public class CategoryResource extends CategoryBaseResource {
         validateAuthentication();
         // Get the category
         Category category =  validateCategory(id);
-//        try {
-//            category = new CategoryDao().getCategory(id, principal.getId());
-//        } catch (NoResultException e) {
-//            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
-//        }
-        
+
         // Move subscriptions in this category to root
         FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
         List<FeedSubscription> feedSubscriptionList = feedSubscriptionDao.findByCategory(id);
@@ -215,13 +172,11 @@ public class CategoryResource extends CategoryBaseResource {
             feedSubscriptionDao.update(feedSubscription);
             feedSubscriptionDao.reorder(feedSubscription, 0);
         }
-        
+
         // Delete the category
         categoryDao.delete(id);
-        
+
         // Always return ok
-//        JSONObject response = new JSONObject();
-//        response.put("status", "ok");
         return Response.ok().entity(buildOkResponse()).build();
     }
 
@@ -236,44 +191,23 @@ public class CategoryResource extends CategoryBaseResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response read(
             @PathParam("id") String id) throws JSONException {
-//        if (!authenticate()) {
-//            throw new ForbiddenClientException();
-//        }
         validateAuthentication();
+
         // Get the category
         Category category =  validateCategory(id);
-//        try {
-//            category = new CategoryDao().getCategory(id, principal.getId());
-//        } catch (NoResultException e) {
-//            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
-//        }
-        // Marks all articles as read in this category
         markCategoryArticlesAsRead(id);
-//        UserArticleDao userArticleDao = new UserArticleDao();
-//        userArticleDao.markAsRead(new UserArticleCriteria()
-//                .setUserId(principal.getId())
-//                .setSubscribed(true)
-//                .setCategoryId(id));
-//
-//        FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
-//        for (FeedSubscriptionDto feedSubscrition : feedSubscriptionDao.findByCriteria(new FeedSubscriptionCriteria()
-//                .setCategoryId(category.getId())
-//                .setUserId(principal.getId()))) {
-//            feedSubscriptionDao.updateUnreadCount(feedSubscrition.getId(), 0);
-//        }
-        
+
+
         // Always return ok
-//        JSONObject response = new JSONObject();
-//        response.put("status", "ok");
         return Response.ok().entity(buildOkResponse()).build();
     }
 
     /**
      * Updates the category.
      * 
-     * @param id Category ID
-     * @param name Category name
-     * @param order Display order of this category
+     * @param id     Category ID
+     * @param name   Category name
+     * @param order  Display order of this category
      * @param folded True if this category is folded in the subscriptions tree.
      * @return Response
      */
@@ -285,21 +219,14 @@ public class CategoryResource extends CategoryBaseResource {
             @FormParam("name") String name,
             @FormParam("order") Integer order,
             @FormParam("folded") Boolean folded) throws JSONException {
-//        if (!authenticate()) {
-//            throw new ForbiddenClientException();
-//        }
         validateAuthentication();
+
         // Validate input data
         name = ValidationUtil.validateLength(name, "name", 1, 100, true);
-        
+
         // Get the category
         Category category =  validateCategory(id);
-//        try {
-//            category = new CategoryDao().getCategory(id, principal.getId());
-//        } catch (NoResultException e) {
-//            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
-//        }
-        
+
         // Update the category
         if (name != null) {
             category.setName(name);
@@ -308,15 +235,13 @@ public class CategoryResource extends CategoryBaseResource {
             category.setFolded(folded);
         }
         categoryDao.update(category);
-        
+
         // Reorder categories
         if (order != null) {
             categoryDao.reorder(category, order);
         }
-        
+
         // Always return ok
-//        JSONObject response = new JSONObject();
-//        response.put("status", "ok");
         return Response.ok().entity(buildOkResponse()).build();
     }
 }

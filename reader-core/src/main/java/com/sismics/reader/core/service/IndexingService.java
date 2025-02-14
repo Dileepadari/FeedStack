@@ -2,7 +2,8 @@ package com.sismics.reader.core.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractScheduledService;
-import com.sismics.reader.core.constant.Constants;
+
+import com.sismics.reader.core.constant.LuceneConfig;
 import com.sismics.reader.core.dao.jpa.UserArticleDao;
 import com.sismics.reader.core.dao.jpa.criteria.UserArticleCriteria;
 import com.sismics.reader.core.dao.jpa.dto.UserArticleDto;
@@ -45,17 +46,17 @@ public class IndexingService extends AbstractScheduledService {
      * Lucene directory.
      */
     private Directory directory;
-    
+
     /**
      * Index reader.
      */
     private DirectoryReader directoryReader;
-    
+
     /**
      * Lucene storage config.
      */
     private String luceneStorageConfig;
-    
+
     public IndexingService(String luceneStorageConfig) {
         this.luceneStorageConfig = luceneStorageConfig;
     }
@@ -63,10 +64,10 @@ public class IndexingService extends AbstractScheduledService {
     @Override
     protected void startUp() {
         // RAM directory storage by default
-        if (luceneStorageConfig == null || luceneStorageConfig.equals(Constants.LUCENE_DIRECTORY_STORAGE_RAM)) {
+        if (luceneStorageConfig == null || luceneStorageConfig.equals(LuceneConfig.LUCENE_DIRECTORY_STORAGE_RAM)) {
             directory = new RAMDirectory();
             log.info("Using RAM Lucene storage");
-        } else if (luceneStorageConfig.equals(Constants.LUCENE_DIRECTORY_STORAGE_FILE)) {
+        } else if (luceneStorageConfig.equals(LuceneConfig.LUCENE_DIRECTORY_STORAGE_FILE)) {
             File luceneDirectory = DirectoryUtil.getLuceneDirectory();
             log.info("Using file Lucene storage: {}", luceneDirectory);
             try {
@@ -94,60 +95,61 @@ public class IndexingService extends AbstractScheduledService {
             }
         }
     }
-    
+
     @Override
     protected void runOneIteration() throws Exception {
         TransactionUtil.handle(() -> {
             // NOP
         });
     }
-    
+
     @Override
     protected Scheduler scheduler() {
         return Scheduler.newFixedDelaySchedule(0, 1, TimeUnit.HOURS);
     }
-    
+
     /**
      * Search articles.
      * 
-     * @param userId User ID
+     * @param userId      User ID
      * @param searchQuery The query
-     * @param offset Offset
-     * @param limit Limit
+     * @param offset      Offset
+     * @param limit       Limit
      * @return List of articles
      */
-    public PaginatedList<UserArticleDto> searchArticles(String userId, String searchQuery, Integer offset, Integer limit) throws Exception {
+    public PaginatedList<UserArticleDto> searchArticles(String userId, String searchQuery, Integer offset,
+            Integer limit) throws Exception {
         // Search articles
         ArticleDao articleDao = new ArticleDao();
         PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(limit, offset);
         Map<String, Article> articleMap = null;
         articleMap = articleDao.search(paginatedList, searchQuery);
-        
+
         if (articleMap.size() > 0) {
             // Get linked UserArticle from database
             UserArticleCriteria userArticleCriteria = new UserArticleCriteria()
                     .setUserId(userId)
                     .setVisible(false)
                     .setArticleIdIn(Lists.newArrayList(articleMap.keySet()));
-            
+
             UserArticleDao userArticleDao = new UserArticleDao();
             PaginatedList<UserArticleDto> userArticledList = PaginatedLists.create(paginatedList.getLimit(), 0);
             userArticleDao.findByCriteria(userArticledList, userArticleCriteria, null, null);
             paginatedList.setResultList(userArticledList.getResultList());
-            
+
             for (UserArticleDto userArticleDto : paginatedList.getResultList()) {
-                Article article = articleMap.get(userArticleDto.getArticleId());
+                Article article = articleMap.get(userArticleDto.getArticle().getId());
                 if (article.getTitle() != null) {
-                    userArticleDto.setArticleTitle(article.getTitle());
+                    userArticleDto.getArticle().setTitle(article.getTitle());
                 }
                 if (article.getDescription() != null) {
-                    userArticleDto.setArticleDescription(article.getDescription());
+                    userArticleDto.getArticle().setDescription(article.getDescription());
                 }
-                
+
                 // Create UserArticle if it does not exists
                 if (userArticleDto.getId() == null) {
                     UserArticle userArticle = new UserArticle();
-                    userArticle.setArticleId(userArticleDto.getArticleId());
+                    userArticle.setArticleId(userArticleDto.getArticle().getId());
                     userArticle.setUserId(userId);
                     userArticle.setReadDate(new Date());
                     String userArticleId = userArticleDao.create(userArticle);
@@ -158,10 +160,10 @@ public class IndexingService extends AbstractScheduledService {
         } else {
             paginatedList.setResultList(new ArrayList<UserArticleDto>());
         }
-        
+
         return paginatedList;
     }
-    
+
     /**
      * Destroy and rebuild Lucene index.
      * 
@@ -179,7 +181,7 @@ public class IndexingService extends AbstractScheduledService {
     public Directory getDirectory() {
         return directory;
     }
-    
+
     /**
      * Returns a valid directory reader.
      * Take care of reopening the reader if the index has changed

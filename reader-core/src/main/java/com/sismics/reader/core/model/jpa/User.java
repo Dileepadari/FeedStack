@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.google.common.base.Objects;
+import com.sismics.reader.core.constant.SecurityConfig;
 
 /**
  * User entity.
@@ -384,5 +385,35 @@ public class User {
                 .add("id", id)
                 .add("username", username)
                 .toString();
+    }
+
+    public static User createNewUser(String username, String password, String email, String localeId) {
+        User user = new User();
+        user.setRoleId(SecurityConfig.DEFAULT_USER_ROLE);
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setEmail(email);
+        user.setDisplayTitleWeb(false);
+        user.setDisplayTitleMobile(true);
+        user.setDisplayUnreadWeb(true);
+        user.setDisplayUnreadMobile(true);
+        user.setCreateDate(new Date());
+        user.setLocaleId(localeId);
+        return user;
+    }
+
+    // In User.java
+    public void updateProperties(String email, String themeId, String localeId, 
+        Boolean displayTitleWeb, Boolean displayTitleMobile,
+        Boolean displayUnreadWeb, Boolean displayUnreadMobile,
+        Boolean narrowArticle) {
+        if (email != null) this.setEmail(email);
+        if (themeId != null) this.setTheme(themeId);
+        if (localeId != null) this.setLocaleId(localeId);
+        if (displayTitleWeb != null) this.setDisplayTitleWeb(displayTitleWeb);
+        if (displayTitleMobile != null) this.setDisplayTitleMobile(displayTitleMobile);
+        if (displayUnreadWeb != null) this.setDisplayUnreadWeb(displayUnreadWeb);
+        if (displayUnreadMobile != null) this.setDisplayUnreadMobile(displayUnreadMobile);
+        if (narrowArticle != null) this.setNarrowArticle(narrowArticle);
     }
 }

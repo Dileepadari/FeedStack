@@ -1,0 +1,355 @@
+@startuml : User Management Subsystem
+
+class User{
+    - id : String
+    - localeId : String
+    - roleId : String
+    - username : String
+    - password : String
+    - email : String
+    - theme : String
+    - displayTitleWeb : boolean
+    - displayTitleMobile : boolean
+    - displayUnreadWeb : boolean
+    - displayUnreadMobile : boolean
+    - narrowArticle : boolean
+    - firstConnection : boolean
+    - createDate : Date
+    - deleteDate : Date
+    + getId() : String
+    + setId(id : String) : void
+    + getLocaleId() : String
+    + setLocaleId(localeId : String) : void
+    + getRoleId() : String
+    + setRoleId(roleId : String) : void
+    + getUsername() : String
+    + setUsername(username : String) : void
+    + getPassword() : String
+    + setPassword(password : String) : void
+    + getEmail() : String
+    + setEmail(email : String) : void
+    + getTheme() : String
+    + setTheme(theme : String) : void
+    + isDisplayTitleWeb() : boolean
+    + setDisplayTitleWeb(displayTitleWeb : boolean) : void
+    + isDisplayTitleMobile() : boolean
+    + setDisplayTitleMobile(displayTitleMobile : boolean) : void
+    + isDisplayUnreadWeb() : boolean
+    + setDisplayUnreadWeb(displayUnreadWeb : boolean) : void
+    + isDisplayUnreadMobile() : boolean
+    + setDisplayUnreadMobile(displayUnreadMobile : boolean) : void
+    + isNarrowArticle() : boolean
+    + setNarrowArticle(narrowArticle : boolean) : void
+    + isFirstConnection() : boolean
+    + setFirstConnection(firstConnection : boolean) : void
+    + getCreateDate() : Date
+    + setCreateDate(createDate : Date) : void
+    + getDeleteDate() : Date
+    + setDeleteDate(deleteDate : Date) : void
+    + toString() : String
+}
+
+class UserDto{
+    - id : String
+    - localeId : String
+    - username : String
+    - email : String
+    - createTimestamp : Long
+    + getId() : String
+    + setId(id : String) : void
+    + getLocaleId() : String
+    + setLocaleId(localeId : String) : void
+    + getUsername() : String
+    + setUsername(username : String) : void
+    + getEmail() : String
+    + setEmail(email : String) : void
+    + getCreateTimestamp() : Long
+    + setCreateTimestamp(createTimestamp : Long) : void
+}
+
+class UserArticle{
+    - id : String
+    - userId : String
+    - articleId : String
+    - createDate : Date
+    - readDate : Date
+    - starredDate : Date
+    - deleteDate : Date
+    + getId() : String
+    + setId(id : String) : void
+    + getUserId() : String
+    + setUserId(userId : String) : void
+    + getArticleId() : String
+    + setArticleId(articleId : String) : void
+    + getCreateDate() : Date
+    + setCreateDate(createDate : Date) : void
+    + getReadDate() : Date
+    + setReadDate(readDate : Date) : void
+    + getStarredDate() : Date
+    + setStarredDate(starredDate : Date) : void
+    + getDeleteDate() : Date
+    + setDeleteDate(deleteDate : Date) : void
+    + toString() : String
+}
+
+class Constants{
+    + {static} DEFAULT_LOCALE_ID : String
+    + {static} DEFAULT_TIMEZONE_ID : String
+    + {static} DEFAULT_THEME_ID : String
+    + {static} DEFAULT_ADMIN_PASSWORD : String
+    + {static} LUCENE_DIRECTORY_STORAGE_RAM : String
+    + {static} LUCENE_DIRECTORY_STORAGE_FILE : String
+    + {static} DEFAULT_USER_ROLE : String
+    + {static} JOB_IMPORT : String
+    + {static} JOB_EVENT_FEED_COUNT : String
+    + {static} JOB_EVENT_STARRED_ARTICLED_COUNT : String
+    + {static} JOB_EVENT_FEED_IMPORT_SUCCESS : String
+    + {static} JOB_EVENT_FEED_IMPORT_FAILURE : String
+    + {static} JOB_EVENT_STARRED_ARTICLE_IMPORT_SUCCESS : String
+    + {static} JOB_EVENT_STARRED_ARTICLE_IMPORT_FAILURE : String
+}
+
+
+
+
+class Role{
+    - id : String
+    - name : String
+    - createDate : Date
+    - deleteDate : Date
+    + getId() : String
+    + setId(id : String) : void
+    + getName() : String
+    + setName(name : String) : void
+    + getCreateDate() : Date
+    + setCreateDate(createDate : Date) : void
+    + getDeleteDate() : Date
+    + setDeleteDate(deleteDate : Date) : void
+    + toString() : String
+}
+
+class BaseFunction{
+    - id : String
+    + getId() : String
+    + setId(id : String) : void
+    + toString() : String
+}
+
+class RoleBaseFunction{
+    - id : String
+    - roleId : String
+    - baseFunctionId : String
+    - createDate : Date
+    - deleteDate : Date
+    + getId() : String
+    + setId(id : String) : void
+    + getRoleId() : String
+    + setRoleId(roleId : String) : void
+    + getBaseFunctionId() : String
+    + setBaseFunctionId(baseFunctionId : String) : void
+    + getCreateDate() : Date
+    + setCreateDate(createDate : Date) : void
+    + getDeleteDate() : Date
+    + setDeleteDate(deleteDate : Date) : void
+    + toString() : String
+}
+
+class AuthenticationToken{
+    - id : String
+    - userId : String
+    - longLasted : boolean
+    - creationDate : Date
+    - lastConnectionDate : Date
+    + getId() : String
+    + setId(id : String) : void
+    + getUserId() : String
+    + setUserId(userId : String) : void
+    + isLongLasted() : boolean
+    + setLongLasted(longLasted : boolean) : void
+    + getCreationDate() : Date
+    + setCreationDate(creationDate : Date) : void
+    + getLastConnectionDate() : Date
+    + setLastConnectionDate(lastConnectionDate : Date) : void
+    + toString() : String
+}
+
+abstract class BaseResource{
+    # request : HttpServletRequest
+    # appKey : String
+    # principal : IPrincipal
+    # authenticate() : boolean
+    # checkBaseFunction(baseFunction : BaseFunction) : void
+    # hasBaseFunction(baseFunction : BaseFunction) : boolean
+}
+
+interface IPrincipal{
+    isAnonymous() : boolean
+    + getId() : String
+    + getLocale() : Locale
+    + getDateTimeZone() : DateTimeZone
+    + getEmail() : String
+}
+
+
+class UserArticleDao{
+    # getQueryParam(criteria : UserArticleCriteria, filterCriteria : FilterCriteria) : QueryParam
+    + create(userArticle : UserArticle) : String
+    + update(userArticle : UserArticle) : UserArticle
+    + markAsRead(criteria : UserArticleCriteria) : void
+    + delete(id : String) : void
+    + getUserArticle(id : String, userId : String) : UserArticle
+}
+
+class AppContext {
+    -static AppContext instance
+    -MailEventBus mailEventBus
+    +static AppContext getInstance()
+    +MailEventBus getMailEventBus()
+    +void setMailEventBus(MailEventBus mailEventBus)
+}
+
+class TokenBasedSecurityFilter{
+    + {static} COOKIE_NAME : String
+    + {static} TOKEN_LONG_LIFETIME : int
+    + {static} TOKEN_SESSION_LIFETIME : int
+    - {static} extractAuthToken(cookies : Cookie[]) : String
+    - {static} handleExpiredToken(dao : AuthenticationTokenDao, authTokenID : String) : void
+    - {static} isTokenExpired(authenticationToken : AuthenticationToken) : boolean
+    # authenticate(request : HttpServletRequest) : User
+}
+
+
+class ValidationUtil{
+    + {static} validateTheme(servletContext : ServletContext, themeId : String, name : String, nullable : boolean) : String
+    + {static} validateLocale(localeId : String, name : String, nullable : boolean) : String
+}
+
+class ThreadLocalContext{
+    + {static} threadLocalContext : ThreadLocal<ThreadLocalContext>
+    - entityManager : EntityManager
+    - ThreadLocalContext()
+    + {static} get() : ThreadLocalContext
+    + {static} cleanup() : void
+    + isInTransactionalContext() : boolean
+    + getEntityManager() : EntityManager
+    + setEntityManager(entityManager : EntityManager) : void
+}
+
+
+class UserResource{
+    + register(username : String, password : String, localeId : String, email : String) : Response
+    + update(password : String, email : String, themeId : String, localeId : String, displayTitleWeb : Boolean, displayTitleMobile : Boolean, displayUnreadWeb : Boolean, displayUnreadMobile : Boolean, narrowArticle : Boolean, firstConnection : Boolean) : Response
+    + update(username : String, password : String, email : String, themeId : String, localeId : String, displayTitleWeb : Boolean, displayTitleMobile : Boolean, displayUnreadWeb : Boolean, displayUnreadMobile : Boolean, narrowArticle : Boolean) : Response
+    + checkUsername(username : String) : Response
+    + login(username : String, password : String, longLasted : boolean) : Response
+    + logout() : Response
+    + delete() : Response
+    + delete(username : String) : Response
+    + info() : Response
+    + view(username : String) : Response
+    + list(limit : Integer, offset : Integer, sortColumn : Integer, asc : Boolean) : Response
+}
+
+class UserDao{
+    # getQueryParam(criteria : UserCriteria, filterCriteria : FilterCriteria) : QueryParam
+    + authenticate(username : String, password : String) : String
+    + create(user : User) : String
+    + update(user : User) : User
+    + updatePassword(user : User) : User
+    + getById(id : String) : User
+    + getActiveByUsername(username : String) : User
+    + getActiveByPasswordResetKey(passwordResetKey : String) : User
+    + delete(username : String) : void
+    # hashPassword(password : String) : String
+}
+
+class AuthenticationTokenDao{
+    + get(id : String) : AuthenticationToken
+    + create(authenticationToken : AuthenticationToken) : String
+    + delete(authenticationTokenId : String) : void
+    + deleteOldSessionToken(userId : String) : void
+    + updateLastConnectionDate(id : String) : void
+}
+
+class RoleBaseFunctionDao{
+    + findByRoleId(roleId : String) : Set<String>
+}
+
+class UserPrincipal{
+    - id : String
+    - name : String
+    - locale : Locale
+    - dateTimeZone : DateTimeZone
+    - email : String
+    - baseFunctionSet : Set<String>
+    + UserPrincipal(id : String, name : String)
+    + isAnonymous() : boolean
+    + getId() : String
+    + setId(id : String) : void
+    + getName() : String
+    + setName(name : String) : void
+    + getLocale() : Locale
+    + setLocale(locale : Locale) : void
+    + getDateTimeZone() : DateTimeZone
+    + setDateTimeZone(dateTimeZone : DateTimeZone) : void
+    + getEmail() : String
+    + setEmail(email : String) : void
+    + getBaseFunctionSet() : Set<String>
+    + setBaseFunctionSet(baseFunctionSet : Set<String>) : void
+}
+
+class SecurityFilter{
+    + {static} PRINCIPAL_ATTRIBUTE : String
+    + {static} LOG : Logger
+    - {static} hasIdentifiedUser(request : HttpServletRequest) : boolean
+    - {static} injectUser(request : HttpServletRequest, user : User) : void
+    - {static} injectAuthenticatedUser(request : HttpServletRequest, user : User) : void
+    - {static} injectAnonymousUser(request : HttpServletRequest) : void
+    + init(filterConfig : FilterConfig) : void
+    + destroy() : void
+    + doFilter(req : ServletRequest, response : ServletResponse, filterChain : FilterChain) : void
+    # {abstract} authenticate(request : HttpServletRequest) : User
+}
+
+
+User "1" -- "1" UserDto
+User "1" -- "*" UserArticle
+User "*" -- "1" Role
+User "1" -- "*" AuthenticationToken
+
+' DAO Relationships
+UserDao ..> User
+UserDao ..> ThreadLocalContext
+UserArticleDao ..> UserArticle
+UserArticleDao ..> ThreadLocalContext
+AuthenticationTokenDao ..> AuthenticationToken
+AuthenticationTokenDao ..> ThreadLocalContext
+RoleBaseFunctionDao ..> RoleBaseFunction
+RoleBaseFunctionDao ..> ThreadLocalContext
+
+UserResource ..> UserDao
+UserResource ..> UserDto
+UserResource ..> AuthenticationTokenDao
+UserResource ..> RoleBaseFunctionDao
+UserResource ..> ValidationUtil
+UserResource ..> Constants
+UserResource ..> AppContext
+UserResource ..> UserArticleDao
+
+TokenBasedSecurityFilter ..> AuthenticationTokenDao
+TokenBasedSecurityFilter ..> UserDao
+UserPrincipal o-- "1" User
+IPrincipal <|.. UserPrincipal
+
+ThreadLocalContext o-- "1" EntityManager
+
+Role "1" -- "*" RoleBaseFunction
+BaseFunction "1" -- "*" RoleBaseFunction
+
+BaseResource <|-- UserResource
+SecurityFilter <|-- TokenBasedSecurityFilter
+Constants <|-- ValidationUtil
+
+
+
+@enduml

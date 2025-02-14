@@ -1,6 +1,6 @@
 package com.sismics.reader.core.dao.jpa;
 
-import com.sismics.reader.core.constant.Constants;
+import com.sismics.reader.core.constant.DefaultConfig;
 import com.sismics.reader.core.dao.jpa.criteria.UserCriteria;
 import com.sismics.reader.core.dao.jpa.dto.UserDto;
 import com.sismics.reader.core.dao.jpa.mapper.UserMapper;
@@ -80,7 +80,7 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
         
         user.setCreateDate(new Date());
         user.setPassword(hashPassword(user.getPassword()));
-        user.setTheme(Constants.DEFAULT_THEME_ID);
+        user.setTheme(DefaultConfig.DEFAULT_THEME_ID);
         em.persist(user);
         
         return user.getId();
