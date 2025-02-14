@@ -413,23 +413,132 @@ I will provide code, type of design smell. Justify the reason why that happens, 
 
 By refactoring the DTOs to enforce proper modularization, we directly address the issues of mixed responsibilities, tight coupling, and code duplication. This change aligns with the Single Responsibility Principle, leading to a cleaner, more maintainable, and testable codebase. Future changes—such as updating comment details or extending feed information—will be isolated to their respective DTOs, thereby reducing the risk of unintended side effects and streamlining the overall development process.
 
-### 5. Unutilized Abstraction
-**Location:** `com.sismics.reader.rest.resource.*`
+### 5. Broken Heirarchy
+**Location:** `com.sismics.reader.rest.resource.ThemeResource`
 
 **Problem:**
-- Ineffective use of BaseResource inheritance
-- Duplicated logic across resources
-- Repeated authentication and error handling
+- ThemeResource extends BaseResource but doesn't effectively use the inheritance hierarchy.
+- ThemeResource extends BaseResource but only uses authentication functionality while inheriting unnecessary methods like checkBaseFunction and hasBaseFunction.
+- It only uses the authentication check but doesn't leverage other base class functionalities.
+- This creates unnecessary coupling and violates the Liskov Substitution Principle.
+
 
 **Solution:**
-1. Extract common logic to base class
-2. Implement proper inheritance
-3. Standardize error handling
+1. Create focused base class with only authentication
+2. Remove unnecessary inheritance from BaseResource
+3. Extend only the minimal required base class
+4. Keep only the functionality needed for theme managements
 
-**Quality Impact:**
-- Maintainability: Duplicated code increases maintenance burden
-- Reusability: Common functionality not shared
-- Complexity: Duplicate patterns increase cognitive load
+**Quality Attributes Affected:**
+
+1. Maintainability
+    - Harder to maintain due to unnecessary inherited methods
+    - Changes to BaseResource may unexpectedly impact ThemeResource
+    - More complex dependency relationships to manage
+2. Reusability
+    - Tight coupling makes it difficult to reuse components independently
+    - ThemeResource is less portable due to unnecessary dependencies
+    - Cannot easily reuse theme functionality in other contexts
+3. Testability
+    - More difficult to unit test due to unnecessary inherited behavior
+    - Need to mock/stub unused functionality
+    - Testing requires understanding full inheritance chain
+4. Understandability
+    - Developers must understand full BaseResource functionality
+    - Unclear which inherited methods are actually used
+    - More complex code navigation
+
+**Code Changes:**
+
+1. Created new ThemeService:
+```java
+public class ThemeService {
+    private final ThemeDao themeDao;
+    
+    public ThemeService() {
+        this.themeDao = new ThemeDao();
+    }
+    
+    public List<String> getThemes(ServletContext context) {
+        try {
+            return themeDao.findAll(context);
+        } catch (Exception e) {
+            throw new ServerException("UnknownError", "Error getting theme list", e);
+        }
+    }
+}
+```
+
+This is to create a more focused theme service.
+
+2.  Create a new AuthenticatedResource Class, which acts as a BaseResource with only Authentication.
+```java
+public class ThemeService {
+    private final ThemeDao themeDao;
+    
+    public ThemeService() {
+        this.themeDao = new ThemeDao();
+    }
+    
+    public List<String> getThemes(ServletContext context) {
+        try {
+            return themeDao.findAll(context);
+        } catch (Exception e) {
+            throw new ServerException("UnknownError", "Error getting theme list", e);
+        }
+    }
+}
+```
+
+3. Refactoring ThemeResource according to these new classes:
+```java
+@Path("/theme")
+public class ThemeResource extends AuthenticatedResource {
+    private final ThemeService themeService;
+    
+    public ThemeResource() {
+        this.themeService = new ThemeService();
+    }
+    
+    /**
+     * Returns the list of all themes.
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response list() throws JSONException {
+        // Only authenticate if needed
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
+        }
+        
+        // Get themes using service
+        List<String> themeList = themeService.getThemes(
+            EnvironmentUtil.isUnitTest() ? null : request.getServletContext()
+        );
+        
+        // Format response
+        JSONObject response = new JSONObject();
+        List<JSONObject> items = new ArrayList<>();
+        for (String theme : themeList) {
+            items.add(new JSONObject().put("id", theme));
+        }
+        response.put("themes", items);
+        return Response.ok().entity(response).build();
+    }
+}
+```
+**LLM Suggestions:**
+
+Prompt:
+`
+I will provide code, type of design smell. Justify the reason why that happens, also indicate where exactly in the code it happens. Explain the quality attributes affected by that smell, and also indicate the steps to refactor it.
+
+`
+
+- Claude:
+![Claude](llm_responses/smell-5/image.png)
+
+While the refactoring is correct, There could be an additional layer of abstraction (ThemeService) to make it more modular and easier to maintain.
 
 ### 6. Wide Hierarchy
 **Location:** `com.sismics.reader.rest.resource.BaseResource`
@@ -449,8 +558,124 @@ By refactoring the DTOs to enforce proper modularization, we directly address th
 - Reliability: Inconsistent error handling
 - Security: Varying authentication implementations
 
-
-All of these design smells are identified using DesigniteJava. It identified many more, but these were selected.
-
-
 ### 7. Feature Envy
+
+**Location:** `com.sismics.reader.rest.resource.UserResource`
+
+**Problem:**
+
+- UserResource is too dependent on the data and functionality of the User class.
+- It creates and sets up a new User object with many setter calls, suggesting this logic might belong in the User class instead.
+- The update methods (both versions) show strong feature envy towards the User class. They make multiple calls to set various user properties
+
+**Solution:**
+
+1. Move User creation and update logic to the User class
+2. Refactor UserResource to use the User class directly
+3. Implement proper encapsulation and abstraction
+
+**Quality Attributes Affected:**
+
+1. Maintainability
+    - Reduced code duplication
+    - Improved separation of concerns
+    - Easier to maintain and extend
+
+2. Testability
+    - More focused unit tests
+    - Reduced test complexity
+    - Improved test coverage
+
+3. Understandability
+    - Reduced cognitive complexity
+
+**Code Changes:**
+
+1. User Class is updated to include the creation and update logic:
+```java
+public static User createNewUser(String username, String password, String email, String localeId) {
+    User user = new User();
+    user.setRoleId(SecurityConfig.DEFAULT_USER_ROLE);
+    user.setUsername(username);
+    user.setPassword(password);
+    user.setEmail(email);
+    user.setDisplayTitleWeb(false);
+    user.setDisplayTitleMobile(true);
+    user.setDisplayUnreadWeb(true);
+    user.setDisplayUnreadMobile(true);
+    user.setCreateDate(new Date());
+    user.setLocaleId(localeId);
+    return user;
+}
+```
+
+```java
+
+// In User.java
+public void updateProperties(String email, String themeId, String localeId, 
+                           Boolean displayTitleWeb, Boolean displayTitleMobile,
+                           Boolean displayUnreadWeb, Boolean displayUnreadMobile,
+                           Boolean narrowArticle) {
+    if (email != null) this.setEmail(email);
+    if (themeId != null) this.setTheme(themeId);
+    if (localeId != null) this.setLocaleId(localeId);
+    if (displayTitleWeb != null) this.setDisplayTitleWeb(displayTitleWeb);
+    if (displayTitleMobile != null) this.setDisplayTitleMobile(displayTitleMobile);
+    if (displayUnreadWeb != null) this.setDisplayUnreadWeb(displayUnreadWeb);
+    if (displayUnreadMobile != null) this.setDisplayUnreadMobile(displayUnreadMobile);
+    if (narrowArticle != null) this.setNarrowArticle(narrowArticle);
+}
+```
+
+2. UserResource is updated to use the User class directly:
+```java
+@PUT
+@Produces(MediaType.APPLICATION_JSON)
+public Response register(
+    @FormParam("username") String username,
+    @FormParam("password") String password,
+    @FormParam("locale") String localeId,
+    @FormParam("email") String email) throws JSONException {
+        ...
+
+    User user = User.createNewUser(username, password, email, localeId);
+
+    ...
+@POST
+@Produces(MediaType.APPLICATION_JSON)
+public Response update(
+    @FormParam("password") String password,
+    @FormParam("email") String email,
+    @FormParam("theme") String themeId,
+    @FormParam("locale") String localeId,
+    @FormParam("display_title_web") Boolean displayTitleWeb,
+    @FormParam("display_title_mobile") Boolean displayTitleMobile,
+    @FormParam("display_unread_web") Boolean displayUnreadWeb,
+    @FormParam("display_unread_mobile") Boolean displayUnreadMobile,
+    @FormParam("narrow_article") Boolean narrowArticle,
+    @FormParam("first_connection") Boolean firstConnection) throws JSONException {
+
+    ...
+
+    user.updateProperties(email, themeId, localeId, displayTitleWeb, 
+                         displayTitleMobile, displayUnreadWeb, 
+                         displayUnreadMobile, narrowArticle);
+
+    ...
+}
+```
+
+**LLM Suggestions:**
+
+Prompt:
+`
+I will provide code, type of design smell. Justify the reason why that happens, also indicate where exactly in the code it happens. Explain the quality attributes affected by that smell, and also indicate the steps to refactor it.
+`
+
+![ChatGPT](llm_responses/smell-7/image.png)
+![ChatGPT](llm_responses/smell-7/image_copy.png)
+
+It gave the same solution as I did. However, I did not consider the setPassword method in the User class.
+
+
+
