@@ -294,7 +294,8 @@ public abstract class BaseJerseyTest extends JerseyTest {
      * Force synchronization of all feeds.
      */
     public void synchronizeAllFeed() {
-        TransactionUtil.handle(AppContext.getInstance().getFeedService()::synchronizeAllFeeds);
+        // TransactionUtil.handle(AppContext.getInstance().getFeedService()::synchronizeAllFeeds);
+        TransactionUtil.handle(AppContext.getInstance().getServiceManager().getFeedService()::synchronizeAllFeeds);
     }
 
     protected void GET(String url, Map<String, String> queryParams) {

@@ -47,7 +47,8 @@ public class SearchResource extends BaseResource {
         ValidationUtil.validateRequired(query, "query");
         
         // Search in index
-        IndexingService indexingService = AppContext.getInstance().getIndexingService();
+        // IndexingService indexingService = AppContext.getInstance().getIndexingService();
+        IndexingService indexingService = AppContext.getInstance().getServiceManager().getIndexingService();
         PaginatedList<UserArticleDto> paginatedList;
         try {
             paginatedList = indexingService.searchArticles(principal.getId(), query, offset, limit);

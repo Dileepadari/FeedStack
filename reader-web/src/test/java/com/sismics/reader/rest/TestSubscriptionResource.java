@@ -415,7 +415,8 @@ public class TestSubscriptionResource extends BaseJerseyTest {
         assertIsOk();
 
         // List all subscriptions
-        AppContext.getInstance().waitForAsync();
+        // AppContext.getInstance().waitForAsync();
+        AppContext.getInstance().getEventBusManager().waitForAsync();
         GET("/subscription");
         assertIsOk();
         JSONObject json = getJsonResult();
@@ -433,7 +434,8 @@ public class TestSubscriptionResource extends BaseJerseyTest {
         assertEquals(1, subscriptions.length());
         
         // Export all subscriptions
-        AppContext.getInstance().waitForAsync();
+        // AppContext.getInstance().waitForAsync();
+        AppContext.getInstance().getEventBusManager().waitForAsync();
         GET("/subscription/export");
         assertIsOk();
         String text = CharStreams.toString(new InputStreamReader(response.getEntityInputStream(), Charsets.UTF_8));
@@ -462,7 +464,8 @@ public class TestSubscriptionResource extends BaseJerseyTest {
         assertIsOk();
 
         // List all subscriptions
-        AppContext.getInstance().waitForAsync();
+        // AppContext.getInstance().waitForAsync();
+        AppContext.getInstance().getEventBusManager().waitForAsync();
         GET("/subscription");
         assertIsOk();
         JSONObject json = getJsonResult();
