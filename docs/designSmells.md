@@ -451,3 +451,6 @@ By refactoring the DTOs to enforce proper modularization, we directly address th
 
 
 All of these design smells are identified using DesigniteJava. It identified many more, but these were selected.
+
+
+### 7. Feature Envy
