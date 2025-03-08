@@ -30,6 +30,78 @@ r.user.init = function() {
     // Prevent form submission
     return false;
   });
+
+  $('#signup-button').click(function() {
+      $('#login-form').hide();
+      $('#signup-form').show();
+      $('#signup-username-input').focus();
+      return false;
+  });
+//
+   $('#back-to-login-button').click(function() {
+        $('#signup-form').hide();
+        $('#login-form').show();
+        $('#login-username-input').focus();
+        return false;
+      });
+//
+    $('#signup-form').submit(function() {
+        r.user.signup();
+        return false;
+      });
+};
+
+/**
+ * User Signup Function - Dummy for now
+ */
+r.user.signup = function() {
+  var username = $('#signup-username-input').val();
+  var email = $('#signup-email-input').val();
+  var password = $('#signup-password-input').val();
+  var password2 = $('#signup-password2-input').val();
+
+  // Basic validation
+  if (!username || !email || !password || !password2) {
+    alert($.t('signup.error.empty'));
+    return;
+  }
+
+  if (password !== password2) {
+    alert($.t('signup.error.password_match'));
+    return;
+  }
+
+  r.util.ajax({
+    url: r.util.url.user_register,
+    type: 'PUT',
+    data: {
+      username: username,
+      email: email,
+      password: password,
+      locale: 'en',
+      first_connection: false
+    },
+    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+    accept: 'application/json, text/javascript, */*; q=0.01',
+    success: function(data) {
+      // Show success message
+      alert($.t('signup.success'));
+
+      // Switch back to login form and pre-fill username
+      $('#signup-form').hide();
+      $('#login-form').show();
+      $('#login-username-input').val(username).focus();
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      console.error('Signup error:', textStatus, errorThrown);
+      // Signup fail
+      if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+        alert(jqXHR.responseJSON.message);
+      } else {
+        alert($.t('signup.error.general'));
+      }
+    }
+  });
 };
 
 /**
@@ -41,9 +113,14 @@ r.user.boot = function() {
     type: 'GET',
     done: function(data) {
       // Default password warning
+      console.log(data.is_default_password);
+
       if (data.is_default_password) {
         $('#default-password').show();
         $('#default-password-info').show();
+      } else{
+              $('#default-password').hide();
+              $('#default-password-info').hide();
       }
       
       // Load i18n synchronously
@@ -56,6 +133,7 @@ r.user.boot = function() {
         // Current user is anonymous, displaying login
         $('#login-page').show();
         $('#login-username-input').focus();
+        $('#signup-form').hide();
       } else {
         // Hiding login
         $('#login-page').hide();

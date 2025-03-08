@@ -164,6 +164,23 @@ public class UserDao extends BaseDao<UserDto, UserCriteria> {
             return null;
         }
     }
+
+    /**
+     * Returns a user by their email address.
+     *
+     * @param email Email address to search for
+     * @return User if found, null otherwise
+     */
+    public User getByEmail(String email) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createQuery("select u from User u where u.email = :email and u.deleteDate is null")
+                .setParameter("email", email);
+        try {
+            return (User) q.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
     
     /**
      * Gets an active user by its password recovery token.
