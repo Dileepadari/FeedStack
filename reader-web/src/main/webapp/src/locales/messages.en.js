@@ -9,7 +9,8 @@
     "password": "Password",
     "remember": "Remember me",
     "submit": "Login",
-    "error": "Bad username or password"
+    "error": "Bad username or password",
+    "createtext": "Don't have an Account?"
   },
   "jobs": {
     "inprogress": "Import in progress",
