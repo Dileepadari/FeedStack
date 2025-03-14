@@ -113,7 +113,7 @@ r.user.boot = function() {
     type: 'GET',
     done: function(data) {
       // Default password warning
-      console.log(data.is_default_password);
+      
 
       if (data.is_default_password) {
         $('#default-password').show();
