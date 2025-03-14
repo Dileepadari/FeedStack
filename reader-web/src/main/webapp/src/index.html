@@ -257,15 +257,27 @@
     
     <!-- Login form -->
     <div id="login-page">
-      <form>
+      <form id="login-form">
         <input type="text" id="login-username-input" placeholder="Username" data-i18n="[placeholder]login.username" /><br />
         <input type="password" id="login-password-input" placeholder="Password" data-i18n="[placeholder]login.password" /><br />
         <label><input type="checkbox" id="login-remember-input" /> <span data-i18n="login.remember">Remember me</span></label><br />
-        <input class="important" type="submit" id="login-submit-button" value="Login" data-i18n="[value]login.submit" />
-        
+        <input class="important" type="submit" id="login-submit-button" value="Login" data-i18n="[value]login.submit" /><br/>
+        <p id="create-account-text" data-i18n="login.createtext">Don't have an Account?</p>
+        <input class="important" type="button" id="signup-button" value="Sign up" data-i18n="[title]login.signup">
         <p id="default-password-info" data-i18n="defaultpassword.info">Reader is not secured. Please log in with username and password "admin", then change password immediately.</p>
       </form>
+
+    <!-- User Registration -->
+      <form id="signup-form" style="display: none;">
+        <input type="text" id="signup-username-input" placeholder="Username" data-i18n="[placeholder]signup.username" /><br />
+        <input type="email" id="signup-email-input" placeholder="Email" data-i18n="[placeholder]signup.email" /><br />
+        <input type="password" id="signup-password-input" placeholder="Password" data-i18n="[placeholder]signup.password" /><br />
+        <input type="password" id="signup-password2-input" placeholder="Password (confirm)" data-i18n="[placeholder]signup.passwordconfirm" /><br />
+        <input class="important" type="submit" id="signup-submit-button" value="Sign up" data-i18n="[value]signup.submit" />
+        <input class="important" type="button" id="back-to-login-button" value="Back to login" data-i18n="[value]signup.back" />
+      </form>
     </div>
+    
     
     <!-- Default admin password warning -->
     <div id="default-password">

@@ -58,59 +58,28 @@ public class UserResource extends BaseResource {
             @FormParam("username") String username,
             @FormParam("password") String password,
             @FormParam("locale") String localeId,
-            @FormParam("email") String email) throws JSONException {
-
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
-        checkBaseFunction(BaseFunction.ADMIN);
-
-        // Validate the input data
-        username = ValidationUtil.validateLength(username, "username", 3, 50);
-        ValidationUtil.validateAlphanumeric(username, "username");
-        password = ValidationUtil.validateLength(password, "password", 8, 50);
-        email = ValidationUtil.validateLength(email, "email", 3, 50);
-        ValidationUtil.validateEmail(email, "email");
+            @FormParam("email") String email) throws Exception {
 
         if (localeId == null) {
-            // Set the locale from the HTTP headers
             localeId = LocaleUtil.getLocaleIdFromAcceptLanguage(request.getHeader("Accept-Language"));
         }
 
-        // Create the user using factory method
-        User user = User.createNewUser(username, password, email, localeId);
-
-        // Create the user in database
-        UserDao userDao = new UserDao();
-        String userId;
+        // Use the Registration Facade
+        RegistrationFacade facade = new RegistrationFacade();
         try {
-            userId = userDao.create(user);
+            facade.registerUser(username, password, email, localeId);
+
+            // Return success response
+            JSONObject response = new JSONObject();
+            response.put("status", "ok");
+            return Response.ok().entity(response).build();
+        } catch (ValidationException e) {
+            throw new ServerException("InvalidDetails", e.getMessage());
+        } catch (UserExistsException e) {
+            throw new ServerException("AlreadyExistingUsername", "Login already used", e);
         } catch (Exception e) {
-            if ("AlreadyExistingUsername".equals(e.getMessage())) {
-                throw new ServerException("AlreadyExistingUsername", "Login already used", e);
-            } else {
-                throw new ServerException("UnknownError", "Unknown Server Error", e);
-            }
+            throw new ServerException("UnknownError", "Unknown Server Error", e);
         }
-
-        // Create the root category for this user
-        Category category = new Category();
-        category.setUserId(userId);
-        category.setOrder(0);
-
-        CategoryDao categoryDao = new CategoryDao();
-        categoryDao.create(category);
-
-        // Raise a user creation event
-        UserCreatedEvent userCreatedEvent = new UserCreatedEvent();
-        userCreatedEvent.setUser(user);
-        // AppContext.getInstance().getMailEventBus().post(userCreatedEvent);
-        AppContext.getInstance().getEventBusManager().getMailEventBus().post(userCreatedEvent);
-
-        // Always return OK
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        return Response.ok().entity(response).build();
     }
 
     /**
