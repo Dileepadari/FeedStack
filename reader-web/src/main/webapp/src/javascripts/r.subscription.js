@@ -185,18 +185,44 @@ r.subscription.buildSubscriptionItem = function(subscription) {
 /**
  * Building category li.
  */
-r.subscription.buildCategoryItem = function(category, subscriptionsHtml) {
-  var unread = '<span class="unread-count" ' + (category.unread_count == 0 ? 'style="display: none;"' : '') + '>&nbsp;(<span class="count">' + category.unread_count + '</span>)</span>';
+// r.subscription.buildCategoryItem = function(category, subscriptionsHtml) {
+//   var unread = '<span class="unread-count" ' + (category.unread_count == 0 ? 'style="display: none;"' : '') + '>&nbsp;(<span class="count">' + category.unread_count + '</span>)</span>';
   
+//   var name = r.util.escape(category.name);
+//   return '<li id="category-' + category.id + '" data-category-id="' + category.id + '" ' +
+//     'class="category' + (r.feed.context.categoryId == category.id ? ' active' : '') + (category.unread_count > 0 ? ' unread' : '') + '">' +
+//     '<div class="collapse ' + (category.folded ? 'closed' : 'opened') + '"></div>' +
+//     '<a href="#/feed/category/' + category.id + '" title="' + name + '"> <img src="images/category.png" /> ' +
+//     '<span class="name">' + name + '</span>' + unread + '</a>' +
+//     '<div class="edit"></div>' + 
+//     subscriptionsHtml +
+//     '</li>';
+// };
+r.subscription.buildCategoryItem = function(category) {
+  var unread = '<span class="unread-count" ' + (category.unread_count == 0 ? 'style="display: none;"' : '') + '>&nbsp;(<span class="count">' + category.unread_count + '</span>)</span>';
   var name = r.util.escape(category.name);
-  return '<li id="category-' + category.id + '" data-category-id="' + category.id + '" ' +
-    'class="category' + (r.feed.context.categoryId == category.id ? ' active' : '') + (category.unread_count > 0 ? ' unread' : '') + '">' +
+  var html = '<li id="category-' + category.id + '" data-category-id="' + category.id + '" class="category' +
+    (r.feed.context.categoryId == category.id ? ' active' : '') + (category.unread_count > 0 ? ' unread' : '') + '">' +
     '<div class="collapse ' + (category.folded ? 'closed' : 'opened') + '"></div>' +
-    '<a href="#/feed/category/' + category.id + '" title="' + name + '"> <img src="images/category.png" /> ' +
-    '<span class="name">' + name + '</span>' + unread + '</a>' +
-    '<div class="edit"></div>' + 
-    subscriptionsHtml +
-    '</li>';
+    '<a href="#/feed/category/' + category.id + '" title="' + name + '">' +
+    '<img src="images/category.png" /> <span class="name">' + name + '</span>' + unread + '</a>' +
+    '<div class="edit"></div>';
+    
+  html += '<ul' + (category.folded ? ' style="display: none;"' : '') + '>';
+
+  if (category.subscriptions && category.subscriptions.length > 0) {
+    $.each(category.subscriptions, function(i, sub) {
+      html += r.subscription.buildSubscriptionItem(sub);
+    });
+  }
+  if (category.categories && category.categories.length > 0) {
+    $.each(category.categories, function(i, subcat) {
+      html += r.subscription.buildCategoryItem(subcat);  // Recursive call
+    });
+  }
+
+  html += '</ul></li>';
+  return html;
 };
 
 /**
@@ -232,25 +258,30 @@ r.subscription.initSorting = function(rootCategoryId) {
           }
         });
       } else if (ui.item.hasClass('category')) {
-        // If the user drop a category not in the root category, cancel and warn
-        if (ui.item.parent().attr('id') != 'category-root') {
-          $('#subscription-list ul').sortable('cancel');
-          $().toastmessage('showErrorToast', $.t('category.nonesting'));
-          return;
-        }
+        // // If the user drop a category not in the root category, cancel and warn
+        // if (ui.item.parent().attr('id') != 'category-root') {
+        //   $('#subscription-list ul').sortable('cancel');
+        //   $().toastmessage('showErrorToast', $.t('category.nonesting'));
+        //   return;
+        // }
         
-        // Getting contextual parameters
+        // // Getting contextual parameters
         var categoryId = ui.item.attr('data-category-id');
+        var parentCategoryId = ui.item.parent().closest('li.category').attr('data-category-id') || rootCategoryId;
         var order = ui.item.index();
         
         // Calling API
         r.util.ajax({
           url: r.util.url.category_update.replace('{id}', categoryId),
-          data: { order: order },
           type: 'POST',
+          data: {
+              parent_id: parentCategoryId,
+              order: order
+          },
           fail: function(jqxhr) {
-            // In case of error, client is no more synced with server, perform full update
-            r.subscription.update();
+              var response = JSON.parse(jqxhr.responseText);
+              alert(response.message || $.t("error.unknown"));
+              r.subscription.update();
           }
         });
       }

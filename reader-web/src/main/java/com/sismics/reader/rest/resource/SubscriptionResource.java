@@ -132,24 +132,31 @@ public class SubscriptionResource extends BaseResource {
 
         // Add the categories without subscriptions
         if (!unread) {
-            List<Category> allCategoryList = categoryDao.findSubCategory(rootCategory.getId(), principal.getId());
-            JSONArray categoryArrayJson = rootCategoryJson.optJSONArray("categories");
-            List<JSONObject> fullCategoryListJson = new ArrayList<JSONObject>();
-            int i = 0;
-            for (Category category : allCategoryList) {
-                if (categoryArrayJson != null && i < categoryArrayJson.length()
-                        && categoryArrayJson.getJSONObject(i).getString("id").equals(category.getId())) {
-                    categoryJson = categoryArrayJson.getJSONObject(i++);
-                } else {
-                    categoryJson = new JSONObject();
-                    categoryJson.put("id", category.getId());
-                    categoryJson.put("name", category.getName());
-                    categoryJson.put("folded", category.isFolded());
-                    categoryJson.put("unread_count", 0);
-                }
-                fullCategoryListJson.add(categoryJson);
-            }
-            rootCategoryJson.put("categories", fullCategoryListJson);
+            // List<Category> allCategoryList = categoryDao.findSubCategory(rootCategory.getId(), principal.getId());
+            // JSONArray categoryArrayJson = rootCategoryJson.optJSONArray("categories");
+            // List<JSONObject> fullCategoryListJson = new ArrayList<JSONObject>();
+            // int i = 0;
+            // for (Category category : allCategoryList) {
+            //     if (categoryArrayJson != null && i < categoryArrayJson.length()
+            //             && categoryArrayJson.getJSONObject(i).getString("id").equals(category.getId())) {
+            //         categoryJson = categoryArrayJson.getJSONObject(i++);
+            //     } else {
+            //         categoryJson = new JSONObject();
+            //         categoryJson.put("id", category.getId());
+            //         categoryJson.put("name", category.getName());
+            //         categoryJson.put("folded", category.isFolded());
+            //         categoryJson.put("unread_count", 0);
+            //     }
+            //     fullCategoryListJson.add(categoryJson);
+            // }
+            // rootCategoryJson.put("categories", fullCategoryListJson);
+                        List<Category> tree = categoryDao.buildCategoryTree(rootCategory.getId(), principal.getId());
+JSONArray fullTreeJson = new JSONArray();
+for (Category cat : tree) {
+    JSONObject catJson = buildCategoryWithSubscriptions(cat, feedSubscriptionList);
+    fullTreeJson.put(catJson);
+}
+rootCategoryJson.put("categories", fullTreeJson);
         }
 
         JSONObject response = new JSONObject();
@@ -158,6 +165,37 @@ public class SubscriptionResource extends BaseResource {
         return Response.ok().entity(response).build();
     }
 
+
+
+    private JSONObject buildCategoryWithSubscriptions(Category category, List<FeedSubscriptionDto> feedList) throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("id", category.getId());
+        json.put("name", category.getName());
+        json.put("folded", category.isFolded());
+    
+        JSONArray subs = new JSONArray();
+        for (FeedSubscriptionDto sub : feedList) {
+            if (sub.getCategoryId().equals(category.getId())) {
+                JSONObject subJson = new JSONObject();
+                subJson.put("id", sub.getId());
+                subJson.put("title", sub.getFeedSubscriptionTitle());
+                subJson.put("url", sub.getFeedRssUrl());
+                subJson.put("unread_count", sub.getUnreadUserArticleCount());
+                subJson.put("sync_fail_count", sub.getSynchronizationFailCount());
+                subs.put(subJson);
+            }
+        }
+        json.put("subscriptions", subs);
+    
+        JSONArray childCats = new JSONArray();
+        for (Category child : category.getChildren()) {
+            childCats.put(buildCategoryWithSubscriptions(child, feedList));
+        }
+        json.put("categories", childCats);
+        return json;
+    }
+
+    
     /**
      * Returns the subscription informations and paginated articles.
      * 
