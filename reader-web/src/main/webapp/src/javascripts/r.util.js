@@ -43,7 +43,8 @@ r.util.url = {
   bugs_report_delete: '../api/bugs/delete/{id}',
   bugs_report_updatestatus: '../api/bugs/updatestatus',
   bugs_report_getbyemail: '../api/bugs/getbyemail',
-  github_tags: 'https://api.github.com/repos/sismics/reader/tags'
+  github_tags: 'https://api.github.com/repos/sismics/reader/tags',
+  filter: '../api/filter'
 };
 
 /**

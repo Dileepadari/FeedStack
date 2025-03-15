@@ -18,6 +18,7 @@ var r = {
   shortcuts: {},
   util: {},
   bugsreport: {},
+  filter: {}
 };
 
 /**
@@ -48,6 +49,7 @@ r.main.initModules = function() {
   r.theme.init();
   r.shortcuts.init();
   r.bugsreport.init();
+  r.filter.init();
   
   // First page
   if (r.user.hasBaseFunction('ADMIN') && r.user.userInfo.first_connection) {
