@@ -38,7 +38,8 @@ r.util.url = {
   app_log: '../api/app/log',
   app_version: '../api/app',
   app_map_port: '../api/app/map_port',
-  github_tags: 'https://api.github.com/repos/sismics/reader/tags'
+  github_tags: 'https://api.github.com/repos/sismics/reader/tags',
+  filter: '../api/filter'
 };
 
 /**

@@ -16,7 +16,8 @@ var r = {
   wizard: {},
   theme: {},
   shortcuts: {},
-  util: {}
+  util: {},
+  filter: {}
 };
 
 /**
@@ -46,6 +47,7 @@ r.main.initModules = function() {
   r.wizard.init();
   r.theme.init();
   r.shortcuts.init();
+  r.filter.init();
   
   // First page
   if (r.user.hasBaseFunction('ADMIN') && r.user.userInfo.first_connection) {

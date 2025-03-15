@@ -367,5 +367,10 @@
     "zh_HK": "Chinese (Hong Kong)",
     "zh_SG": "Chinese (Singapore)",
     "zh_TW": "Chinese (Taiwan)"
+  },
+  "filter": {
+    "all": "All Sources",
+    "categories": "Categories",
+    "sources": "Sources"
   }
 }

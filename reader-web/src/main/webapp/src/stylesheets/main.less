@@ -508,6 +508,26 @@
     > .full-button, > .list-button, > .settings-button, > .category-button, > .back-button, .narrow-article {
       float: right;
     }
+
+    > .filter-button.active {
+      background-color: @main-color-active;
+      color: #000;
+    }
+
+    > .clear-filters-button {
+      margin-left: 5px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+
+    > .clear-filters-button:hover {
+      background-color: #d32f2f;
+    }
   }
   
   #feed-container {
@@ -1018,6 +1038,87 @@
     }
   }
 }
+
+#qtip-filter.qtip-drop-menu {
+  width: 400px; // Increased from 300px
+
+  .filter-container {
+    padding: 15px;
+    max-height: 400px; // Added max height
+    overflow-y: auto;
+  }
+
+  .filter-section {
+    margin-bottom: 20px;
+
+    h4 {
+      font-size: 13px;
+      font-weight: bold;
+      margin: 0 0 10px 0;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #eee;
+    }
+  }
+
+  .sources-list,
+  .categories-list {
+    max-height: 150px; // Reduced from 200px
+    overflow-y: auto;
+    padding-right: 10px;
+    margin-bottom: 10px;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+  }
+
+  .filter-item {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 12px;
+
+    label {
+      margin-left: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    input[type="checkbox"] {
+      flex-shrink: 0;
+    }
+  }
+
+  .filter-apply-button {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    background: @main-color;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 13px;
+
+    &:hover {
+      background: @main-color-active;
+    }
+  }
+}
+
+
 
 // Media queries overrides
 @import "_desktop.less" screen and (min-width: 1024px);
