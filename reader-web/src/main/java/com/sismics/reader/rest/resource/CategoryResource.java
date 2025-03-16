@@ -42,37 +42,39 @@ public class CategoryResource extends BaseResource {
     @GET
     // @Produces(MediaType.APPLICATION_JSON)
     // public Response list() throws JSONException {
-    //     if (!authenticate()) {
-    //         throw new ForbiddenClientException();
-    //     }
+    // if (!authenticate()) {
+    // throw new ForbiddenClientException();
+    // }
 
-    //     // Get the root category
-    //     CategoryDao categoryDao = new CategoryDao();
-    //     Category rootCategory = categoryDao.getRootCategory(principal.getId());
-    // List<Category> children = categoryDao.buildCategoryTree(rootCategory.getId(), principal.getId());
+    // // Get the root category
+    // CategoryDao categoryDao = new CategoryDao();
+    // Category rootCategory = categoryDao.getRootCategory(principal.getId());
+    // List<Category> children = categoryDao.buildCategoryTree(rootCategory.getId(),
+    // principal.getId());
     // rootCategory.setChildren(children); // <- 💡 Important!
-    //     // Get the subcategories
-    //     List<Category> categoryList = categoryDao.findSubCategory(rootCategory.getId(), principal.getId());
+    // // Get the subcategories
+    // List<Category> categoryList =
+    // categoryDao.findSubCategory(rootCategory.getId(), principal.getId());
 
-    //     // Build the response
-    //     List<JSONObject> rootCategories = new ArrayList<JSONObject>();
+    // // Build the response
+    // List<JSONObject> rootCategories = new ArrayList<JSONObject>();
 
-    //     JSONObject rootCategoryJson = new JSONObject();
-    //     rootCategoryJson.put("id", rootCategory.getId());
-    //     rootCategories.add(rootCategoryJson);
+    // JSONObject rootCategoryJson = new JSONObject();
+    // rootCategoryJson.put("id", rootCategory.getId());
+    // rootCategories.add(rootCategoryJson);
 
-    //     List<JSONObject> categoriesJson = new ArrayList<JSONObject>();
-    //     for (Category category : categoryList) {
-    //         JSONObject categoryJson = new JSONObject();
-    //         categoryJson.put("id", category.getId());
-    //         categoryJson.put("name", category.getName());
-    //         categoriesJson.add(categoryJson);
-    //     }
-    //     rootCategoryJson.put("categories", categoriesJson);
+    // List<JSONObject> categoriesJson = new ArrayList<JSONObject>();
+    // for (Category category : categoryList) {
+    // JSONObject categoryJson = new JSONObject();
+    // categoryJson.put("id", category.getId());
+    // categoryJson.put("name", category.getName());
+    // categoriesJson.add(categoryJson);
+    // }
+    // rootCategoryJson.put("categories", categoriesJson);
 
-    //     JSONObject response = new JSONObject();
-    //     response.put("categories", rootCategories);
-    //     return Response.ok().entity(response).build();
+    // JSONObject response = new JSONObject();
+    // response.put("categories", rootCategories);
+    // return Response.ok().entity(response).build();
     // }
 
     @Produces(MediaType.APPLICATION_JSON)
@@ -107,6 +109,7 @@ public class CategoryResource extends BaseResource {
         json.put("categories", childrenJson);
         return json;
     }
+
     /**
      * Returns all articles in a category.
      * 
@@ -187,75 +190,75 @@ public class CategoryResource extends BaseResource {
     @PUT
     // @Produces(MediaType.APPLICATION_JSON)
     // public Response add(
-    //         @FormParam("name") String name) throws JSONException {
-    //     if (!authenticate()) {
-    //         throw new ForbiddenClientException();
-    //     }
-
-    //     // Validate input data
-    //     name = ValidationUtil.validateLength(name, "name", 1, 100, false);
-
-    //     // Get the root category
-    //     CategoryDao categoryDao = new CategoryDao();
-    //     Category rootCategory = categoryDao.getRootCategory(principal.getId());
-
-    //     // Get the display order
-    //     int displayOrder = categoryDao.getCategoryCount(rootCategory.getId(), principal.getId());
-
-    //     // Create the category
-    //     Category category = new Category();
-    //     category.setUserId(principal.getId());
-    //     category.setParentId(rootCategory.getId());
-    //     category.setName(name);
-    //     category.setOrder(displayOrder);
-    //     String categoryId = categoryDao.create(category);
-
-    //     JSONObject response = new JSONObject();
-    //     response.put("id", categoryId);
-    //     return Response.ok().entity(response).build();
+    // @FormParam("name") String name) throws JSONException {
+    // if (!authenticate()) {
+    // throw new ForbiddenClientException();
     // }
-        @Produces(MediaType.APPLICATION_JSON)
-        public Response add(
-                @FormParam("name") String name,
-                @FormParam("parent_id") String parentId) throws JSONException {
-            if (!authenticate()) {
-                throw new ForbiddenClientException();
-            }
 
-            // Validate input data
-            name = ValidationUtil.validateLength(name, "name", 1, 100, false);
+    // // Validate input data
+    // name = ValidationUtil.validateLength(name, "name", 1, 100, false);
 
-            CategoryDao categoryDao = new CategoryDao();
+    // // Get the root category
+    // CategoryDao categoryDao = new CategoryDao();
+    // Category rootCategory = categoryDao.getRootCategory(principal.getId());
 
-            // Determine parent category
-            Category parentCategory;
-            if (parentId == null || parentId.isEmpty()) {
-                parentCategory = categoryDao.getRootCategory(principal.getId());
-            } else {
-                parentCategory = categoryDao.getCategory(parentId, principal.getId());
-            }
+    // // Get the display order
+    // int displayOrder = categoryDao.getCategoryCount(rootCategory.getId(),
+    // principal.getId());
 
-            // Validate depth limit
-            if (categoryDao.computeDepth(parentCategory, principal.getId()) > 5)  {
-                throw new ClientException("MaxDepthExceeded", "Cannot exceed 5 levels of nesting");
-            }
-            
+    // // Create the category
+    // Category category = new Category();
+    // category.setUserId(principal.getId());
+    // category.setParentId(rootCategory.getId());
+    // category.setName(name);
+    // category.setOrder(displayOrder);
+    // String categoryId = categoryDao.create(category);
 
-            // Get the display order
-            int displayOrder = categoryDao.getCategoryCount(parentCategory.getId(), principal.getId());
-
-            // Create the category
-            Category category = new Category();
-            category.setUserId(principal.getId());
-            category.setParentId(parentCategory.getId());
-            category.setName(name);
-            category.setOrder(displayOrder);
-            String categoryId = categoryDao.create(category);
-
-            JSONObject response = new JSONObject();
-            response.put("id", categoryId);
-            return Response.ok().entity(response).build();
+    // JSONObject response = new JSONObject();
+    // response.put("id", categoryId);
+    // return Response.ok().entity(response).build();
+    // }
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response add(
+            @FormParam("name") String name,
+            @FormParam("parent_id") String parentId) throws JSONException {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
         }
+
+        // Validate input data
+        name = ValidationUtil.validateLength(name, "name", 1, 100, false);
+
+        CategoryDao categoryDao = new CategoryDao();
+
+        // Determine parent category
+        Category parentCategory;
+        if (parentId == null || parentId.isEmpty()) {
+            parentCategory = categoryDao.getRootCategory(principal.getId());
+        } else {
+            parentCategory = categoryDao.getCategory(parentId, principal.getId());
+        }
+
+        // Validate depth limit
+        if (categoryDao.computeDepth(parentCategory, principal.getId()) > 5) {
+            throw new ClientException("MaxDepthExceeded", "Cannot exceed 5 levels of nesting");
+        }
+
+        // Get the display order
+        int displayOrder = categoryDao.getCategoryCount(parentCategory.getId(), principal.getId());
+
+        // Create the category
+        Category category = new Category();
+        category.setUserId(principal.getId());
+        category.setParentId(parentCategory.getId());
+        category.setName(name);
+        category.setOrder(displayOrder);
+        String categoryId = categoryDao.create(category);
+
+        JSONObject response = new JSONObject();
+        response.put("id", categoryId);
+        return Response.ok().entity(response).build();
+    }
 
     /**
      * Deletes a category.
@@ -275,19 +278,21 @@ public class CategoryResource extends BaseResource {
         // // Get the category
         // CategoryDao categoryDao = new CategoryDao();
         // try {
-        //     categoryDao.getCategory(id, principal.getId());
+        // categoryDao.getCategory(id, p-+rincipal.getId());
         // } catch (NoResultException e) {
-        //     throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
+        // throw new ClientException("CategoryNotFound", MessageFormat.format("Category
+        // not found: {0}", id));
         // }
 
         // // Move subscriptions in this category to root
         // FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
-        // List<FeedSubscription> feedSubscriptionList = feedSubscriptionDao.findByCategory(id);
+        // List<FeedSubscription> feedSubscriptionList =
+        // feedSubscriptionDao.findByCategory(id);
         // Category rootCategory = categoryDao.getRootCategory(principal.getId());
         // for (FeedSubscription feedSubscription : feedSubscriptionList) {
-        //     feedSubscription.setCategoryId(rootCategory.getId());
-        //     feedSubscriptionDao.update(feedSubscription);
-        //     feedSubscriptionDao.reorder(feedSubscription, 0);
+        // feedSubscription.setCategoryId(rootCategory.getId());
+        // feedSubscriptionDao.update(feedSubscription);
+        // feedSubscriptionDao.reorder(feedSubscription, 0);
         // }
 
         // // Delete the category
@@ -297,38 +302,38 @@ public class CategoryResource extends BaseResource {
         // JSONObject response = new JSONObject();
         // response.put("status", "ok");
         // return Response.ok().entity(response).build();
-            // Get the category
-    CategoryDao categoryDao = new CategoryDao();
-    Category category;
-    try {
-        category = categoryDao.getCategory(id, principal.getId());
-    } catch (NoResultException e) {
-        throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
-    }
+        // Get the category
+        CategoryDao categoryDao = new CategoryDao();
+        Category category;
+        try {
+            category = categoryDao.getCategory(id, principal.getId());
+        } catch (NoResultException e) {
+            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
+        }
 
-    // Move subscriptions to root category
-    FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
-    List<FeedSubscription> feedSubscriptionList = feedSubscriptionDao.findByCategory(id);
-    Category rootCategory = categoryDao.getRootCategory(principal.getId());
-    for (FeedSubscription feedSubscription : feedSubscriptionList) {
-        feedSubscription.setCategoryId(rootCategory.getId());
-        feedSubscriptionDao.update(feedSubscription);
-        feedSubscriptionDao.reorder(feedSubscription, 0);
-    }
+        // Move subscriptions to root category
+        FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
+        List<FeedSubscription> feedSubscriptionList = feedSubscriptionDao.findByCategory(id);
+        Category rootCategory = categoryDao.getRootCategory(principal.getId());
+        for (FeedSubscription feedSubscription : feedSubscriptionList) {
+            feedSubscription.setCategoryId(rootCategory.getId());
+            feedSubscriptionDao.update(feedSubscription);
+            feedSubscriptionDao.reorder(feedSubscription, 0);
+        }
 
-    // Move child categories to root
-    List<Category> childCategories = categoryDao.findSubCategory(id, principal.getId());
-    for (Category child : childCategories) {
-        child.setParentId(rootCategory.getId());
-        categoryDao.update(child);
-    }
+        // Move child categories to root
+        List<Category> childCategories = categoryDao.findSubCategory(id, principal.getId());
+        for (Category child : childCategories) {
+            child.setParentId(rootCategory.getId());
+            categoryDao.update(child);
+        }
 
-    // Delete the category
-    categoryDao.delete(id);
+        // Delete the category
+        categoryDao.delete(id);
 
-    JSONObject response = new JSONObject();
-    response.put("status", "ok");
-    return Response.ok().entity(response).build();
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        return Response.ok().entity(response).build();
     }
 
     /**
@@ -387,111 +392,112 @@ public class CategoryResource extends BaseResource {
     @Path("{id: [a-z0-9\\-]+}")
     // @Produces(MediaType.APPLICATION_JSON)
     // public Response update(
-    //         @PathParam("id") String id,
-    //         @FormParam("name") String name,
-    //         @FormParam("order") Integer order,
-    //         @FormParam("folded") Boolean folded) throws JSONException {
-    //     if (!authenticate()) {
-    //         throw new ForbiddenClientException();
-    //     }
-
-    //     // Validate input data
-    //     name = ValidationUtil.validateLength(name, "name", 1, 100, true);
-
-    //     // Get the category
-    //     CategoryDao categoryDao = new CategoryDao();
-    //     Category category;
-    //     try {
-    //         category = categoryDao.getCategory(id, principal.getId());
-    //     } catch (NoResultException e) {
-    //         throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
-    //     }
-
-    //     // Update the category
-    //     if (name != null) {
-    //         category.setName(name);
-    //     }
-    //     if (folded != null) {
-    //         category.setFolded(folded);
-    //     }
-    //     categoryDao.update(category);
-
-    //     // Reorder categories
-    //     if (order != null) {
-    //         categoryDao.reorder(category, order);
-    //     }
-
-    //     // Always return ok
-    //     JSONObject response = new JSONObject();
-    //     response.put("status", "ok");
-    //     return Response.ok().entity(response).build();
+    // @PathParam("id") String id,
+    // @FormParam("name") String name,
+    // @FormParam("order") Integer order,
+    // @FormParam("folded") Boolean folded) throws JSONException {
+    // if (!authenticate()) {
+    // throw new ForbiddenClientException();
     // }
-@Produces(MediaType.APPLICATION_JSON)
-public Response update(
-        @PathParam("id") String id,
-        @FormParam("name") String name,
-        @FormParam("order") Integer order,
-        @FormParam("folded") Boolean folded,
-        @FormParam("parent_id") String parentId) throws JSONException {
-    if (!authenticate()) {
-        throw new ForbiddenClientException();
-    }
 
-    // Validate input data
-    name = ValidationUtil.validateLength(name, "name", 1, 100, true);
+    // // Validate input data
+    // name = ValidationUtil.validateLength(name, "name", 1, 100, true);
 
-    // Get the category
-    CategoryDao categoryDao = new CategoryDao();
-    Category category;
-    try {
-        category = categoryDao.getCategory(id, principal.getId());
-    } catch (NoResultException e) {
-        throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
-    }
+    // // Get the category
+    // CategoryDao categoryDao = new CategoryDao();
+    // Category category;
+    // try {
+    // category = categoryDao.getCategory(id, principal.getId());
+    // } catch (NoResultException e) {
+    // throw new ClientException("CategoryNotFound", MessageFormat.format("Category
+    // not found: {0}", id));
+    // }
 
-    // Change parent category if provided
-    if (parentId != null && !parentId.equals(category.getParentId())) {
-        Category newParent = categoryDao.getCategory(parentId, principal.getId());
+    // // Update the category
+    // if (name != null) {
+    // category.setName(name);
+    // }
+    // if (folded != null) {
+    // category.setFolded(folded);
+    // }
+    // categoryDao.update(category);
 
-        // Ensure new parent is not a child of the category (prevent cyclic dependency)
-        if (categoryDao.computeDepth(newParent, principal.getId()) > 5) {
-            throw new ClientException("MaxDepthExceeded", "Cannot exceed 5 levels of nesting");
+    // // Reorder categories
+    // if (order != null) {
+    // categoryDao.reorder(category, order);
+    // }
+
+    // // Always return ok
+    // JSONObject response = new JSONObject();
+    // response.put("status", "ok");
+    // return Response.ok().entity(response).build();
+    // }
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response update(
+            @PathParam("id") String id,
+            @FormParam("name") String name,
+            @FormParam("order") Integer order,
+            @FormParam("folded") Boolean folded,
+            @FormParam("parent_id") String parentId) throws JSONException {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
         }
-        
 
-        category.setParentId(newParent.getId());
+        // Validate input data
+        name = ValidationUtil.validateLength(name, "name", 1, 100, true);
+
+        // Get the category
+        CategoryDao categoryDao = new CategoryDao();
+        Category category;
+        try {
+            category = categoryDao.getCategory(id, principal.getId());
+        } catch (NoResultException e) {
+            throw new ClientException("CategoryNotFound", MessageFormat.format("Category not found: {0}", id));
+        }
+
+        // Change parent category if provided
+        if (parentId != null && !parentId.equals(category.getParentId())) {
+            Category newParent = categoryDao.getCategory(parentId, principal.getId());
+
+            // Ensure new parent is not a child of the category (prevent cyclic dependency)
+            if (categoryDao.computeDepth(newParent, principal.getId()) > 5) {
+                throw new ClientException("MaxDepthExceeded", "Cannot exceed 5 levels of nesting");
+            }
+
+            category.setParentId(newParent.getId());
+        }
+
+        // Update the category
+        if (name != null) {
+            category.setName(name);
+        }
+        if (folded != null) {
+            category.setFolded(folded);
+        }
+        categoryDao.update(category);
+
+        // Reorder categories
+        if (order != null) {
+            categoryDao.reorder(category, order);
+        }
+
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        return Response.ok().entity(response).build();
     }
 
-    // Update the category
-    if (name != null) {
-        category.setName(name);
-    }
-    if (folded != null) {
-        category.setFolded(folded);
-    }
-    categoryDao.update(category);
+    // private JSONObject buildCategoryJson(Category category) throws JSONException
+    // {
+    // JSONObject json = new JSONObject();
+    // json.put("id", category.getId());
+    // json.put("name", category.getName());
+    // json.put("folded", category.isFolded());
 
-    // Reorder categories
-    if (order != null) {
-        categoryDao.reorder(category, order);
-    }
-
-    JSONObject response = new JSONObject();
-    response.put("status", "ok");
-    return Response.ok().entity(response).build();
-}
-
-// private JSONObject buildCategoryJson(Category category) throws JSONException {
-//     JSONObject json = new JSONObject();
-//     json.put("id", category.getId());
-//     json.put("name", category.getName());
-//     json.put("folded", category.isFolded());
-
-//     JSONArray childrenJson = new JSONArray();
-//     for (Category child : category.getChildren()) {
-//         childrenJson.put(buildCategoryJson(child));
-//     }
-//     json.put("categories", childrenJson);
-//     return json;
-// }
+    // JSONArray childrenJson = new JSONArray();
+    // for (Category child : category.getChildren()) {
+    // childrenJson.put(buildCategoryJson(child));
+    // }
+    // json.put("categories", childrenJson);
+    // return json;
+    // }
 }
