@@ -4,12 +4,25 @@
     "unknown": "Error accessing Reader, try again",
     "feed": "Error loading feed, try again"
   },
+  "bugsreport": {
+    "title": "Report a bug",
+    "message": "Please describe the bug you encountered. If you can, please provide steps to reproduce the bug. We will do our best to fix it as soon as possible",
+    "cancel": "Cancel",
+    "button": "Report",
+    "msglabel": "Bug Description",
+    "success": "Bug reported",
+    "error": "Error while reporting bug",
+    "logs": {
+      "title": "Browse Bug Reports",
+    }
+  },
   "login": {
     "username": "Username",
     "password": "Password",
     "remember": "Remember me",
     "submit": "Login",
-    "error": "Bad username or password"
+    "error": "Bad username or password",
+    "createtext": "Don't have an Account?"
   },
   "jobs": {
     "inprogress": "Import in progress",

@@ -77,12 +77,12 @@
     margin: 5px 0;
   }
   
-  input[type="text"], input[type="password"] {
+  input[type="text"], input[type="password"], input[type="email"] {
     width: 200px;
     .border-radius(4px);
   }
   
-  input[type="submit"] {
+  input[type="submit"], input[type="reset"] {
     width: 100px;
   }
   
@@ -92,6 +92,9 @@
   
   #default-password-info {
     display: none;
+    color: #fff;
+  }
+  #create-account-text{
     color: #fff;
   }
 }
@@ -422,7 +425,7 @@
     margin: 5px;
   }
   
-  input[type="submit"] {
+  input[type="submit"], input[type="reset"] {
     margin: 5px;
   }
 }
@@ -436,7 +439,7 @@
     margin: 5px;
   }
   
-  input[type="submit"] {
+  input[type="submit"], input[type="reset"] {
     margin: 5px;
   }
 
@@ -939,6 +942,112 @@
 	      }
       }
     }
+  }
+
+  #bugsreport-container {
+    padding: 1em 1.5em;
+  
+    h1 {
+      font-size: 22px;
+      font-variant: small-caps;
+      font-weight: 300;
+      padding-bottom: 6px;
+      padding-left: 8px;
+      margin-bottom: 20px;
+      margin-top: 24px;
+      color: @main-color;
+      border-bottom: 1px solid #ddd;
+    }
+      select {
+        position: relative; 
+        top: -3px;
+      }
+      
+      .button {
+        position: relative;
+        top: 7px;
+      }
+
+      #desc{
+        padding: 6px 0;
+        margin-bottom: 20px;
+        margin-top: 24px;
+        color: @main-color;
+        border-bottom: 1px solid #ddd;
+      }
+      textarea {
+        width: 100%;
+        padding: 6px 0;
+        margin-bottom: 20px;
+        margin-top: 24px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 0 10px rgba(0,0,0,0) inset;
+        font-size: 14px;
+      }
+
+      #submit, #cancel {
+        padding: 0 10px;
+        background: @main-color;
+        color: #fff;
+        border-bottom: 1px solid #ddd;
+      }
+
+      #bugsreport-table{
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 20px;
+        margin-top: 24px;
+        border: 1px solid #ddd;
+      
+        tr.bug-item {
+          > td {
+            font: 12px monospace;
+            padding: 10px 6px 3px 2px;
+            border: 1px solid #ddd;
+            text-align: center;
+          }
+
+          > th{
+            font: 12px monospace;
+            padding: 3px 6px;
+            font-weight: 800;
+            text-align: center;
+          }
+
+          > .bug-description{
+              width: 40%;
+          }
+        }
+      }
+
+      #bugsreport-user-table{
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 20px;
+        margin-top: 24px;
+        border: 1px solid #ddd;
+
+        tr.bug-item {
+          > td {
+            font: 12px monospace;
+            padding: 10px 6px 3px 2px;
+            border: 1px solid #ddd;
+            text-align: center;
+          }
+
+          > th{
+            font: 12px monospace;
+            padding: 3px 6px;
+            font-weight: 800;
+            text-align: center;
+          }
+
+          > .bug-description{
+              width: 40%;
+          }
+        }
+      }
   }
   
   #wizard-container {

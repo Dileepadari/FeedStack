@@ -11,6 +11,7 @@ create memory table T_USER ( USE_ID_C varchar(36) not null, USE_IDLOCALE_C varch
 create cached table T_USER_ARTICLE ( USA_ID_C varchar(36) not null, USA_IDUSER_C varchar(36) not null, USA_IDARTICLE_C varchar(36) not null, USA_CREATEDATE_D datetime not null, USA_READDATE_D datetime, USA_STARREDDATE_D datetime, USA_DELETEDATE_D datetime, primary key (USA_ID_C) );
 create memory table T_ROLE ( ROL_ID_C varchar(36) not null, ROL_NAME_C varchar(36) not null, ROL_CREATEDATE_D datetime not null, ROL_DELETEDATE_D datetime, primary key (ROL_ID_C) );
 create memory table T_ROLE_BASE_FUNCTION ( RBF_ID_C varchar(36) not null, RBF_IDROLE_C varchar(36) not null, RBF_IDBASEFUNCTION_C varchar(20) not null, RBF_CREATEDATE_D datetime not null, RBF_DELETEDATE_D datetime, primary key (RBF_ID_C) );
+create memory table T_BUG_REPORT ( BUG_ID_C VARCHAR(255) not null, BUG_EMAIL_C VARCHAR(255) not null, BUG_DESCRIPTION_C VARCHAR(2000) not null, BUG_TIMESTAMP_D datetime, BUG_STATUS_C VARCHAR(50) not null, primary key (BUG_ID_C) );  
 alter table T_ARTICLE add constraint FK_ART_IDFEED_C foreign key (ART_IDFEED_C) references T_FEED (FED_ID_C) on delete restrict on update restrict;
 alter table T_AUTHENTICATION_TOKEN add constraint FK_AUT_IDUSER_C foreign key (AUT_IDUSER_C) references T_USER (USE_ID_C) on delete restrict on update restrict;
 alter table T_CATEGORY add constraint FK_CAT_IDPARENT_C foreign key (CAT_IDPARENT_C) references T_CATEGORY (CAT_ID_C) on delete restrict on update restrict;

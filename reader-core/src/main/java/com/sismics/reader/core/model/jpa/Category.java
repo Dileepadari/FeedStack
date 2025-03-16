@@ -23,19 +23,19 @@ public class Category {
     @Id
     @Column(name = "CAT_ID_C", length = 36)
     private String id;
-    
+
     /**
      * User ID.
      */
     @Column(name = "CAT_IDUSER_C", nullable = false, length = 36)
     private String userId;
-    
+
     /**
      * Parent category ID.
      */
     @Column(name = "CAT_IDPARENT_C", length = 36)
     private String parentId;
-    
+
     /**
      * Category name.
      */
@@ -53,19 +53,19 @@ public class Category {
      */
     @Column(name = "CAT_FOLDED_B", nullable = false)
     private boolean folded;
- 
+
     /**
      * Creation date.
      */
     @Column(name = "CAT_CREATEDATE_D", nullable = false)
     private Date createDate;
-    
+
     /**
      * Deletion date.
      */
     @Column(name = "CAT_DELETEDATE_D")
     private Date deleteDate;
-    
+
     /**
      * Getter of id.
      *
