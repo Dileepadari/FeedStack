@@ -46,7 +46,8 @@ public class RssReader extends DefaultHandler {
                     DateTimeFormat.forPattern("yyyy-mm-dd HH:mm:ss").getParser(),
                     DateTimeFormat.forPattern("EEE, dd MMM yyyy HH:mm:ss").getParser(),
                     DateTimeFormat.forPattern("dd MMM yyyy HH:mm:ss zzz").getParser(),
-                    DateTimeFormat.forPattern("EEE MMM dd yyyy HH:mm:ss 'GMT'Z Z").getParser()
+                    DateTimeFormat.forPattern("EEE MMM dd yyyy HH:mm:ss 'GMT'Z Z").getParser(),
+                    DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ").getParser()
                 }).toFormatter().withOffsetParsed().withLocale(Locale.ENGLISH);
     
     /**
@@ -326,6 +327,7 @@ public class RssReader extends DefaultHandler {
                 "enclosure".equalsIgnoreCase(localName)) {
             pushElement(Element.ITEM_ENCLOSURE);
             String enclosureUrl = StringUtils.trim(attributes.getValue("url"));
+            log.debug("Enclosure URL: " + enclosureUrl);
             if (!StringUtils.isBlank(enclosureUrl)) {
                 article.setEnclosureUrl(enclosureUrl);
                 String length = attributes.getValue("length");
@@ -337,6 +339,9 @@ public class RssReader extends DefaultHandler {
                         // NOP
                     }
                     article.setEnclosureLength(enclosureLength);
+                }
+                else {
+                    article.setEnclosureLength(500);
                 }
                 article.setEnclosureType(StringUtils.trim(attributes.getValue("type")));
             }
@@ -556,7 +561,7 @@ public class RssReader extends DefaultHandler {
     
     @Override
     public void fatalError(SAXParseException e) throws SAXException {
-        log.warn("Fatal SAX parse error encountered, trying to resume parsing...", e);
+        log.warn("Fatal error at line " + e.getLineNumber() + ", column " + e.getColumnNumber() + ": " + e.getMessage());
         fatalErrorCount++;
         if (fatalErrorCount >= FATAL_ERROR_MAX) {
             throw new SAXException("Tried to recover too many times (" + FATAL_ERROR_MAX + "), giving up.");
