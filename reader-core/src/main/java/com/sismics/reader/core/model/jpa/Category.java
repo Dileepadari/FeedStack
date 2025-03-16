@@ -28,19 +28,19 @@ public class Category {
     @Id
     @Column(name = "CAT_ID_C", length = 36)
     private String id;
-    
+
     /**
      * User ID.
      */
     @Column(name = "CAT_IDUSER_C", nullable = false, length = 36)
     private String userId;
-    
+
     /**
      * Parent category ID.
      */
     @Column(name = "CAT_IDPARENT_C", length = 36)
     private String parentId;
-    
+
     /**
      * Category name.
      */
@@ -58,22 +58,23 @@ public class Category {
      */
     @Column(name = "CAT_FOLDED_B", nullable = false)
     private boolean folded;
- 
+
     /**
      * Creation date.
      */
     @Column(name = "CAT_CREATEDATE_D", nullable = false)
     private Date createDate;
-    
+
     /**
      * Deletion date.
      */
     @Column(name = "CAT_DELETEDATE_D")
     private Date deleteDate;
-//4_se
+
+    // 4_se
     @Transient
-private List<Category> children = new ArrayList<>();
-    
+    private List<Category> children = new ArrayList<>();
+
     /**
      * Getter of id.
      *
@@ -217,20 +218,19 @@ private List<Category> children = new ArrayList<>();
     public void setDeleteDate(Date deleteDate) {
         this.deleteDate = deleteDate;
     }
-//4_se
+
+    // 4_se
     public List<Category> getChildren() {
         return children;
     }
-    
+
     public void setChildren(List<Category> children) {
         this.children = children;
     }
-    
+
     public void addChild(Category child) {
         this.children.add(child);
     }
-
-
 
     @Override
     public String toString() {

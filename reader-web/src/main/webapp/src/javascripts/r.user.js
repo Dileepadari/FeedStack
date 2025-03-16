@@ -123,8 +123,13 @@ r.user.boot = function() {
               $('#default-password-info').hide();
       }
       
-      // Load i18n synchronously
-      r.user.initI18n(data.locale);
+      // Load i18n synchronously if available other wise give english
+      var lang = data.locale;
+      if (lang) { 
+        r.user.initI18n(lang);
+      }else{
+        r.user.initI18n('en');
+      }
       
       // Hide loader layer
       $('#loader-page').hide();
@@ -264,9 +269,11 @@ r.user.initI18n = function(language) {
     lng: language,
     useCookie: false,
     getAsync: false,
-    resGetPath: 'locales/messages.__lng__.js',
+    resGetPath: 'locales/messages.__lng__.json',
     debug: false
   });
+
+  // Translating HTML elements with i18next
   $('html').i18n();
   
   // Initializing moment.js i18n

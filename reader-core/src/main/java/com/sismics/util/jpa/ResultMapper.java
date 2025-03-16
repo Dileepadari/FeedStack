@@ -61,49 +61,40 @@ public abstract class ResultMapper<T> {
     }
 
     protected Boolean booleanValue(Object o) {
-        return o == null ? null :
-                o instanceof String ? "true".equalsIgnoreCase((String) o) :
-                o instanceof Boolean ? (Boolean) o :
-                o instanceof Byte ? o.equals(Byte.valueOf("1")) :
-                o instanceof Integer ? o.equals(Integer.valueOf("1")) :
-                null;
+        return o == null ? null
+                : o instanceof String ? "true".equalsIgnoreCase((String) o)
+                        : o instanceof Boolean ? (Boolean) o
+                                : o instanceof Byte ? o.equals(Byte.valueOf("1"))
+                                        : o instanceof Integer ? o.equals(Integer.valueOf("1")) : null;
     }
 
     protected Integer intValue(Object o) {
-        return o == null ? null :
-                o instanceof Integer ? (Integer) o :
-                o instanceof BigInteger ? ((BigInteger) o).intValue() :
-                o instanceof String ? Integer.valueOf((String) o) :
-                null;
+        return o == null ? null
+                : o instanceof Integer ? (Integer) o
+                        : o instanceof BigInteger ? ((BigInteger) o).intValue()
+                                : o instanceof String ? Integer.valueOf((String) o) : null;
     }
 
     protected Long longValue(Object o) {
-        return o == null ? null :
-                o instanceof Long ? (Long) o :
-                o instanceof Integer ? (Integer) o :
-                o instanceof BigInteger ? ((BigInteger) o).longValue() :
-                o instanceof BigDecimal ? ((BigDecimal) o).longValue() :
-                null;
+        return o == null ? null
+                : o instanceof Long ? (Long) o
+                        : o instanceof Integer ? (Integer) o
+                                : o instanceof BigInteger ? ((BigInteger) o).longValue()
+                                        : o instanceof BigDecimal ? ((BigDecimal) o).longValue() : null;
     }
 
     protected Float floatValue(Object o) {
-        return o == null ? null :
-                o instanceof Float ? (Float) o :
-                o instanceof BigDecimal ? ((BigDecimal) o).floatValue() :
-                null;
+        return o == null ? null
+                : o instanceof Float ? (Float) o : o instanceof BigDecimal ? ((BigDecimal) o).floatValue() : null;
     }
 
     protected Double doubleValue(Object o) {
-        return o == null ? null :
-                o instanceof Double ? (Double) o :
-                o instanceof BigDecimal ? ((BigDecimal) o).doubleValue() :
-                null;
+        return o == null ? null
+                : o instanceof Double ? (Double) o : o instanceof BigDecimal ? ((BigDecimal) o).doubleValue() : null;
     }
 
     protected BigDecimal bigDecimalValue(Object o) {
-        return o == null ? null :
-                o instanceof BigDecimal ? (BigDecimal) o :
-                null;
+        return o == null ? null : o instanceof BigDecimal ? (BigDecimal) o : null;
     }
 
     protected Date dateValue(Object o) {
@@ -122,8 +113,6 @@ public abstract class ResultMapper<T> {
     }
 
     protected String arrayValue(Object o) {
-        return o == null ? null :
-                o instanceof String ? (String) o :
-                "";
+        return o == null ? null : o instanceof String ? (String) o : "";
     }
 }
