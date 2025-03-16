@@ -8,6 +8,11 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.google.common.base.Objects;
+// 4_se
+import java.util.List;
+import java.util.ArrayList;
+
+import javax.persistence.Transient;
 
 /**
  * Category entity.
@@ -65,6 +70,10 @@ public class Category {
      */
     @Column(name = "CAT_DELETEDATE_D")
     private Date deleteDate;
+
+    // 4_se
+    @Transient
+    private List<Category> children = new ArrayList<>();
 
     /**
      * Getter of id.
@@ -208,6 +217,19 @@ public class Category {
      */
     public void setDeleteDate(Date deleteDate) {
         this.deleteDate = deleteDate;
+    }
+
+    // 4_se
+    public List<Category> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<Category> children) {
+        this.children = children;
+    }
+
+    public void addChild(Category child) {
+        this.children.add(child);
     }
 
     @Override

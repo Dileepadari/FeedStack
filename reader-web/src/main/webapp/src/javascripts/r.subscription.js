@@ -87,9 +87,23 @@ r.subscription.init = function() {
   }, 60000);
   
   $('#subscriptions').on('click', 'li a', function() {
+  $('#subscriptions').on('click', 'li a', function(e) {
     // Force hashchange trigger if the user clicks on an already opened feed
     if (window.location.hash == $(this).attr('href')) {
       $.History.trigger();
+    }
+    
+    // For category clicks, we want to navigate to the feed but not collapse the tree
+    if ($(this).closest('li').hasClass('category')) {
+      // Only prevent default on desktop to allow the tree to stay expanded
+      if (!r.main.mobile) {
+        e.preventDefault();
+        // Manually update the hash without navigating
+        var href = $(this).attr('href');
+        if (href && href !== '#') {
+          window.location.hash = href;
+        }
+      }
     }
     
     // Hide subscriptions on mobile
@@ -98,14 +112,34 @@ r.subscription.init = function() {
       $('#subscriptions-backdrop').fadeOut('fast');
     }
   });
+  });
 };
 
 /**
  * Updating subscriptions tree.
  */
 r.subscription.update = function() {
+  console.log("Updating subscription tree");
+  
   // Unread state
   var unread = r.user.isDisplayUnread();
+  
+  // Save current expanded/collapsed state and active items
+  var expandedState = {};
+  $('#subscription-list li.category').each(function() {
+    var id = $(this).attr('data-category-id');
+    var isExpanded = !$(this).find('> .collapse').hasClass('closed');
+    expandedState[id] = isExpanded;
+  });
+  
+  var activeCategory = $('#subscription-list li.category.active').attr('data-category-id');
+  var activeSubscription = $('#subscription-list li.subscription.active').attr('data-subscription-id');
+  
+  console.log("Saved state:", {
+    expandedCategories: Object.keys(expandedState).length,
+    activeCategory: activeCategory,
+    activeSubscription: activeSubscription
+  });
   
   // Getting subscriptions
   r.util.ajax({
@@ -113,55 +147,134 @@ r.subscription.update = function() {
     data: { unread: unread },
     type: 'GET',
     done: function(data) {
-      if ($(data.categories[0].categories).size() > 0 || $(data.categories[0].subscriptions).size() > 0) {
-        // Building HTML tree
-        var html = '<ul id="category-root" data-category-id="' + data.categories[0].id + '">';
-        $(data.categories[0].categories).each(function(i, category) {
-          // Adding sub-category
-          var subscriptionsHtml = '<ul ' + (category.folded ? 'style="display: none;"' : '') + '>';
-          if ($(category.subscriptions).length > 0) {
-            // Adding subscriptions
-            $(category.subscriptions).each(function(i, subscription) {
-              subscriptionsHtml += r.subscription.buildSubscriptionItem(subscription);
-            });
-          }
-          subscriptionsHtml += '</ul>';
-          html += r.subscription.buildCategoryItem(category, subscriptionsHtml);
-        });
-        
-        // Adding remaining subscriptions
-        $(data.categories[0].subscriptions).each(function(i, subscription) {
-          html += r.subscription.buildSubscriptionItem(subscription);
-        });
-        html += '&nbsp;</ul>';
-        
-        // Updating HTML and force redraw
-        $('#subscription-list')
-          .html(html)
-          .redraw();
-      } else {
-        // Empty placeholder
-        var html = '<p>' + $.t('subscription.empty') + '</p>';
-        if (unread) {
-          html = '<p>' + $.t('subscription.emptyunread') + '</p>'
-            + '<p><a href="#">' + $.t('subscription.showall') + '</a></p>';
-        }
-        $('#subscription-list').html(html);
-        $('#subscription-list p a').click(function() {
-          r.user.setDisplayUnread(false);
-          r.subscription.update();
-        });
+      console.log("Received data structure:", {
+        rootCategoryId: data.categories[0].id,
+        categoryCount: data.categories[0].categories ? data.categories[0].categories.length : 0,
+        subscriptionCount: data.categories[0].subscriptions ? data.categories[0].subscriptions.length : 0
+      });
+      
+      // Check if the categories array has proper structure
+      if (data.categories[0].categories) {
+        console.log("First level categories:", data.categories[0].categories.map(function(c) {
+          return {
+            id: c.id,
+            name: c.name,
+            hasChildren: c.categories && c.categories.length > 0,
+            childCount: c.categories ? c.categories.length : 0
+          };
+        }));
       }
       
-      // Updating main unread item and title
-      var unreadItem = $('#unread-feed-button');
-      r.subscription.updateUnreadCount(unreadItem, data.unread_count);
-      r.subscription.updateTitle(data.unread_count);
-      
-      // Initializing tree features
-      r.subscription.initSorting(data.categories[0].id);
-      r.subscription.initCollapsing();
-      r.subscription.initEditing();
+      // Store the original data for debugging
+      r.subscription.lastResponse = data;
+      data = r.subscription.applyArticleCounts(data);
+      console.log("Updated data with total counts:", data);
+      try {
+        if ((data.categories[0].categories && data.categories[0].categories.length > 0) || 
+            (data.categories[0].subscriptions && data.categories[0].subscriptions.length > 0)) {
+          // Apply saved expanded/collapsed state to the data before building HTML
+          if (data.categories[0].categories && data.categories[0].categories.length > 0) {
+            r.subscription.applyExpandedState(data.categories[0].categories, expandedState);
+          }
+          
+          // Building HTML tree
+          var html = '<ul id="category-root" data-category-id="' + data.categories[0].id + '">';
+          
+          // Process all categories recursively
+          if (data.categories[0].categories && data.categories[0].categories.length > 0) {
+            $(data.categories[0].categories).each(function(i, category) {
+              html += r.subscription.buildCategoryItem(category);
+            });
+          }
+          
+          // Adding remaining subscriptions
+          if (data.categories[0].subscriptions && data.categories[0].subscriptions.length > 0) {
+            $(data.categories[0].subscriptions).each(function(i, subscription) {
+              html += r.subscription.buildSubscriptionItem(subscription);
+            });
+          }
+          html += '&nbsp;</ul>';
+          
+          // Updating HTML and force redraw
+          $('#subscription-list')
+            .html(html)
+            .redraw();
+            
+          console.log("Tree rendered, initializing features");
+            
+          // Restore active states
+          if (activeCategory) {
+            $('#category-' + activeCategory).addClass('active');
+          }
+          if (activeSubscription) {
+            $('#subscription-' + activeSubscription).addClass('active');
+          }
+        } else {
+          // Empty placeholder
+          var html = '<p>' + $.t('subscription.empty') + '</p>';
+          if (unread) {
+            html = '<p>' + $.t('subscription.emptyunread') + '</p>'
+              + '<p><a href="#">' + $.t('subscription.showall') + '</a></p>';
+          }
+          $('#subscription-list').html(html);
+          $('#subscription-list p a').click(function() {
+            r.user.setDisplayUnread(false);
+            r.subscription.update();
+          });
+        }
+        
+        // Updating main unread item and title
+        var unreadItem = $('#unread-feed-button');
+        r.subscription.updateUnreadCount(unreadItem, data.unread_count);
+        r.subscription.updateTitle(data.unread_count);
+        
+        // Initializing tree features
+        r.subscription.initSorting(data.categories[0].id);
+        r.subscription.initCollapsing();
+        r.subscription.initEditing();
+        
+        // Output DOM structure after rendering
+        console.log("Tree structure after rendering:", {
+          totalCategories: $('#subscription-list li.category').length,
+          totalSubscriptions: $('#subscription-list li.subscription').length,
+          nestedCategories: $('#subscription-list li.category li.category').length
+        });
+        
+        // Debug first two levels of nesting
+        $('#subscription-list > ul > li.category').each(function() {
+          var $this = $(this);
+          console.log("Top-level category:", $this.attr('id'), {
+            name: $this.find('> a .name').text(),
+            childCategories: $this.find('> ul > li.category').length,
+            childSubscriptions: $this.find('> ul > li.subscription').length
+          });
+        });
+        
+      } catch (e) {
+        console.error("Error rendering subscription tree:", e);
+      }
+    },
+    fail: function(jqxhr) {
+      console.error("Error fetching subscription list:", jqxhr);
+    }
+  });
+};
+
+/**
+ * Apply expanded state to category data before rendering
+ */
+r.subscription.applyExpandedState = function(categories, expandedState) {
+  if (!categories) return;
+  
+  $(categories).each(function(i, category) {
+    // If we have saved state for this category, use it
+    if (expandedState[category.id] !== undefined) {
+      category.folded = !expandedState[category.id];
+    }
+    
+    // Process subcategories recursively
+    if (category.categories && category.categories.length > 0) {
+      r.subscription.applyExpandedState(category.categories, expandedState);
     }
   });
 };
@@ -171,38 +284,88 @@ r.subscription.update = function() {
  */
 r.subscription.buildSubscriptionItem = function(subscription) {
   var unread = '<span class="unread-count" ' + (subscription.unread_count == 0 ? 'style="display: none;"' : '') + '>&nbsp;(<span class="count">' + subscription.unread_count + '</span>)</span>';
+  var total = '<span class="total-count">&nbsp;[<span class="total">' + (subscription.total_count || 0) + '</span>]</span>';
   
   var title = r.util.escape(subscription.title);
   return '<li id="subscription-' + subscription.id + '" data-subscription-id="' + subscription.id + '" data-subscription-url="' + subscription.url + '" ' +
     'class="subscription' + (r.feed.context.subscriptionId == subscription.id ? ' active' : '') + (subscription.unread_count > 0 ? ' unread' : '') + '">' +
     '<a href="#/feed/subscription/' + subscription.id + '" title="' + title + '"> <img src="' + r.util.url.subscription_favicon.replace('{id}', subscription.id) + '" /> ' +
     (subscription.sync_fail_count >= 5 ? '<img src="images/warning.png" title="' + $.t('subscription.syncfail') + '" />' : '') +
-    '<span class="title">' + title + '</span>' + unread + '</a>' +
+    '<span class="title">' + title + '</span>' + unread + total + '</a>' +
     '<div class="edit"></div>' +
     '</li>';
 };
-
 /**
  * Building category li.
  */
-r.subscription.buildCategoryItem = function(category, subscriptionsHtml) {
-  var unread = '<span class="unread-count" ' + (category.unread_count == 0 ? 'style="display: none;"' : '') + '>&nbsp;(<span class="count">' + category.unread_count + '</span>)</span>';
+r.subscription.buildCategoryItem = function(category) {
+  console.log("Building category item:", category.id, category.name, {
+    hasSubscriptions: category.subscriptions && category.subscriptions.length > 0,
+    subscriptionCount: category.subscriptions ? category.subscriptions.length : 0,
+    hasSubcategories: category.categories && category.categories.length > 0,
+    subcategoryCount: category.categories ? category.categories.length : 0,
+    isFolded: category.folded === true
+  });
   
-  var name = r.util.escape(category.name);
-  return '<li id="category-' + category.id + '" data-category-id="' + category.id + '" ' +
-    'class="category' + (r.feed.context.categoryId == category.id ? ' active' : '') + (category.unread_count > 0 ? ' unread' : '') + '">' +
-    '<div class="collapse ' + (category.folded ? 'closed' : 'opened') + '"></div>' +
-    '<a href="#/feed/category/' + category.id + '" title="' + name + '"> <img src="images/category.png" /> ' +
-    '<span class="name">' + name + '</span>' + unread + '</a>' +
-    '<div class="edit"></div>' + 
-    subscriptionsHtml +
-    '</li>';
+  // Ensure counts are proper numbers
+  var unreadCount = parseInt(category.unread_count || 0);
+  var totalCount = parseInt(category.total_count || 0);
+  
+  // Make sure we have a name
+  var categoryName = category.name || 'Unnamed Category';
+  
+  // Build HTML elements
+  var unread = '<span class="unread-count" ' + (unreadCount == 0 ? 'style="display: none;"' : '') + '>&nbsp;(<span class="count">' + unreadCount + '</span>)</span>';
+  var total = '<span class="total-count">&nbsp;[<span class="total">' + totalCount + '</span>]</span>';
+  
+  var name = r.util.escape(categoryName);
+  var isFolded = category.folded === true; // Explicit check for true
+  
+  var html = '<li id="category-' + category.id + '" data-category-id="' + category.id + '" class="category' +
+    (r.feed.context.categoryId == category.id ? ' active' : '') + (unreadCount > 0 ? ' unread' : '') + '">' +
+    '<div class="collapse ' + (isFolded ? 'closed' : 'opened') + '"></div>' +
+    '<a href="#/feed/category/' + category.id + '" title="' + name + '">' +
+    '<img src="images/category.png" /> <span class="name">' + name + '</span>' + unread + total + '</a>' +
+    '<div class="edit"></div>';
+    
+  html += '<ul' + (isFolded ? ' style="display: none;"' : '') + '>';
+
+  // Process all subscriptions in this category
+  if (category.subscriptions && category.subscriptions.length > 0) {
+    $.each(category.subscriptions, function(i, sub) {
+      html += r.subscription.buildSubscriptionItem(sub);
+    });
+  }
+  
+  // Process all subcategories recursively
+  if (category.categories && category.categories.length > 0) {
+    $.each(category.categories, function(i, subcat) {
+      html += r.subscription.buildCategoryItem(subcat);  // Recursive call
+    });
+  }
+
+  html += '</ul></li>';
+  return html;
 };
 
 /**
- * Adding sorting feature.
+ * IMPORTANT: Replace the initSorting function with this version
+ * This fixes the drag and drop nesting functionality
  */
 r.subscription.initSorting = function(rootCategoryId) {
+  console.log("Initializing sorting with rootCategoryId:", rootCategoryId);
+  
+  // Destroy any existing sortable to prevent duplicates
+  $('#subscription-list ul').each(function() {
+    try {
+      if ($(this).data('ui-sortable')) {
+        $(this).sortable('destroy');
+      }
+    } catch(e) {
+      // Ignore errors if not initialized
+    }
+  });
+  
   $('#subscription-list ul').sortable({
     connectWith: '#subscription-list ul', // Can move items between lists
     revert: 100, // 100ms revert animation duration
@@ -210,75 +373,221 @@ r.subscription.initSorting = function(rootCategoryId) {
     distance: 15, // Drag only after 15px mouse distance
     placeholder: 'placeholder', // Placeholder CSS class
     forcePlaceholderSize: true, // Otherwise placeholder is 1px height
+    tolerance: 'pointer', // Use pointer position for determining drop target
+    start: function(event, ui) {
+      console.log("Drag started:", ui.item.attr('id'));
+      
+      // Save the original parent for cancellation if needed
+      ui.item.data('originalParent', ui.item.parent());
+      ui.item.data('originalIndex', ui.item.index());
+      
+      // Create a placeholder for collapsed lists
+      $('#subscription-list li.category > .collapse.closed').each(function() {
+        var $category = $(this).parent();
+        if ($category.find('> ul').children().length === 0) {
+          $category.find('> ul').append('<li class="sortable-placeholder" style="display:none"></li>');
+        }
+      });
+    },
+    over: function(event, ui) {
+      // Automatically open closed categories when dragging over them
+      var $category = $(event.target).closest('li.category');
+      if ($category.length && $category.find('> .collapse').hasClass('closed')) {
+        $category.find('> .collapse').removeClass('closed').addClass('opened');
+        $category.find('> ul').show();
+      }
+    },
     stop: function(event, ui) {
+      // Clean up any placeholder elements
+      $('.sortable-placeholder').remove();
+      
+      var newParent = ui.item.parent();
+      var newParentCategory = newParent.closest('li.category');
+      
+      console.log("Drag stopped. New parent:", 
+                 newParent.attr('id') || newParent.parent().attr('id'),
+                 "Is category?", ui.item.hasClass('category'));
+                 
       // Category or subscription moved
       if (ui.item.hasClass('subscription')) {
         // Getting contextual parameters
         var subscriptionId = ui.item.attr('data-subscription-id');
-        var order = ui.item.index() - ui.item.prevAll('li.category').length; // Substract categories, which are not part of the order
-        var categoryId = ui.item.parent().parent().attr('data-category-id');
-        if (ui.item.parent().attr('id') == 'category-root') {
+        var order = ui.item.index() - ui.item.prevAll('li.category').length; // Subtract categories, which are not part of the order
+        var categoryId = newParent.parent().attr('data-category-id');
+        if (newParent.attr('id') == 'category-root') {
           categoryId = rootCategoryId;
         }
+        
+        console.log("Moving subscription", subscriptionId, "to category", categoryId, "at order", order);
 
         // Calling API
         r.util.ajax({
           url: r.util.url.subscription_update.replace('{id}', subscriptionId),
           data: { category: categoryId, order: order },
           type: 'POST',
-          always: function() {
+          done: function(data) {
+            console.log("Subscription update successful", data);
             // Full tree update needed to update unread counts
+            r.subscription.update();
+          },
+          fail: function(jqxhr) {
+            console.error("Error updating subscription:", jqxhr);
+            // Always update to ensure UI matches server state
             r.subscription.update();
           }
         });
       } else if (ui.item.hasClass('category')) {
-        // If the user drop a category not in the root category, cancel and warn
-        if (ui.item.parent().attr('id') != 'category-root') {
-          $('#subscription-list ul').sortable('cancel');
-          $().toastmessage('showErrorToast', $.t('category.nonesting'));
+        // Getting contextual parameters
+        var categoryId = ui.item.attr('data-category-id');
+        var parentCategoryId;
+        
+        if (newParent.attr('id') == 'category-root') {
+          parentCategoryId = rootCategoryId;
+        } else {
+          parentCategoryId = newParentCategory.attr('data-category-id');
+        }
+        
+        var order = ui.item.index();
+        
+        console.log("Moving category", categoryId, "to parent", parentCategoryId, "at order", order);
+        
+        // Check for maximum nesting level (5)
+        var nestingLevel = 0;
+        var parentCheck = newParentCategory;
+        while (parentCheck.length > 0 && nestingLevel < 5) {
+          nestingLevel++;
+          parentCheck = parentCheck.parent().closest('li.category');
+        }
+        
+        console.log("Detected nesting level:", nestingLevel);
+        
+        // Prevent cyclic dependencies - cannot move a category inside itself or its children
+        var isCyclic = false;
+        if (categoryId && parentCategoryId) {
+          // Check if target is a child of the dragged category
+          ui.item.find('li.category').each(function() {
+            if ($(this).attr('data-category-id') === parentCategoryId) {
+              isCyclic = true;
+              return false; // break loop
+            }
+          });
+        }
+        
+        if (isCyclic) {
+          console.log("Cyclic nesting detected, cancelling");
+          // Restore to original position
+          var originalParent = ui.item.data('originalParent');
+          var originalIndex = ui.item.data('originalIndex');
+          if (originalParent) {
+            ui.item.detach();
+            if (originalIndex === 0) {
+              originalParent.prepend(ui.item);
+            } else {
+              var before = originalParent.children().eq(originalIndex);
+              if (before.length) {
+                ui.item.insertBefore(before);
+              } else {
+                originalParent.append(ui.item);
+              }
+            }
+          }
+          $().toastmessage('showErrorToast', $.t('category.cyclicdependency') || 'Cannot move a category inside itself');
           return;
         }
         
-        // Getting contextual parameters
-        var categoryId = ui.item.attr('data-category-id');
-        var order = ui.item.index();
+        if (nestingLevel >= 5) {
+          console.log("Maximum nesting level reached, cancelling");
+          // Restore to original position
+          var originalParent = ui.item.data('originalParent');
+          var originalIndex = ui.item.data('originalIndex');
+          if (originalParent) {
+            ui.item.detach();
+            if (originalIndex === 0) {
+              originalParent.prepend(ui.item);
+            } else {
+              var before = originalParent.children().eq(originalIndex);
+              if (before.length) {
+                ui.item.insertBefore(before);
+              } else {
+                originalParent.append(ui.item);
+              }
+            }
+          }
+          $().toastmessage('showErrorToast', $.t('category.maxnestinglevel') || 'Maximum nesting level reached (5)');
+          return;
+        }
         
         // Calling API
         r.util.ajax({
           url: r.util.url.category_update.replace('{id}', categoryId),
-          data: { order: order },
           type: 'POST',
+          data: {
+              parent_id: parentCategoryId,
+              order: order
+          },
+          done: function(data) {
+            console.log("Category update successful", data);
+            // Update to refresh the tree with proper nesting
+            r.subscription.update();
+          },
           fail: function(jqxhr) {
-            // In case of error, client is no more synced with server, perform full update
+            console.error("Category update failed:", jqxhr);
+            var response;
+            try {
+              response = JSON.parse(jqxhr.responseText);
+              alert(response.message || $.t("error.unknown"));
+            } catch(e) {
+              alert($.t("error.unknown"));
+            }
             r.subscription.update();
           }
         });
       }
     }
   }).disableSelection();
+  
+  console.log("Sortable initialized on", $('#subscription-list ul').length, "lists");
 };
 
 /**
  * Initializing collapsing feature.
  */
 r.subscription.initCollapsing = function() {
-  $('#subscription-list .collapse').click(function() {
-    var parent = $(this).parent();
+  // Remove any existing click handlers to prevent duplicates
+  $('#subscription-list .collapse').off('click');
+  
+  // Attach new click handlers
+  $('#subscription-list .collapse').on('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    var $this = $(this);
+    var parent = $this.parent();
     var children = parent.find('> ul');
     var categoryId = parent.attr('data-category-id');
-    children.toggle();
-    $(this).toggleClass('opened').toggleClass('closed');
     
-    // Calling API
+    // Toggle visual state
+    var isFolded = $this.hasClass('closed');
+    $this.toggleClass('opened closed');
+    
+    // Toggle visibility with animation
+    if (isFolded) {
+      children.slideDown(200);
+    } else {
+      children.slideUp(200);
+    }
+    
+    // Update server state
     r.util.ajax({
       url: r.util.url.category_update.replace('{id}', categoryId),
-      data: { folded: !children.is(':visible') },
+      data: { folded: !isFolded },
       type: 'POST',
       fail: function(jqxhr) {
-        // In case of error, client is no more synced with server, perform full update
-        r.subscription.update();
+        console.error('Failed to update category folded state');
       }
     });
+    
+    return false;
   });
 };
 
@@ -523,12 +832,22 @@ r.subscription.initToolbar = function() {
           url: r.util.url.category_list,
           type: 'GET',
           done: function(data) {
-            var categories = data.categories[0].categories;
-            html = '<ul><li data-category-id="' + data.categories[0].id + '">' + $.t('category.empty') + '</li>';
-            $(categories).each(function(i, category) {
-              html += '<li data-category-id="' + category.id + '">'
-                + r.util.escape(category.name) + '</li>';
-            });
+            var html = '<ul><li data-category-id="' + data.categories[0].id + '">' + $.t('category.empty') + '</li>';
+            
+            // Recursive function to build nested category list
+            function buildCategoryList(categories, indent) {
+              $(categories).each(function(i, category) {
+                var padding = indent * 15; // 15px per level of indentation
+                html += '<li data-category-id="' + category.id + '" style="padding-left: ' + padding + 'px">' 
+                      + r.util.escape(category.name) + '</li>';
+                
+                if (category.categories && category.categories.length > 0) {
+                  buildCategoryList(category.categories, indent + 1);
+                }
+              });
+            }
+            
+            buildCategoryList(data.categories[0].categories, 0);
             html += '</ul>';
             content.html(html);
             content.find('li[data-category-id="' + categoryId + '"]').addClass('active');
@@ -546,7 +865,7 @@ r.subscription.initToolbar = function() {
  */
 r.subscription.updateUnreadCount = function(item, count) {
   var countItem = item.find('> a .count');
-  var current = parseInt(countItem.text());
+  var current = parseInt(countItem.text() || '0');
   if (count == -1) {
     count = current - 1;
   } else if (count == -2) {
@@ -577,3 +896,168 @@ r.subscription.updateTitle = function(count) {
   }
   $('title').html(title);
 };
+// Add this function to r.subscription to help debug nesting issues
+r.subscription.debugTree = function() {
+  console.log("=== DEBUGGING CATEGORY TREE ===");
+  
+  // Print data structure received from server
+  console.log("Last server response:", r.subscription.lastResponse);
+  
+  // Check for connected sortable
+  var sortableInstances = $('#subscription-list ul').filter(function() {
+    return $(this).data('ui-sortable') !== undefined;
+  }).length;
+  
+  console.log("Sortable instances found:", sortableInstances);
+  
+  // Analyze DOM structure
+  var allCategories = $('#subscription-list li.category');
+  console.log("Total categories in DOM:", allCategories.length);
+  
+  var nestingData = [];
+  allCategories.each(function() {
+    var $this = $(this);
+    var id = $this.attr('data-category-id');
+    var level = $this.parents('li.category').length;
+    var parentId = $this.parent().closest('li.category').attr('data-category-id') || 'root';
+    
+    nestingData.push({
+      id: id,
+      name: $this.find('> a .name').text(),
+      level: level,
+      parentId: parentId,
+      childCategories: $this.find('> ul > li.category').length,
+      childSubscriptions: $this.find('> ul > li.subscription').length,
+      isCollapsed: $this.find('> .collapse').hasClass('closed')
+    });
+  });
+  
+  console.table(nestingData);
+  
+  // Test sortable functionality
+  console.log("Testing if sortable is attached properly...");
+  var firstCategory = $('#subscription-list li.category').first();
+  var hasSort = typeof firstCategory.sortable === 'function';
+  var canSort = firstCategory.hasClass('ui-sortable-handle');
+  
+  console.log("First category can be sorted:", {
+    hasSortableFunction: hasSort,
+    hasSortableClass: canSort
+  });
+  
+  return "Debug information logged to console";
+};
+
+// You can call this function in the browser console: 
+// r.subscription.debugTree()
+
+
+
+/**
+ * Apply the current article counts to the subscription tree
+ */
+r.subscription.applyArticleCounts = function(data) {
+  function updateSubscriptionTotals(categories) {
+    if (!categories) return;
+    
+    $.each(categories, function(i, category) {
+      if (category.subscriptions) {
+        $.each(category.subscriptions, function(j, subscription) {
+          // If we have a count for this subscription, use it
+          if (r.feed.subscriptionArticleCounts[subscription.id] !== undefined) {
+            subscription.total_count = r.feed.subscriptionArticleCounts[subscription.id];
+            
+            // Ensure total count is at least as large as unread count
+            if (subscription.total_count < subscription.unread_count) {
+              subscription.total_count = subscription.unread_count;
+            }
+          } else {
+            // Initialize with unread count as a minimum
+            subscription.total_count = subscription.unread_count || 0;
+            r.feed.subscriptionArticleCounts[subscription.id] = subscription.total_count;
+          }
+        });
+      }
+      
+      // Process subcategories
+      if (category.categories) {
+        updateSubscriptionTotals(category.categories);
+      }
+    });
+  }
+  
+  // Calculate category totals from subscriptions and subcategories
+  function calculateCategoryTotals(category) {
+    var total = 0;
+    
+    // Add subscription totals
+    if (category.subscriptions) {
+      $.each(category.subscriptions, function(i, subscription) {
+        total += subscription.total_count || 0;
+      });
+    }
+    
+    // Add subcategory totals
+    if (category.categories) {
+      $.each(category.categories, function(i, subcategory) {
+        total += calculateCategoryTotals(subcategory);
+      });
+    }
+    
+    // Set category total
+    category.total_count = total;
+    return total;
+  }
+  
+  if (data && data.categories && data.categories.length > 0) {
+    var rootCategory = data.categories[0];
+    
+    // First update all subscription totals
+    if (rootCategory.categories) {
+      updateSubscriptionTotals(rootCategory.categories);
+    }
+    
+    // Also handle root subscriptions
+    if (rootCategory.subscriptions) {
+      $.each(rootCategory.subscriptions, function(i, subscription) {
+        // If we have a count for this subscription, use it
+        if (r.feed.subscriptionArticleCounts[subscription.id] !== undefined) {
+          subscription.total_count = r.feed.subscriptionArticleCounts[subscription.id];
+          
+          // Ensure total count is at least as large as unread count
+          if (subscription.total_count < subscription.unread_count) {
+            subscription.total_count = subscription.unread_count;
+          }
+        } else {
+          // Initialize with unread count as a minimum
+          subscription.total_count = subscription.unread_count || 0;
+          r.feed.subscriptionArticleCounts[subscription.id] = subscription.total_count;
+        }
+      });
+    }
+    
+    // Then calculate category totals recursively
+    var rootTotal = 0;
+    
+    // Add up root subscription totals
+    if (rootCategory.subscriptions) {
+      $.each(rootCategory.subscriptions, function(i, subscription) {
+        rootTotal += subscription.total_count || 0;
+      });
+    }
+    
+    // Add up category totals
+    if (rootCategory.categories) {
+      $.each(rootCategory.categories, function(i, category) {
+        rootTotal += calculateCategoryTotals(category);
+      });
+    }
+    
+    // Set root category total
+    rootCategory.total_count = rootTotal;
+  }
+  
+  return data;
+};
+  
+  
