@@ -2,63 +2,48 @@
  *  Bugs report module.
  */
 
-
 r.bugsreport.reset = function() {
-    // Hiding bug report form
     $('#bugsreport-container').hide();
 };
 
 r.bugsreport.report = function() {
-    // Getting form values
     var email = r.user.userInfo.email;
     var description = $('#bugsreport-message').val();
 
-    
-    // Validating input
     if (description.length === 0) {
         $().toastmessage('showErrorToast', $.t('bugsreport.error.empty'));
         return;
     }
-    
+
     if (email.length === 0) {
         $().toastmessage('showErrorToast', $.t('bugsreport.error.invalid_email'));
         return;
     }
-    // make it a json object
+
     var data = {
         description: description,
         email: email
     };
-    
-    // Sending bug report
+
     $.ajax({
         type: 'POST',
         url: r.util.url.report_bug,
         data: JSON.stringify(data),
         contentType: 'application/json',
         success: function(data) {
-            // Displaying success message
             $().toastmessage('showSuccessToast', $.t('bugsreport.success'));
         },
         error: function(data) {
-            // Displaying error message
             $().toastmessage('showErrorToast', $.t('bugsreport.error'));
         }
     });
-    // make the input emprty
+
     $('#bugsreport-message').val('');
 };
 
-/**
- *  Initializing the bug report module
- */
 r.bugsreport.init = function() {
-    // Listening for hash changes on #/bugsreport/*
     $.History.bind('/bugsreport/', function(state, target) {
-        // Resetting page context
         r.main.reset();
-
-        // Displaying bug report form
         $('#bugsreport-container').show();
         $('#toolbar > .settings').removeClass('hidden');
     });
@@ -74,66 +59,61 @@ r.bugsreport.init = function() {
         r.bugsreport.getAllBugs();
     }
 
-    // Listening for form submission
     $('#bugsreport-form').on('submit', function (event) {
         event.preventDefault();
         r.bugsreport.report();
-        return false; // Prevent default form submission
+        return false;
     });
 
     $('#buglogs-refresh-button').on('click', function (event) {
         if (r.user.hasBaseFunction('ADMIN')) {
             r.bugsreport.getAllBugs();
-        }else{
+        } else {
             var userEmail = r.user.userInfo.email;
             r.bugsreport.getUserBugs(userEmail);
         }
-        return false; // Prevent default form submission
+        return false;
     });
 };
 
-// Delete a bug report when the admin section is loaded
 r.bugsreport.deleteBugReport = function(bugId) {
     $.ajax({
         type: 'DELETE',
         url: r.util.url.bugs_report_delete.replace('{id}', bugId),
         success: function(data) {
-            // Refresh the bug reports table
-            r.bugsreport.getAllBugs();
+            if (r.user.hasBaseFunction('ADMIN')) {
+                r.bugsreport.getAllBugs();
+            } else {
+                var userEmail = r.user.userInfo.email;
+                r.bugsreport.getUserBugs(userEmail);
+            }
             $().toastmessage('showSuccessToast', $.t('bugsreport.deleted'));
         },
         error: function(data) {
-            // Display an error message
             $().toastmessage('showErrorToast', $.t('bugsreport.delete.error'));
         }
     });
-}
+};
 
-// Update a bug report status when the admin section is loaded
 r.bugsreport.updateBugReportStatus = function(bugId, newStatus) {
     $.ajax({
-        type: 'POST'    ,
+        type: 'POST',
         url: r.util.url.bugs_report_updatestatus,
         data: JSON.stringify({
             id: bugId,
-            status: newStatus}
-        ),
+            status: newStatus
+        }),
         contentType: 'application/json',
         success: function(data) {
-            // Refresh the bug reports table
             r.bugsreport.getAllBugs();
             $().toastmessage('showSuccessToast', $.t('Status Updated Successfully'));
         },
         error: function(data) {
-            // Display an error message
             $().toastmessage('showErrorToast', $.t('bugsreport.update.error'));
         }
     });
-}
+};
 
-/**
- * Get all the bug reports and display them in the table
- */
 r.bugsreport.getAllBugs = function() {
     $.ajax({
         type: 'GET',
@@ -143,7 +123,6 @@ r.bugsreport.getAllBugs = function() {
             var tableBody = $('#bugsreport-table tbody');
             tableBody.empty();
 
-            // make 
             $.each(bugReports, function(index, bugReport) {
                 var row = '<tr class="bug-item" id="' + bugReport.id +'">' +
                     '<td>' +  (index  + 1) + '</td>' +
@@ -163,7 +142,6 @@ r.bugsreport.getAllBugs = function() {
                 tableBody.append(row);
             });
 
-            // Attach event listeners for status change and delete buttons
             $('.bug-status').on('change', function() {
                 var bugId = $(this).data('id');
                 var newStatus = $(this).val();
@@ -176,7 +154,6 @@ r.bugsreport.getAllBugs = function() {
                     r.bugsreport.deleteBugReport(bugId);
                 }
             });
-
         },
         error: function(data) {
             console.log(data);
@@ -184,9 +161,6 @@ r.bugsreport.getAllBugs = function() {
     });
 };
 
-/**
- * Get all the bug reports for a specific user and display them in the table
- */
 r.bugsreport.getUserBugs = function(email) {
     $.ajax({
         type: 'GET',
@@ -221,9 +195,6 @@ r.bugsreport.getUserBugs = function(email) {
     });
 };
 
-/**
- * Filter bug reports based on criteria
- */
 r.bugsreport.filterBugs = function(criteria) {
     $.ajax({
         type: 'GET',
