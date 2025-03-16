@@ -1,12 +1,13 @@
 package com.sismics.reader.core.dao.jpa.criteria;
 
 import com.sismics.reader.core.constant.BugStatus;
+import java.util.Date;
 
 public class BugReportCriteria {
     private String id;
     private String email;
     private String description;
-    private Long timestamp;
+    private Date timestamp;
     private BugStatus status;
 
     // Getters and setters
@@ -22,7 +23,7 @@ public class BugReportCriteria {
         return description;
     }
 
-    public Long getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 
@@ -45,7 +46,7 @@ public class BugReportCriteria {
         return this;
     }
 
-    public BugReportCriteria setTimestamp(Long timestamp) {
+    public BugReportCriteria setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
         return this;
     }

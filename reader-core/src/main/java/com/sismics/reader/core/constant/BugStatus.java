@@ -1,5 +1,9 @@
 package com.sismics.reader.core.constant;
 
 public enum BugStatus {
-    OPEN, RESOLVED, DELETED
+    OPEN,
+    CLOSED,
+    IN_PROGRESS,
+    RESOLVED,
+    DELETED,
 }

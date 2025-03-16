@@ -1,12 +1,18 @@
 package com.sismics.reader.core.model.jpa;
 
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 
 import com.sismics.reader.core.constant.BugStatus;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.EnumType;
+
+import java.util.Date;
 
 @Entity
 @Table(name = "T_BUG_REPORT")
@@ -22,8 +28,10 @@ public class BugReport {
     private String description;
 
     @Column(name = "BUG_TIMESTAMP_D", nullable = false)
-    private Long timestamp;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date timestamp;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "BUG_STATUS_C", nullable = false)
     private BugStatus status;
 
@@ -52,11 +60,11 @@ public class BugReport {
         this.description = description;
     }
 
-    public Long getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Long timestamp) {
+    public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
 

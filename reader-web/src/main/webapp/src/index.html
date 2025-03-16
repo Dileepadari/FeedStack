@@ -218,6 +218,33 @@
             <input type="reset" value="Cancel" data-i18n="[value]bugsreport.cancel" id="cancel"/>
             <input type="submit" value="Report" data-i18n="[value]bugsreport.button" id="submit"/>
           </form>
+          <h1>
+            <span data-i18n="bugsreport.logs.title">Previous Bug Reports</span>
+            <select id="buglogs-level-select">
+                <option value="">All</option>
+                <option value="OPEN">Open</option>
+                <option value="CLOSED">Closed</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="RESOLVED">Resolved</option>
+            </select>
+            <div class="button" id="buglogs-refresh-button"><img src="images/refresh.png" class="icon" /></div>
+          
+          </h1>
+          <div id="userbugs-logs-container">
+            <table id="bugsreport-user-table">
+              <thead>
+                  <tr class="bug-item">
+                      <th>ID</th>
+                      <th>Description</th>
+                      <th>Timestamp</th>
+                      <th>Status</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <!-- Bug reports will be populated here -->
+              </tbody>
+          </table>
+          </div>
         </div>
         <div class="admin" id="bugsreport-tab-admin">
         
@@ -226,21 +253,31 @@
            -->
           <h1>
             <span data-i18n="bugsreport.logs.title">Browse Bug Reports</span>
-            <select id="logs-level-select">
-              <option value="" data-i18n="about.logs.level.all">All</option>
-              <option class="fatal" value="FATAL" data-i18n="about.logs.level.fatal">Fatal</option>
-              <option class="error" value="ERROR" data-i18n="about.logs.level.error">Error</option>
-              <option class="warn" value="WARN" data-i18n="about.logs.level.warn">Warn</option>
-              <option class="info" value="INFO" data-i18n="about.logs.level.info">Info</option>
-              <option class="debug" value="DEBUG" data-i18n="about.logs.level.debug">Debug</option>
-              <option class="trace" value="TRACE" data-i18n="about.logs.level.trace">Trace</option>
+            <select id="buglogs-level-select">
+                <option value="">All</option>
+                <option value="OPEN">Open</option>
+                <option value="CLOSED">Closed</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="RESOLVED">Resolved</option>
             </select>
-            <div class="button" id="logs-refresh-button"><img src="images/refresh.png" class="icon" /></div>
+            <div class="button" id="buglogs-refresh-button"><img src="images/refresh.png" class="icon" /></div>
           
           </h1>
           <div id="logs-container">
-            <table id="logs-table">
-            </table>
+            <table id="bugsreport-table">
+              <thead>
+                  <tr class="bug-item">
+                      <th>ID</th>
+                      <th>Email</th>
+                      <th>Description</th>
+                      <th>Timestamp</th>
+                      <th>Status</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <!-- Bug reports will be populated here -->
+              </tbody>
+          </table>
           </div>
           
         </div>
