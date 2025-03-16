@@ -50,7 +50,7 @@ public class ContentUrlStrategy implements UrlStrategy {
 
     private String buildApiCall(String url) {
         try {
-            String encodedQuery = url.replace("http://www.", "").replace("https://www.", "");
+            String encodedQuery = url.replace("http://www.", "").replace("https://www.", "").replace("http://", "").replace("https://", "");
             encodedQuery = URLEncoder.encode(encodedQuery, StandardCharsets.UTF_8.name());
             return API_URL + "?q=" + encodedQuery + "&apiKey=" + API_KEY;
         } catch (UnsupportedEncodingException e) {
