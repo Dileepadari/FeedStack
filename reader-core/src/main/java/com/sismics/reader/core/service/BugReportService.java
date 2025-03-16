@@ -13,8 +13,8 @@ public class BugReportService {
     private BugReportDao bugReportDao;
     private static final Logger logger = Logger.getLogger(BugReportService.class.getName());
 
-    public BugReportService(BugReportDao bugReportDao) {
-        this.bugReportDao = bugReportDao;
+    public BugReportService() {
+        this.bugReportDao = new BugReportDao();
     }
 
     public String createBugReport(String email, String description) {
