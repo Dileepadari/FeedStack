@@ -3,6 +3,7 @@ package com.sismics.reader.core.dao.jpa;
 import com.sismics.reader.core.dao.jpa.criteria.BugReportCriteria;
 import com.sismics.reader.core.dao.jpa.dto.BugReportDto;
 import com.sismics.reader.core.dao.jpa.mapper.BugReportMapper;
+import java.util.logging.Logger;
 import com.sismics.util.context.ThreadLocalContext;
 import com.sismics.util.jpa.BaseDao;
 import com.sismics.util.jpa.QueryParam;
@@ -20,6 +21,7 @@ import javax.persistence.PersistenceException;
 import javax.persistence.TypedQuery;
 
 public class BugReportDao extends BaseDao<BugReport, BugReportCriteria> {
+    private static final Logger logger = Logger.getLogger(BugReportDao.class.getName());
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -65,31 +67,7 @@ public class BugReportDao extends BaseDao<BugReport, BugReportCriteria> {
             parameterMap.put("description", criteria.getDescription());
         }
 
-        if (criteria.getEmail() != null) {
-            sb.append(" AND b.email = :email");
-            criteriaList.add("email");
-            parameterMap.put("email", criteria.getEmail());
-        }
-        if (criteria.getStatus() != null) {
-            sb.append(" AND b.status = :status");
-            criteriaList.add("status");
-            parameterMap.put("status", criteria.getStatus());
-        }
-        if (criteria.getDescription() != null) {
-            sb.append(" AND b.description = :description");
-            criteriaList.add("description");
-            parameterMap.put("description", criteria.getDescription());
-        }
-
-        if (criteria.getEmail() != null) {
-            sb.append(" AND b.email = :email");
-        }
-        if (criteria.getStatus() != null) {
-            sb.append(" AND b.status = :status");
-        }
-        if (criteria.getDescription() != null) {
-            sb.append(" AND b.description = :description");
-        }
+        // Removed redundant checks
 
         TypedQuery<BugReport> query = getEntityManager().createQuery(sb.toString(), BugReport.class);
 
@@ -97,14 +75,15 @@ public class BugReportDao extends BaseDao<BugReport, BugReportCriteria> {
             query.setParameter("email", criteria.getEmail());
         }
         if (criteria.getStatus() != null) {
-            query.setParameter("status", criteria.getStatus());
-        }
-        if (criteria.getDescription() != null) {
-            query.setParameter("description", criteria.getDescription());
-        }
+            if (criteria.getDescription() != null) {
+                query.setParameter("description", criteria.getDescription());
+            }
 
+            return new QueryParam(sb.toString(), criteriaList, parameterMap, null, filterCriteria,
+                    new BugReportMapper());
+        } // Closing the getQueryParam method
         return new QueryParam(sb.toString(), criteriaList, parameterMap, null, filterCriteria, new BugReportMapper());
-    }
+    } // Closing the BugReportDao class
 
     public String createBugReport(BugReport bugReport) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
@@ -112,7 +91,8 @@ public class BugReportDao extends BaseDao<BugReport, BugReportCriteria> {
             em.persist(bugReport);
             return bugReport.getId();
         } catch (PersistenceException e) {
-            throw new RuntimeException("Failed to create bug report: " + e.getMessage(), e);
+            logger.severe("Failed to create bug report: " + e.getMessage());
+            throw new RuntimeException("Failed to create bug report", e);
         }
     }
 
@@ -127,7 +107,8 @@ public class BugReportDao extends BaseDao<BugReport, BugReportCriteria> {
                 throw new RuntimeException("Bug report not found for ID: " + id);
             }
         } catch (PersistenceException e) {
-            throw new RuntimeException("Failed to update bug report status: " + e.getMessage(), e);
+            logger.severe("Failed to update bug report status: " + e.getMessage());
+            throw new RuntimeException("Failed to update bug report status", e);
         }
     }
 
@@ -141,7 +122,8 @@ public class BugReportDao extends BaseDao<BugReport, BugReportCriteria> {
                 throw new RuntimeException("Bug report not found for ID: " + id);
             }
         } catch (PersistenceException e) {
-            throw new RuntimeException("Failed to delete bug report: " + e.getMessage(), e);
+            logger.severe("Failed to delete bug report: " + e.getMessage());
+            throw new RuntimeException("Failed to delete bug report", e);
         }
     }
 
