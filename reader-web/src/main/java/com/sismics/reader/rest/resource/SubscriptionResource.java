@@ -130,7 +130,7 @@ public Response list(
             subscription.put("title", feedSubscription.getFeedSubscriptionTitle());
             subscription.put("url", feedSubscription.getFeedRssUrl());
             subscription.put("unread_count", feedSubscription.getUnreadUserArticleCount());
-            subscription.put("total_count", feedSubscription.getUnreadUserArticleCount());
+            // subscription.put("total_count", feedSubscription.getUnreadUserArticleCount());
             subscription.put("sync_fail_count", feedSubscription.getSynchronizationFailCount());
             
             // In unread mode, only include if has unread items
@@ -178,7 +178,7 @@ private JSONObject buildCategoryWithSubscriptions(Category category, List<FeedSu
                 subJson.put("title", sub.getFeedSubscriptionTitle());
                 subJson.put("url", sub.getFeedRssUrl());
                 subJson.put("unread_count", sub.getUnreadUserArticleCount());
-                subJson.put("total_count", sub.getUnreadUserArticleCount());
+                subJson.put("total_count", 0);
                 subJson.put("sync_fail_count", sub.getSynchronizationFailCount());
                 subs.put(subJson);
             }
@@ -193,7 +193,7 @@ private JSONObject buildCategoryWithSubscriptions(Category category, List<FeedSu
         
         // Add child's counts to parent
         unreadCount += childJson.getInt("unread_count");
-        totalCount += childJson.getInt("total_count");
+        // totalCount += childJson.getInt("total_count");
         
         // Only include categories that have unread items or visible subscriptions when in unread mode
         if (!unreadOnly || 
@@ -207,7 +207,7 @@ private JSONObject buildCategoryWithSubscriptions(Category category, List<FeedSu
     
     // Set the total counts for this category
     json.put("unread_count", unreadCount);
-    json.put("total_count", totalCount);
+    json.put("total_count", 0);
     json.put("categories", childCats);
     
     return json;

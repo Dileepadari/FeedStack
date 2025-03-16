@@ -167,7 +167,8 @@ r.subscription.update = function() {
       
       // Store the original data for debugging
       r.subscription.lastResponse = data;
-      
+      data = r.subscription.applyArticleCounts(data);
+      console.log("Updated data with total counts:", data);
       try {
         if ((data.categories[0].categories && data.categories[0].categories.length > 0) || 
             (data.categories[0].subscriptions && data.categories[0].subscriptions.length > 0)) {
@@ -294,7 +295,6 @@ r.subscription.buildSubscriptionItem = function(subscription) {
     '<div class="edit"></div>' +
     '</li>';
 };
-
 /**
  * Building category li.
  */
@@ -950,3 +950,114 @@ r.subscription.debugTree = function() {
 
 // You can call this function in the browser console: 
 // r.subscription.debugTree()
+
+
+
+/**
+ * Apply the current article counts to the subscription tree
+ */
+r.subscription.applyArticleCounts = function(data) {
+  function updateSubscriptionTotals(categories) {
+    if (!categories) return;
+    
+    $.each(categories, function(i, category) {
+      if (category.subscriptions) {
+        $.each(category.subscriptions, function(j, subscription) {
+          // If we have a count for this subscription, use it
+          if (r.feed.subscriptionArticleCounts[subscription.id] !== undefined) {
+            subscription.total_count = r.feed.subscriptionArticleCounts[subscription.id];
+            
+            // Ensure total count is at least as large as unread count
+            if (subscription.total_count < subscription.unread_count) {
+              subscription.total_count = subscription.unread_count;
+            }
+          } else {
+            // Initialize with unread count as a minimum
+            subscription.total_count = subscription.unread_count || 0;
+            r.feed.subscriptionArticleCounts[subscription.id] = subscription.total_count;
+          }
+        });
+      }
+      
+      // Process subcategories
+      if (category.categories) {
+        updateSubscriptionTotals(category.categories);
+      }
+    });
+  }
+  
+  // Calculate category totals from subscriptions and subcategories
+  function calculateCategoryTotals(category) {
+    var total = 0;
+    
+    // Add subscription totals
+    if (category.subscriptions) {
+      $.each(category.subscriptions, function(i, subscription) {
+        total += subscription.total_count || 0;
+      });
+    }
+    
+    // Add subcategory totals
+    if (category.categories) {
+      $.each(category.categories, function(i, subcategory) {
+        total += calculateCategoryTotals(subcategory);
+      });
+    }
+    
+    // Set category total
+    category.total_count = total;
+    return total;
+  }
+  
+  if (data && data.categories && data.categories.length > 0) {
+    var rootCategory = data.categories[0];
+    
+    // First update all subscription totals
+    if (rootCategory.categories) {
+      updateSubscriptionTotals(rootCategory.categories);
+    }
+    
+    // Also handle root subscriptions
+    if (rootCategory.subscriptions) {
+      $.each(rootCategory.subscriptions, function(i, subscription) {
+        // If we have a count for this subscription, use it
+        if (r.feed.subscriptionArticleCounts[subscription.id] !== undefined) {
+          subscription.total_count = r.feed.subscriptionArticleCounts[subscription.id];
+          
+          // Ensure total count is at least as large as unread count
+          if (subscription.total_count < subscription.unread_count) {
+            subscription.total_count = subscription.unread_count;
+          }
+        } else {
+          // Initialize with unread count as a minimum
+          subscription.total_count = subscription.unread_count || 0;
+          r.feed.subscriptionArticleCounts[subscription.id] = subscription.total_count;
+        }
+      });
+    }
+    
+    // Then calculate category totals recursively
+    var rootTotal = 0;
+    
+    // Add up root subscription totals
+    if (rootCategory.subscriptions) {
+      $.each(rootCategory.subscriptions, function(i, subscription) {
+        rootTotal += subscription.total_count || 0;
+      });
+    }
+    
+    // Add up category totals
+    if (rootCategory.categories) {
+      $.each(rootCategory.categories, function(i, category) {
+        rootTotal += calculateCategoryTotals(category);
+      });
+    }
+    
+    // Set root category total
+    rootCategory.total_count = rootTotal;
+  }
+  
+  return data;
+};
+  
+  
