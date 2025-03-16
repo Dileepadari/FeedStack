@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 
 import com.sismics.reader.core.service.BugReportService;
 import com.sismics.reader.rest.constant.BaseFunction;
+import com.sismics.reader.core.dao.jpa.BugReportDao;
 import com.sismics.reader.core.dao.jpa.dto.BugReportDto;
 import com.sismics.rest.exception.ForbiddenClientException;
 
@@ -18,6 +19,7 @@ import org.codehaus.jettison.json.JSONObject;
 import com.sismics.reader.core.constant.BugStatus;
 
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.ArrayList;
 
 import javax.ws.rs.Consumes;
@@ -27,6 +29,7 @@ import javax.ws.rs.GET;
 @Path("/bugs")
 public class BugReportResource extends BaseResource {
     private BugReportService bugReportService;
+    private static final Logger logger = Logger.getLogger(BugReportResource.class.getName());
 
     public BugReportResource() {
         this.bugReportService = new BugReportService();
