@@ -131,96 +131,65 @@ r.filter.isStarredMode = function(){
     var currentUrl = window.location.hash;
     return currentUrl.indexOf('/feed/starred') !== -1;
 }
-
 r.filter.applyFilters = function() {
-    // Get current unread state
     const unread = r.filter.isUnreadMode();
     const starred = r.filter.isStarredMode();
-
-    // Build URL parameters
     let params = [];
 
-    // Add source filters
-    r.filter.activeFilters.sources.forEach(function(sourceId) {
-        params.push('source=' + encodeURIComponent(sourceId));
-    });
+    // Add source and category filters
+    r.filter.activeFilters.sources.forEach(sourceId => params.push('source=' + encodeURIComponent(sourceId)));
+    r.filter.activeFilters.categories.forEach(categoryId => params.push('category=' + encodeURIComponent(categoryId)));
 
-    // Add category filters
-    r.filter.activeFilters.categories.forEach(function(categoryId) {
-        params.push('category=' + encodeURIComponent(categoryId));
-    });
-
-    // Add unread parameter if needed
+    // Add unread/starred/all filter
     if (unread) {
         params.push('filter=unread');
-    }
-
-    else if (starred) {
+    } else if (starred) {
         params.push('filter=starred');
+    } else {
     }
-    else {
-        params.push('filter=all');
-    }
+    params.push('filter=all');
+    r.feed.cache.container.empty();
+    r.feed.context.url = r.util.url.filter + (params.length ? '?' + params.join('&') : '');
+    // Reload filtered feed
+    $('#filter-button').toggleClass('active-filter', r.filter.activeFilters.sources.length > 0 || r.filter.activeFilters.categories.length > 0);
+    r.feed.context.lastItem = null;
+    r.feed.load();
 
-    // Fetch filtered articles
-    r.util.ajax({
-        url: r.util.url.filter + (params.length ? '?' + params.join('&') : ''),
-        type: 'GET',
-        done: function(data) {
-            // Clear current feed
-            r.feed.cache.container.empty();
+    // // Fetch filtered articles
+    // r.util.ajax({
+    //     url: r.util.url.filter + (params.length ? '?' + params.join('&') : ''),
+    //     type: 'GET',
+    //     done: function(data) {
+    //         r.feed.cache.container.empty();
 
-            // Process and display articles
-            if (data.articles && data.articles.length > 0) {
-                // Update filter indicator
-                if (r.filter.activeFilters.categories.length > 0 || r.filter.activeFilters.sources.length > 0) {
-                    $('#filter-button').addClass('active-filter');
-                } else {
-                    $('#filter-button').removeClass('active-filter');
-                }
+    //         if (data.articles && data.articles.length > 0) {
+    //             // Update filter indicator and pagination context
+    //             $('#filter-button').toggleClass('active-filter', r.filter.activeFilters.sources.length > 0 || r.filter.activeFilters.categories.length > 0);
 
-                // Add bumper
-                var bumper = r.feed.buildBumper(data);
-                r.feed.context.bumper = bumper;
-                r.feed.cache.container.append(bumper);
+    //             // Build articles
+    //             $(data.articles).each((i, article) => {
+    //                 article.subscription.title = r.util.escape(article.subscription.title);
+    //                 article.creator = r.util.escape(article.creator);
 
-                // Building articles
-                $(data.articles).each(function(i, article) {
-                    // Escape some fields
-                    article.subscription.title = r.util.escape(article.subscription.title);
-                    article.creator = r.util.escape(article.creator);
+    //                 const item = r.article.build(article);
+    //                 r.feed.context.bumper.before(item);
 
-                    // Build article
-                    var item = r.article.build(article);
-                    r.feed.context.bumper.before(item);
+    //                 if (i === data.articles.length - 1) {
+    //                     r.feed.context.lastItem = item;
+    //                 }
+    //             });
 
-                    // Store last item
-                    if(i == data.articles.length - 1) {
-                        r.feed.context.lastItem = item;
-                    }
-                });
+    //             // Update pagination context
+    //             r.feed.context.url = r.util.url.filter + (params.length ? '?' + params.join('&') : '');
+    //             r.feed.context.fullyLoaded = data.articles.length < r.feed.context.limit();
 
-                // Focus article list and redraw
-                r.feed.cache.container
-                    .trigger('focus')
-                    .redraw();
-
-                // Setup pagination for filtered articles
-                r.feed.context.url = r.util.url.filter + (params.length ? '?' + params.join('&') : '');
-                r.feed.context.fullyLoaded = data.articles.length < r.feed.context.limit();
-
-                // Trigger paging in case all articles are visible
-                r.feed.triggerPaging();
-            } else {
-                // Show no results message
-                r.feed.cache.container.html(
-                    '<div class="no-results">' +
-                    '<p>' + $.t('filter.no_results') + '</p>' +
-                    '</div>'
-                );
-            }
-        }
-    });
+    //             // Trigger paging
+    //             r.feed.triggerPaging();
+    //         } else {
+    //             r.feed.cache.container.html('<div class="no-results"><p>' + $.t('filter.no_results') + '</p></div>');
+    //         }
+    //     }
+    // });
 };
 
 r.filter.clearFilters = function() {
@@ -232,16 +201,17 @@ r.filter.clearFilters = function() {
 
     // Update filter button state
     r.filter.updateFilterButtonState();
-
-    // Reload default feed
-    if (r.filter.isUnreadMode()) {
-        window.location.href = '#/feed/unread';
-        
-    } else if (r.filter.isStarredMode()) {
-        window.location.href = '#/feed/starred';
-    } else {
-        window.location.href = '#/feed/all';
+    // reset context url
+    if(r.filter.isUnreadMode()){
+        r.feed.context.url = r.util.url.unread;
     }
+    else if(r.filter.isStarredMode()){
+        r.feed.context.url = r.util.url.starred;
+    }else{
+        r.feed.context.url = r.util.url.all;
+    }
+    // Reload feed
+    r.feed.load();
 };
 
 r.filter.updateFilterButtonState = function() {
