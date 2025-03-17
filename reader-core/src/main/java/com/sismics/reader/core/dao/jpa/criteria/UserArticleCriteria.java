@@ -90,6 +90,16 @@ public class UserArticleCriteria {
     private boolean fetchAllFeedSubscription;
 
     /**
+     * Category ID (inclusive).
+     */
+    private List<String> categoryIdIn;
+
+    /**
+     * Feed subscription ID (inclusive).
+     */
+    private List<String> feedSubscriptionIdIn;
+
+    /**
      * Getter of userId.
      *
      * @return userId
@@ -380,6 +390,44 @@ public class UserArticleCriteria {
 
     public UserArticleCriteria setFetchAllFeedSubscription(boolean fetchAllFeedSubscription) {
         this.fetchAllFeedSubscription = fetchAllFeedSubscription;
+        return this;
+    }
+
+    /**
+     * Getter of categoryIdIn.
+     *
+     * @return categoryIdIn
+     */
+    public List<String> getCategoryIdIn() {
+        return categoryIdIn;
+    }
+
+    /**
+     * Setter of categoryIdIn.
+     *
+     * @param categoryIdIn categoryIdIn
+     */
+    public UserArticleCriteria setCategoryIdIn(List<String> categoryIdIn) {
+        this.categoryIdIn = categoryIdIn;
+        return this;
+    }
+
+    /**
+     * Getter of feedSubscriptionIdIn.
+     *
+     * @return feedSubscriptionIdIn
+     */
+    public List<String> getFeedSubscriptionIdIn() {
+        return feedSubscriptionIdIn;
+    }
+
+    /**
+     * Setter of feedSubscriptionIdIn.
+     *
+     * @param feedSubscriptionIdIn feedSubscriptionIdIn
+     */
+    public UserArticleCriteria setFeedSubscriptionIdIn(List<String> feedSubscriptionIdIn) {
+        this.feedSubscriptionIdIn = feedSubscriptionIdIn;
         return this;
     }
 }

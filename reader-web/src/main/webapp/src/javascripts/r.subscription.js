@@ -119,7 +119,7 @@ r.subscription.init = function() {
  * Updating subscriptions tree.
  */
 r.subscription.update = function() {
-  console.log("Updating subscription tree");
+  // console.log("Updating subscription tree");
   
   // Unread state
   var unread = r.user.isDisplayUnread();
@@ -135,11 +135,11 @@ r.subscription.update = function() {
   var activeCategory = $('#subscription-list li.category.active').attr('data-category-id');
   var activeSubscription = $('#subscription-list li.subscription.active').attr('data-subscription-id');
   
-  console.log("Saved state:", {
-    expandedCategories: Object.keys(expandedState).length,
-    activeCategory: activeCategory,
-    activeSubscription: activeSubscription
-  });
+  // console.log("Saved state:", {
+  //   expandedCategories: Object.keys(expandedState).length,
+  //   activeCategory: activeCategory,
+  //   activeSubscription: activeSubscription
+  // });
   
   // Getting subscriptions
   r.util.ajax({
@@ -147,28 +147,28 @@ r.subscription.update = function() {
     data: { unread: unread },
     type: 'GET',
     done: function(data) {
-      console.log("Received data structure:", {
-        rootCategoryId: data.categories[0].id,
-        categoryCount: data.categories[0].categories ? data.categories[0].categories.length : 0,
-        subscriptionCount: data.categories[0].subscriptions ? data.categories[0].subscriptions.length : 0
-      });
+      // console.log("Received data structure:", {
+      //   rootCategoryId: data.categories[0].id,
+      //   categoryCount: data.categories[0].categories ? data.categories[0].categories.length : 0,
+      //   subscriptionCount: data.categories[0].subscriptions ? data.categories[0].subscriptions.length : 0
+      // });
       
       // Check if the categories array has proper structure
       if (data.categories[0].categories) {
-        console.log("First level categories:", data.categories[0].categories.map(function(c) {
-          return {
-            id: c.id,
-            name: c.name,
-            hasChildren: c.categories && c.categories.length > 0,
-            childCount: c.categories ? c.categories.length : 0
-          };
-        }));
+        // console.log("First level categories:", data.categories[0].categories.map(function(c) {
+        //   return {
+        //     id: c.id,
+        //     name: c.name,
+        //     hasChildren: c.categories && c.categories.length > 0,
+        //     childCount: c.categories ? c.categories.length : 0
+        //   };
+        // }));
       }
       
       // Store the original data for debugging
       r.subscription.lastResponse = data;
       data = r.subscription.applyArticleCounts(data);
-      console.log("Updated data with total counts:", data);
+      // console.log("Updated data with total counts:", data);
       try {
         if ((data.categories[0].categories && data.categories[0].categories.length > 0) || 
             (data.categories[0].subscriptions && data.categories[0].subscriptions.length > 0)) {
@@ -200,7 +200,7 @@ r.subscription.update = function() {
             .html(html)
             .redraw();
             
-          console.log("Tree rendered, initializing features");
+          // console.log("Tree rendered, initializing features");
             
           // Restore active states
           if (activeCategory) {
@@ -234,28 +234,28 @@ r.subscription.update = function() {
         r.subscription.initEditing();
         
         // Output DOM structure after rendering
-        console.log("Tree structure after rendering:", {
-          totalCategories: $('#subscription-list li.category').length,
-          totalSubscriptions: $('#subscription-list li.subscription').length,
-          nestedCategories: $('#subscription-list li.category li.category').length
-        });
+        // console.log("Tree structure after rendering:", {
+        //   totalCategories: $('#subscription-list li.category').length,
+        //   totalSubscriptions: $('#subscription-list li.subscription').length,
+        //   nestedCategories: $('#subscription-list li.category li.category').length
+        // });
         
         // Debug first two levels of nesting
         $('#subscription-list > ul > li.category').each(function() {
           var $this = $(this);
-          console.log("Top-level category:", $this.attr('id'), {
-            name: $this.find('> a .name').text(),
-            childCategories: $this.find('> ul > li.category').length,
-            childSubscriptions: $this.find('> ul > li.subscription').length
-          });
+          // console.log("Top-level category:", $this.attr('id'), {
+          //   name: $this.find('> a .name').text(),
+          //   childCategories: $this.find('> ul > li.category').length,
+          //   childSubscriptions: $this.find('> ul > li.subscription').length
+          // });
         });
         
       } catch (e) {
-        console.error("Error rendering subscription tree:", e);
+        // console.error("Error rendering subscription tree:", e);
       }
     },
     fail: function(jqxhr) {
-      console.error("Error fetching subscription list:", jqxhr);
+      // console.error("Error fetching subscription list:", jqxhr);
     }
   });
 };
@@ -299,13 +299,13 @@ r.subscription.buildSubscriptionItem = function(subscription) {
  * Building category li.
  */
 r.subscription.buildCategoryItem = function(category) {
-  console.log("Building category item:", category.id, category.name, {
-    hasSubscriptions: category.subscriptions && category.subscriptions.length > 0,
-    subscriptionCount: category.subscriptions ? category.subscriptions.length : 0,
-    hasSubcategories: category.categories && category.categories.length > 0,
-    subcategoryCount: category.categories ? category.categories.length : 0,
-    isFolded: category.folded === true
-  });
+  // console.log("Building category item:", category.id, category.name, {
+  //   hasSubscriptions: category.subscriptions && category.subscriptions.length > 0,
+  //   subscriptionCount: category.subscriptions ? category.subscriptions.length : 0,
+  //   hasSubcategories: category.categories && category.categories.length > 0,
+  //   subcategoryCount: category.categories ? category.categories.length : 0,
+  //   isFolded: category.folded === true
+  // });
   
   // Ensure counts are proper numbers
   var unreadCount = parseInt(category.unread_count || 0);
@@ -353,7 +353,7 @@ r.subscription.buildCategoryItem = function(category) {
  * This fixes the drag and drop nesting functionality
  */
 r.subscription.initSorting = function(rootCategoryId) {
-  console.log("Initializing sorting with rootCategoryId:", rootCategoryId);
+  // console.log("Initializing sorting with rootCategoryId:", rootCategoryId);
   
   // Destroy any existing sortable to prevent duplicates
   $('#subscription-list ul').each(function() {
@@ -375,7 +375,7 @@ r.subscription.initSorting = function(rootCategoryId) {
     forcePlaceholderSize: true, // Otherwise placeholder is 1px height
     tolerance: 'pointer', // Use pointer position for determining drop target
     start: function(event, ui) {
-      console.log("Drag started:", ui.item.attr('id'));
+      // console.log("Drag started:", ui.item.attr('id'));
       
       // Save the original parent for cancellation if needed
       ui.item.data('originalParent', ui.item.parent());
@@ -404,9 +404,9 @@ r.subscription.initSorting = function(rootCategoryId) {
       var newParent = ui.item.parent();
       var newParentCategory = newParent.closest('li.category');
       
-      console.log("Drag stopped. New parent:", 
-                 newParent.attr('id') || newParent.parent().attr('id'),
-                 "Is category?", ui.item.hasClass('category'));
+      // console.log("Drag stopped. New parent:", 
+                //  newParent.attr('id') || newParent.parent().attr('id'),
+                //  "Is category?", ui.item.hasClass('category'));
                  
       // Category or subscription moved
       if (ui.item.hasClass('subscription')) {
@@ -418,7 +418,7 @@ r.subscription.initSorting = function(rootCategoryId) {
           categoryId = rootCategoryId;
         }
         
-        console.log("Moving subscription", subscriptionId, "to category", categoryId, "at order", order);
+        // console.log("Moving subscription", subscriptionId, "to category", categoryId, "at order", order);
 
         // Calling API
         r.util.ajax({
@@ -426,12 +426,12 @@ r.subscription.initSorting = function(rootCategoryId) {
           data: { category: categoryId, order: order },
           type: 'POST',
           done: function(data) {
-            console.log("Subscription update successful", data);
+            // console.log("Subscription update successful", data);
             // Full tree update needed to update unread counts
             r.subscription.update();
           },
           fail: function(jqxhr) {
-            console.error("Error updating subscription:", jqxhr);
+            // console.error("Error updating subscription:", jqxhr);
             // Always update to ensure UI matches server state
             r.subscription.update();
           }
@@ -449,7 +449,7 @@ r.subscription.initSorting = function(rootCategoryId) {
         
         var order = ui.item.index();
         
-        console.log("Moving category", categoryId, "to parent", parentCategoryId, "at order", order);
+        // console.log("Moving category", categoryId, "to parent", parentCategoryId, "at order", order);
         
         // Check for maximum nesting level (5)
         var nestingLevel = 0;
@@ -459,7 +459,7 @@ r.subscription.initSorting = function(rootCategoryId) {
           parentCheck = parentCheck.parent().closest('li.category');
         }
         
-        console.log("Detected nesting level:", nestingLevel);
+        // console.log("Detected nesting level:", nestingLevel);
         
         // Prevent cyclic dependencies - cannot move a category inside itself or its children
         var isCyclic = false;
@@ -474,7 +474,7 @@ r.subscription.initSorting = function(rootCategoryId) {
         }
         
         if (isCyclic) {
-          console.log("Cyclic nesting detected, cancelling");
+          // console.log("Cyclic nesting detected, cancelling");
           // Restore to original position
           var originalParent = ui.item.data('originalParent');
           var originalIndex = ui.item.data('originalIndex');
@@ -496,7 +496,7 @@ r.subscription.initSorting = function(rootCategoryId) {
         }
         
         if (nestingLevel >= 5) {
-          console.log("Maximum nesting level reached, cancelling");
+          // console.log("Maximum nesting level reached, cancelling");
           // Restore to original position
           var originalParent = ui.item.data('originalParent');
           var originalIndex = ui.item.data('originalIndex');
@@ -526,12 +526,12 @@ r.subscription.initSorting = function(rootCategoryId) {
               order: order
           },
           done: function(data) {
-            console.log("Category update successful", data);
+            // console.log("Category update successful", data);
             // Update to refresh the tree with proper nesting
             r.subscription.update();
           },
           fail: function(jqxhr) {
-            console.error("Category update failed:", jqxhr);
+            // console.error("Category update failed:", jqxhr);
             var response;
             try {
               response = JSON.parse(jqxhr.responseText);
@@ -546,7 +546,7 @@ r.subscription.initSorting = function(rootCategoryId) {
     }
   }).disableSelection();
   
-  console.log("Sortable initialized on", $('#subscription-list ul').length, "lists");
+  // console.log("Sortable initialized on", $('#subscription-list ul').length, "lists");
 };
 
 /**
@@ -583,7 +583,7 @@ r.subscription.initCollapsing = function() {
       data: { folded: !isFolded },
       type: 'POST',
       fail: function(jqxhr) {
-        console.error('Failed to update category folded state');
+        // console.error('Failed to update category folded state');
       }
     });
     
@@ -898,21 +898,21 @@ r.subscription.updateTitle = function(count) {
 };
 // Add this function to r.subscription to help debug nesting issues
 r.subscription.debugTree = function() {
-  console.log("=== DEBUGGING CATEGORY TREE ===");
+  // console.log("=== DEBUGGING CATEGORY TREE ===");
   
   // Print data structure received from server
-  console.log("Last server response:", r.subscription.lastResponse);
+  // console.log("Last server response:", r.subscription.lastResponse);
   
   // Check for connected sortable
   var sortableInstances = $('#subscription-list ul').filter(function() {
     return $(this).data('ui-sortable') !== undefined;
   }).length;
   
-  console.log("Sortable instances found:", sortableInstances);
+  // console.log("Sortable instances found:", sortableInstances);
   
   // Analyze DOM structure
   var allCategories = $('#subscription-list li.category');
-  console.log("Total categories in DOM:", allCategories.length);
+  // console.log("Total categories in DOM:", allCategories.length);
   
   var nestingData = [];
   allCategories.each(function() {
@@ -932,23 +932,23 @@ r.subscription.debugTree = function() {
     });
   });
   
-  console.table(nestingData);
+  // console.table(nestingData);
   
   // Test sortable functionality
-  console.log("Testing if sortable is attached properly...");
+  // console.log("Testing if sortable is attached properly...");
   var firstCategory = $('#subscription-list li.category').first();
   var hasSort = typeof firstCategory.sortable === 'function';
   var canSort = firstCategory.hasClass('ui-sortable-handle');
   
-  console.log("First category can be sorted:", {
-    hasSortableFunction: hasSort,
-    hasSortableClass: canSort
-  });
+  // console.log("First category can be sorted:", {
+  //   hasSortableFunction: hasSort,
+  //   hasSortableClass: canSort
+  // });
   
-  return "Debug information logged to console";
+  return "Debug information logged to // console";
 };
 
-// You can call this function in the browser console: 
+// You can call this function in the browser // console: 
 // r.subscription.debugTree()
 
 
