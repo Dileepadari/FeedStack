@@ -27,6 +27,8 @@ r.util.url = {
   category_list: '../api/category',
   all: '../api/all',
   starred: '../api/starred',
+  articlesummary:"../api/articlesummary",
+  generate:"../api/generate",
   starred_star: '../api/starred/{id}',
   article_read: '../api/article/{id}/read',
   article_unread: '../api/article/{id}/unread',

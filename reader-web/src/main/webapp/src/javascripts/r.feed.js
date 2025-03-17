@@ -92,7 +92,28 @@ r.feed.init = function() {
       // Specific toolbar actions for starred
       r.feed.cache.toolbar.find('> .starred').removeClass('hidden');
       
-    } else if (target.substring(0, 13) == 'subscription/') {
+    } else if (target == 'articlesummary'){
+      // Configuring context for /starred
+      r.feed.context.url = r.util.url.articlesummary;
+      r.feed.context.unread = false;
+      r.feed.context.subscriptionId = target.substring(13);
+
+      $('#articlesummary-feed-button').addClass('active');
+      
+      // Specific toolbar actions for articlesummary
+      r.feed.cache.toolbar.find('> .articlesummary').removeClass('hidden');
+    }
+    else if (target == 'generate'){
+      r.feed.context.url = r.util.url.generate;
+      r.feed.context.unread = false;
+      r.feed.context.subscriptionId = target.substring(13);
+
+      $('#generate-feed-button').addClass('active');
+      
+      // Specific toolbar actions for welcome
+      r.feed.cache.toolbar.find('> .generate').removeClass('hidden');
+    }
+    else if (target.substring(0, 13) == 'subscription/') {
       // Configuring context for /subscription/id
       r.feed.context.url = '../api/' + target;
       r.feed.context.subscriptionId = target.substring(13);
