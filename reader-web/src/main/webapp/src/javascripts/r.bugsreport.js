@@ -156,7 +156,7 @@ r.bugsreport.getAllBugs = function() {
             });
         },
         error: function(data) {
-            console.log(data);
+            console.error("Error: " + data);
         }
     });
 };
@@ -190,7 +190,7 @@ r.bugsreport.getUserBugs = function(email) {
             });
         },
         error: function(data) {
-            console.log(data);
+            console.error("Error: " + data);
         }
     });
 };
@@ -217,7 +217,7 @@ r.bugsreport.filterBugs = function(criteria) {
             });
         },
         error: function(data) {
-            console.log(data);
+            console.error("Error: " + data);
         }
     });
 };
