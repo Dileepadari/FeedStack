@@ -15,7 +15,7 @@
 
 #### User-Specific Summaries
 - The system generates personalized daily reports for users based on their subscribed feeds.
-- The report for each subscription is generated individually in order to avoid loss of information and better understandability.
+- The daily report is generated for `10` most recent subscribed articles.
 - It organizes the latest articles into a structured format for better readability.
 - If no new articles exist, the system ensures an empty response instead of returning errors.
 

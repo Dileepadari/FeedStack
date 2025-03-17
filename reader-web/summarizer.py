@@ -21,18 +21,19 @@ def summarize_text(text,weight,prompt_type=1):
 
     else :
         prompt = f"""
-        You are generating a **daily report** from the provided information. The goal is to ensure the report is **detailed yet structured**, capturing all major updates while maintaining clarity.
+        You are tasked with generating a **comprehensive daily report** based on the provided information. The report should be **detailed, well-structured, and easy to read**, ensuring all critical updates are captured effectively.
 
-        **Guidelines:**
-        - **Cover all key updates** rather than providing a minimal summary.
-        - **Group related updates together** for better readability.
-        - **Use bullet points or structured paragraphs** to make it easy to scan.
-        - **Ensure a balanced level of detail**—not too brief, but not overly technical.
+        ### **Guidelines for Structuring the Report:**
+        - **Thorough Coverage:** Include all key updates instead of a brief summary.
+        - **Logical Organization:** Group related updates together for coherence.
+        - **Readable Format:** Use bullet points, subheadings, or structured paragraphs for clarity.
+        - **Essential Information:** Ensure the report conveys all necessary details.
+        - **Appropriate Length:** Aim for **200–400 words**, depending on the diversity and volume of information.
 
-        Now, generate a well-structured daily report based on this text:  
+        Now, generate a structured and detailed daily report based on the following text:  
 
         {text}
-    """
+        """
 
     try:
         response = client.chat.completions.create(

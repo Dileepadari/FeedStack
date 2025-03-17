@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 @Path("/generate")
 public class GenerateResource extends BaseResource {
     private static final Logger LOGGER = Logger.getLogger(GenerateResource.class.getName());
+    private final int max_articles = 10;
     private final SummarizationStrategy articlesummary;
     private final SummarizationStrategy reportsummary;
 
@@ -55,27 +56,25 @@ public class GenerateResource extends BaseResource {
                 .setSubscribed(true)
                 .setVisible(true);
 
+
+        Calendar cal = Calendar.getInstance();
+        long todayInMillis = cal.getTimeInMillis();
         if (afterArticle != null) {
             UserArticleDto lastArticle = getLastArticle(userArticleDao, afterArticle);
             
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.DATE, -1); // Subtract 1 day to get yesterday's date
-            Date publicationDate = cal.getTime();
             criteria.setArticlePublicationDateMax(new Date(lastArticle.getArticlePublicationTimestamp()));
             criteria.setArticleIdMax(lastArticle.getArticle().getId());
-            LOGGER.info("\n\n\n\nLast Article Pub Date : "+publicationDate + "\n\n\n\n");
         }
         else if(afterArticle == null){
-            LOGGER.info("\n\n\n\n\n\n Who Are You $$$$$$$$$$$$$$$$$$$\n\n\n\n");
             JSONObject empty = new JSONObject();
             empty.put("articles", new JSONArray());
             // return Response.ok().entity({"articles":[]}).build();
         }
         
-        PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(limit, null);
+        PaginatedList<UserArticleDto> paginatedList = PaginatedLists.create(100, null);
         userArticleDao.findByCriteria(paginatedList, criteria, null, null);
         JSONObject result = new JSONObject();
-        result = buildSummarizedResponse(paginatedList);
+        result = buildSummarizedResponse(paginatedList,todayInMillis);
         LOGGER.info("\n\n\n\n\n\n\n\n\n\n\n\n\n"+result+"\n\n\n\n\n\n\n\n\n\n");
         return Response.ok().entity(result).build();
     }
@@ -88,7 +87,7 @@ public class GenerateResource extends BaseResource {
         return articles.get(0);
     }
 
-    private JSONObject buildSummarizedResponse(PaginatedList<UserArticleDto> articles) throws JSONException {
+    private JSONObject buildSummarizedResponse(PaginatedList<UserArticleDto> articles,long todayInMillis) throws JSONException {
         JSONObject response = new JSONObject();
         List<JSONObject> summarizedArticles = new ArrayList<>();
         StringBuilder completeSummary = new StringBuilder();
@@ -115,10 +114,12 @@ public class GenerateResource extends BaseResource {
             JSONObject subscription = articleJson.getJSONObject("subscription");
         
             // Swap the title
-            articleJson.put("title","Report for " + subscription.getString("title"));         
+            articleJson.put("title","User Daily Report"); 
+            subscription.put("title","RSS-Reader");        
             // Set other required fields
             articleJson.put("url", "null");
-            articleJson.put("creator", "User");
+            articleJson.put("creator", "Team-20");
+            articleJson.put("date",todayInMillis);
             articleJson.put("description", finalSummary);
         
             summarizedArticles.add(articleJson);
@@ -152,7 +153,7 @@ public class GenerateResource extends BaseResource {
         for (int i = 0; i < summary.length(); i++) {
             if (summary.startsWith(separator, i)) {
                 count++;
-                if (count == 5) {
+                if (count == this.max_articles) {
                     index = i;
                     break;
                 }
