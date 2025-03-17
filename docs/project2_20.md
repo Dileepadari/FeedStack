@@ -80,3 +80,50 @@ GenerateResource --> SummarizationStrategy
 @enduml
 
 ```
+
+
+## 6b - Duplicate Detection
+
+### 1. Tasks Implemented
+####  Article Similarity Detection
+- The system identifies duplicate articles based on Named Entity Recognition (NER) and semantic similarity.
+- It uses spaCy for extracting named entities (e.g., organizations, people, and locations).
+- Cosine similarity is applied to article embeddings for semantic comparison.
+- The final similarity score is computed using a weighted sum:
+    - 40% weight to named entity overlap.
+    - 60% weight to semantic similarity.
+
+#### Duplicate Article Filtering
+- If two articles exceed a similarity threshold (default 0.8), they are marked as duplicates.
+- The system filters out duplicate articles, ensuring users receive only unique content.
+
+
+
+### 2. Design Pattern Used
+#### Command Pattern 
+- Encapsulates duplicate detection logic in a separate command object (DetectorCommand).
+- Allows dynamic execution of commands (e.g., using PythonDetectorCommand for Python-based detection).
+- Decouples request sender (DetectorResource) from the actual detection logic, making the system more flexible.
+
+````
+@startuml
+
+interface DetectorCommand {
+    + execute(articleIds: List<String>, titles: List<String>, descriptions: List<String>, threshold: double): String
+}
+
+class PythonDetectorCommand {
+    + execute(articleIds: List<String>, titles: List<String>, descriptions: List<String>, threshold: double): String
+}
+
+class DetectorResource {
+    - detectorCommand: DetectorCommand
+    + get(unread: boolean, limit: Integer, afterArticle: String): Response
+}
+
+DetectorCommand <|.. PythonDetectorCommand
+DetectorResource --> DetectorCommand
+
+@enduml
+
+````
