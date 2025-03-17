@@ -17,7 +17,8 @@ var r = {
   theme: {},
   shortcuts: {},
   util: {},
-  filter: {}
+  filter: {},
+  bugsreport: {},
 };
 
 /**
@@ -48,6 +49,7 @@ r.main.initModules = function() {
   r.theme.init();
   r.shortcuts.init();
   r.filter.init();
+  r.bugsreport.init();
   
   // First page
   if (r.user.hasBaseFunction('ADMIN') && r.user.userInfo.first_connection) {
@@ -67,4 +69,5 @@ r.main.reset = function() {
   r.settings.reset();
   r.about.reset();
   r.wizard.reset();
+  r.bugsreport.reset();
 };

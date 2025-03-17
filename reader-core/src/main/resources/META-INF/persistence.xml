@@ -20,5 +20,6 @@
     <class>com.sismics.reader.core.model.jpa.User</class>
     <class>com.sismics.reader.core.model.jpa.UserArticle</class>
     <class>com.sismics.reader.core.model.jpa.RoleBaseFunction</class>
+    <class>com.sismics.reader.core.model.jpa.BugReport</class>
   </persistence-unit>
 </persistence>

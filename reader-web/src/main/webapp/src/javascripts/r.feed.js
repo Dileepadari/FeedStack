@@ -1,3 +1,20 @@
+
+// Replace the currentArticleCounts with subscriptionArticleCounts
+r.feed.subscriptionArticleCounts = {}; // Persistent across feed switches
+
+/**
+ * Reset article counts for a specific subscription or for all
+ */
+r.feed.resetArticleCounts = function(subscriptionId) {
+  if (subscriptionId) {
+    // Reset just one subscription
+    r.feed.subscriptionArticleCounts[subscriptionId] = 0;
+  } else {
+    // Don't reset all counts when switching feeds
+    // Instead, we'll just count new articles for the current feed
+  }
+};
+
 /**
  * Current feed context.
  */
@@ -173,6 +190,11 @@ r.feed.init = function() {
   
   // Update feed mode
   r.feed.updateMode(false);
+
+  // Initialize article counts
+  // r.feed.initArticleCounts();
+
+
 };
 
 /**
@@ -235,8 +257,7 @@ r.feed.load = function(next) {
   if (!next) {
     // Loading animation
     r.feed.cache.container.html(r.util.buildLoader());
-    
-    // Updating show all/show new button
+    r.feed.resetArticleCounts(r.feed.context.subscriptionId);    // Updating show all/show new button
     r.feed.context.unread ?  r.feed.cache.toolbar.find('.all-button').html($.t('toolbar.showall'))
         : r.feed.cache.toolbar.find('.all-button').html($.t('toolbar.shownew'));
     
@@ -303,6 +324,9 @@ r.feed.load = function(next) {
         article.subscription.title = r.util.escape(article.subscription.title);
         article.creator = r.util.escape(article.creator);
         
+            // Track article in counts
+            r.feed.countArticle(article);
+            
         // Build article
         var item = r.article.build(article);
         r.feed.context.bumper.before(item);
@@ -323,7 +347,7 @@ r.feed.load = function(next) {
       if (!next) {
         // Scrolling to top
         r.feed.scrollTop(0);
-        
+        r.subscription.update();
         // Focus article list and redraw
         r.feed.cache.container
           .trigger('focus')
@@ -508,4 +532,21 @@ r.feed.markAllRead = function() {
       r.subscription.update();
     }
   });
+};
+
+/**
+ * Count an article for its subscription
+ */
+r.feed.countArticle = function(article) {
+  if (!article || !article.subscription || !article.subscription.id) return;
+  
+  var subscriptionId = article.subscription.id;
+  
+  // Initialize if needed
+  if (r.feed.subscriptionArticleCounts[subscriptionId] === undefined) {
+    r.feed.subscriptionArticleCounts[subscriptionId] = 0;
+  }
+  
+  // Increment count - we'll count all articles that are displayed
+  r.feed.subscriptionArticleCounts[subscriptionId]++;
 };
