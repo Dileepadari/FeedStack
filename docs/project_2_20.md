@@ -229,7 +229,18 @@ public static ApiFeedService getInstance() {
     if (instance == null) {
         instance = new ApiFeedService();
     }
-    return instance;Key Features Implemented
+    return instance;
+    }
+
+public Optional<JSONObject> fetchContent(String apiCall) {
+   
+  Optional<JSONObject> cachedContent = cache.get(apiCall);
+   if (cachedContent.isPresent()) {
+        logger.info("Returning cached content for: {}", apiCall);
+      return cachedContent;
+   }
+
+   try {
         logger.info("Fetching content from: {}", apiCall);
         URL url = new URL(apiCall);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
