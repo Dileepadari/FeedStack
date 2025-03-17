@@ -1,9 +1,12 @@
 import sys
 import os
 from groq import Groq
+from dotenv import load_dotenv
 
 # Initialize Groq Client
-client = Groq(api_key="GROQ_API_KEY_REMOVED")
+load_dotenv()
+groq_api_key = os.getenv('GROQ_API')
+client = Groq(api_key=groq_api_key)
 
 def summarize_text(text,weight,prompt_type=1):
     max_weight = 1
