@@ -1,3 +1,114 @@
+## Feature-4: Making Categories Better 
+Task - Enhance the category system to support nesting, allowing up to 5 levels of subcategories. Each category and subcategory should display metadata such as the number of unread items and the total count of articles. The UI should render nested categories in a collapsible format, allowing categories to host both individual feeds and subcategories simultaneously.
+### Features Implemented
+1. Hierarchical Structure:
+
+- Categories can contain both subscriptions and subcategories
+- Support for up to 5 levels of nesting
+- Proper parent-child relationships maintained
+
+
+2. Metadata Display:
+
+- Unread counts calculated and displayed for each category
+- Total article counts aggregated through the hierarchy
+- Visual distinction between unread and total counts
+
+
+3. Interactive UI:
+
+- Collapsible/expandable categories
+- Drag-and-drop reorganization of categories and subscriptions
+- Persistent state across sessions
+
+
+### Design Patterns Used:
+1. **Composite Pattern**
+The Composite Design Pattern is a structural design pattern that lets you compose objects into tree-like structures to represent part-whole hierarchies. It allows clients to treat individual objects and compositions of objects uniformly. In other words, whether dealing with a single object or a group of objects (composite), clients can use them interchangeably.
+
+#### Rationale:
+The Composite pattern is a structural design pattern that lets you compose objects into tree structures to represent part-whole hierarchies. In our RSS reader, we needed to represent a hierarchical structure of categories and subscriptions, where categories can contain both subscriptions (leaf nodes) and other categories (composite nodes).
+This pattern provides an elegant solution for treating individual objects and compositions of objects uniformly. For our nested categories implementation, this meant we could handle operations on both simple subscriptions and complex nested category structures using the same interface.The most compelling evidence of the Composite pattern is in our recursive implementations. The recursive approach elegantly handles the tree structure without needing to know the depth or complexity of the hierarchy.
+
+Categories function as the composite nodes in our tree. The dual containment capability is the essence of the Composite pattern and is implemented through the children and subscriptions lists in our Category class.
+Subscriptions represent the leaf nodes in our hierarchy. They have no children and serve as the endpoints of our tree structure. In our implementation, each subscription:
+- Contains data from a single RSS feed
+- Maintains its own count of unread and total articles
+- Can be moved between different categories
+#### Changes:
+- Modified the Category class to support parent-child relationships between categories
+- Implemented a tree structure in both backend and frontend to represent the hierarchy
+- Created recursive functions to process and display the nested structure
+- Added depth calculation and restrictions to respect the 5-level nesting limit
+- Added calculation of unread and total counts for each category in the hierarchy
+- Implemented propagation of counts from child categories to parent categories
+- Created a mechanism to update these counts when articles are read or new articles are added
+
+#### Implementation:
+
+```plantuml
+@startuml
+class Category {
+  -id: String
+  -name: String
+  -parentId: String
+  -folded: boolean
+  -order: int
+  -userId: String
+  -children: List<Category>
+  +getChildren(): List<Category>
+  +setChildren(children: List<Category>): void
+}
+
+class FeedSubscription {
+  -id: String
+  -title: String
+  -url: String
+  -categoryId: String
+  -unreadCount: int
+  -totalCount: int
+}
+
+class CategoryDao {
+  +buildCategoryTree(rootId: String, userId: String): List<Category>
+  +computeDepth(category: Category, userId: String): int
+}
+
+class CategoryResource {
+  +list(): Response
+  +buildCategoryJson(category: Category): JSONObject
+  +update(id: String, name: String, order: Integer, folded: Boolean, parentId: String): Response
+}
+
+Category "1" *-- "many" Category: contains
+Category "1" *-- "many" FeedSubscription: contains
+CategoryDao --> Category: manages
+CategoryResource --> CategoryDao: uses
+@enduml
+```
+
+In the backend, the Category entity was enhanced to maintain parent-child relationships, and the CategoryDao and the Category Dto was extended to build and manage category trees. The CategoryResource provides REST endpoints to interact with the nested structure.
+In the frontend, the UI components were modified to render the hierarchical structure in a collapsible format, allowing users to expand and collapse categories as needed.
+
+#### System Architecture
+The nested category implementation follows a client-server architecture:
+
+1. Backend (Java):
+
+- CategoryDao: Manages category persistence and tree construction
+- CategoryResource: Provides RESTful endpoints for category operations
+- SubscriptionResource: Handles subscription management within categories
+
+
+2. Frontend (JavaScript):
+
+- r.subscription.js: Manages the rendering and interaction with the category tree
+- Event handlers for user interactions (collapse/expand, drag-drop, etc.)
+
+
+
+
+
 ## Feature-5A: Simulating Rss Feeds
 
 The tasks we have to implement in this feature are:
@@ -118,18 +229,7 @@ public static ApiFeedService getInstance() {
     if (instance == null) {
         instance = new ApiFeedService();
     }
-    return instance;
-}
-
-public Optional<JSONObject> fetchContent(String apiCall) {
-    
-    Optional<JSONObject> cachedContent = cache.get(apiCall);
-    if (cachedContent.isPresent()) {
-        logger.info("Returning cached content for: {}", apiCall);
-        return cachedContent;
-    }
-
-    try {
+    return instance;Key Features Implemented
         logger.info("Fetching content from: {}", apiCall);
         URL url = new URL(apiCall);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
