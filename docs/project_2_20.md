@@ -365,7 +365,6 @@ UserArticleCriteria userArticleCriteria = filterStrategy.applyCriteria(criteriaB
 
 This pattern makes the filtering process more maintainable and extensible while keeping each filtering rule focused and independent.
 
-
 ## Feature-5A: Simulating Rss Feeds
 
 The tasks we have to implement in this feature are:
