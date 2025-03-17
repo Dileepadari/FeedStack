@@ -72,47 +72,38 @@ r.filter.loadFilters = function() {
             const sourcesHtml = [];
             const categoriesHtml = [];
 
-            // Add sources
-            if (data.categories && data.categories[0]) {
+            if (data.categories && data.categories.length > 0) {
                 const rootCategory = data.categories[0];
 
                 // Process root subscriptions
                 if (rootCategory.subscriptions) {
-                    rootCategory.subscriptions.forEach(function(subscription) {
-                        sourcesHtml.push(
-                            `<div class="filter-item">
-                                <input type="checkbox" value="${subscription.id}" id="source-${subscription.id}"
-                                    ${r.filter.activeFilters.sources.includes(subscription.id) ? 'checked' : ''}>
-                                <label for="source-${subscription.id}">${r.util.escape(subscription.title)}</label>
-                            </div>`
-                        );
+                    rootCategory.subscriptions.forEach(subscription => {
+                        sourcesHtml.push(generateSubscriptionHtml(subscription));
                     });
                 }
 
-                // Process categories and their subscriptions
-                if (rootCategory.categories) {
-                    rootCategory.categories.forEach(function(category) {
-                        categoriesHtml.push(
-                            `<div class="filter-item">
-                                <input type="checkbox" value="${category.id}" id="category-${category.id}"
-                                    ${r.filter.activeFilters.categories.includes(category.id) ? 'checked' : ''}>
-                                <label for="category-${category.id}">${r.util.escape(category.name)}</label>
-                            </div>`
-                        );
+                // Recursive function to process categories and their subscriptions
+                function processCategories(categories, level) {
+                    categories.forEach(category => {
+                        categoriesHtml.push(generateCategoryHtml(category, level));
 
                         // Add subscriptions from this category
                         if (category.subscriptions) {
-                            category.subscriptions.forEach(function(subscription) {
-                                sourcesHtml.push(
-                                    `<div class="filter-item">
-                                        <input type="checkbox" value="${subscription.id}" id="source-${subscription.id}"
-                                            ${r.filter.activeFilters.sources.includes(subscription.id) ? 'checked' : ''}>
-                                        <label for="source-${subscription.id}">${r.util.escape(subscription.title)}</label>
-                                    </div>`
-                                );
+                            category.subscriptions.forEach(subscription => {
+                                sourcesHtml.push(generateSubscriptionHtml(subscription));
                             });
                         }
+
+                        // Recursively process subcategories
+                        if (category.categories && category.categories.length > 0) {
+                            processCategories(category.categories, level + 1);
+                        }
                     });
+                }
+
+                // Process all nested categories
+                if (rootCategory.categories) {
+                    processCategories(rootCategory.categories, 0);
                 }
             }
 
@@ -121,6 +112,26 @@ r.filter.loadFilters = function() {
         }
     });
 };
+
+// Helper function to generate subscription HTML
+function generateSubscriptionHtml(subscription) {
+    return `<div class="filter-item">
+                <input type="checkbox" value="${subscription.id}" id="source-${subscription.id}"
+                    ${r.filter.activeFilters.sources.includes(subscription.id) ? 'checked' : ''}>
+                <label for="source-${subscription.id}">${r.util.escape(subscription.title)}</label>
+            </div>`;
+}
+
+// Helper function to generate category HTML with indentation
+function generateCategoryHtml(category, level) {
+    const padding = level * 15; // Indentation for nested categories
+    return `<div class="filter-item" style="padding-left: ${padding}px">
+                <input type="checkbox" value="${category.id}" id="category-${category.id}"
+                    ${r.filter.activeFilters.categories.includes(category.id) ? 'checked' : ''}>
+                <label for="category-${category.id}">${r.util.escape(category.name)}</label>
+            </div>`;
+}
+
 
 r.filter.isUnreadMode = function(){
        var currentUrl = window.location.hash;
@@ -221,9 +232,11 @@ r.filter.updateFilterButtonState = function() {
 
     // Update filter button appearance
     if (hasActiveFilters) {
+        
         $('#toolbar > .filter-button').addClass('active');
 
         // Add clear filters button if it doesn't exist
+        $('#toolbar > .clear-filters-button').removeClass('hidden');
         if ($('#toolbar > .clear-filters-button').length === 0) {
             $('#toolbar').append(
                 '<button class="clear-filters-button" title="Clear filters">' +

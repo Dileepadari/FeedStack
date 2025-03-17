@@ -67,153 +67,155 @@ public class SubscriptionResource extends BaseResource {
      * @return Response
      */
     @GET
-@Produces(MediaType.APPLICATION_JSON)
-public Response list(
-        @QueryParam("unread") Boolean unread) throws JSONException {
-    if (!authenticate()) {
-        throw new ForbiddenClientException();
-    }
-    
-    // Default value
-    if (unread == null) {
-        unread = Boolean.FALSE;
-    }
-
-    // Search this user's subscriptions
-    FeedSubscriptionCriteria feedSubscriptionCriteria = new FeedSubscriptionCriteria()
-            .setUserId(principal.getId())
-            .setUnread(unread);
-
-    FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
-    List<FeedSubscriptionDto> feedSubscriptionList = feedSubscriptionDao.findByCriteria(feedSubscriptionCriteria);
-
-    // Get the root category
-    CategoryDao categoryDao = new CategoryDao();
-    Category rootCategory = categoryDao.getRootCategory(principal.getId());
-    
-    // Build the root category JSON
-    JSONObject rootCategoryJson = new JSONObject();
-    rootCategoryJson.put("id", rootCategory.getId());
-    rootCategoryJson.put("name", "");
-    rootCategoryJson.put("folded", false);
-    
-    // Always build the complete tree structure regardless of unread mode
-    List<Category> tree = categoryDao.buildCategoryTree(rootCategory.getId(), principal.getId());
-    JSONArray fullTreeJson = new JSONArray();
-    
-    // Track total unread count
-    int totalUnreadCount = 0;
-    
-    // Build categories with subscriptions, filtering based on unread status
-    for (Category cat : tree) {
-        JSONObject catJson = buildCategoryWithSubscriptions(cat, feedSubscriptionList, unread);
-        if (!unread || 
-            catJson.getInt("unread_count") > 0 || 
-            catJson.getJSONArray("subscriptions").length() > 0 ||
-            catJson.getJSONArray("categories").length() > 0) {
-            
-            // Add to total unread count
-            totalUnreadCount += catJson.getInt("unread_count");
-            
-            // Add to tree
-            fullTreeJson.put(catJson);
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response list(
+            @QueryParam("unread") Boolean unread) throws JSONException {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
         }
-    }
-    rootCategoryJson.put("categories", fullTreeJson);
-    
-    // Add subscriptions directly in root category
-    JSONArray rootSubscriptions = new JSONArray();
-    for (FeedSubscriptionDto feedSubscription : feedSubscriptionList) {
-        if (feedSubscription.getCategoryId().equals(rootCategory.getId())) {
-            JSONObject subscription = new JSONObject();
-            subscription.put("id", feedSubscription.getId());
-            subscription.put("title", feedSubscription.getFeedSubscriptionTitle());
-            subscription.put("url", feedSubscription.getFeedRssUrl());
-            subscription.put("unread_count", feedSubscription.getUnreadUserArticleCount());
-            // subscription.put("total_count", feedSubscription.getUnreadUserArticleCount());
-            subscription.put("sync_fail_count", feedSubscription.getSynchronizationFailCount());
-            
-            // In unread mode, only include if has unread items
-            if (!unread || feedSubscription.getUnreadUserArticleCount() > 0) {
-                rootSubscriptions.put(subscription);
-                totalUnreadCount += feedSubscription.getUnreadUserArticleCount();
+
+        // Default value
+        if (unread == null) {
+            unread = Boolean.FALSE;
+        }
+
+        // Search this user's subscriptions
+        FeedSubscriptionCriteria feedSubscriptionCriteria = new FeedSubscriptionCriteria()
+                .setUserId(principal.getId())
+                .setUnread(unread);
+
+        FeedSubscriptionDao feedSubscriptionDao = new FeedSubscriptionDao();
+        List<FeedSubscriptionDto> feedSubscriptionList = feedSubscriptionDao.findByCriteria(feedSubscriptionCriteria);
+
+        // Get the root category
+        CategoryDao categoryDao = new CategoryDao();
+        Category rootCategory = categoryDao.getRootCategory(principal.getId());
+
+        // Build the root category JSON
+        JSONObject rootCategoryJson = new JSONObject();
+        rootCategoryJson.put("id", rootCategory.getId());
+        rootCategoryJson.put("name", "");
+        rootCategoryJson.put("folded", false);
+
+        // Always build the complete tree structure regardless of unread mode
+        List<Category> tree = categoryDao.buildCategoryTree(rootCategory.getId(), principal.getId());
+        JSONArray fullTreeJson = new JSONArray();
+
+        // Track total unread count
+        int totalUnreadCount = 0;
+
+        // Build categories with subscriptions, filtering based on unread status
+        for (Category cat : tree) {
+            JSONObject catJson = buildCategoryWithSubscriptions(cat, feedSubscriptionList, unread);
+            if (!unread ||
+                    catJson.getInt("unread_count") > 0 ||
+                    catJson.getJSONArray("subscriptions").length() > 0 ||
+                    catJson.getJSONArray("categories").length() > 0) {
+
+                // Add to total unread count
+                totalUnreadCount += catJson.getInt("unread_count");
+
+                // Add to tree
+                fullTreeJson.put(catJson);
             }
         }
-    }
-    rootCategoryJson.put("subscriptions", rootSubscriptions);
-    
-    // Build the response
-    JSONArray categories = new JSONArray();
-    categories.put(rootCategoryJson);
-    
-    JSONObject response = new JSONObject();
-    response.put("categories", categories);
-    response.put("unread_count", totalUnreadCount);
-    
-    return Response.ok().entity(response).build();
-}
+        rootCategoryJson.put("categories", fullTreeJson);
 
-private JSONObject buildCategoryWithSubscriptions(Category category, List<FeedSubscriptionDto> feedList, boolean unreadOnly) throws JSONException {
-    JSONObject json = new JSONObject();
-    json.put("id", category.getId());
-    json.put("name", category.getName());
-    json.put("folded", category.isFolded());
-    
-    // Track unread and total counts
-    int unreadCount = 0;
-    int totalCount = 0;
-    
-    // Process subscriptions in this category
-    JSONArray subs = new JSONArray();
-    for (FeedSubscriptionDto sub : feedList) {
-        if (sub.getCategoryId().equals(category.getId())) {
-            // Add to counts
-            unreadCount += sub.getUnreadUserArticleCount();
-            totalCount += sub.getUnreadUserArticleCount();
-            
-            // Only include if not filtered by unread or has unread items
-            if (!unreadOnly || sub.getUnreadUserArticleCount() > 0) {
-                JSONObject subJson = new JSONObject();
-                subJson.put("id", sub.getId());
-                subJson.put("title", sub.getFeedSubscriptionTitle());
-                subJson.put("url", sub.getFeedRssUrl());
-                subJson.put("unread_count", sub.getUnreadUserArticleCount());
-                subJson.put("total_count", 0);
-                subJson.put("sync_fail_count", sub.getSynchronizationFailCount());
-                subs.put(subJson);
+        // Add subscriptions directly in root category
+        JSONArray rootSubscriptions = new JSONArray();
+        for (FeedSubscriptionDto feedSubscription : feedSubscriptionList) {
+            if (feedSubscription.getCategoryId().equals(rootCategory.getId())) {
+                JSONObject subscription = new JSONObject();
+                subscription.put("id", feedSubscription.getId());
+                subscription.put("title", feedSubscription.getFeedSubscriptionTitle());
+                subscription.put("url", feedSubscription.getFeedRssUrl());
+                subscription.put("unread_count", feedSubscription.getUnreadUserArticleCount());
+                // subscription.put("total_count",
+                // feedSubscription.getUnreadUserArticleCount());
+                subscription.put("sync_fail_count", feedSubscription.getSynchronizationFailCount());
+
+                // In unread mode, only include if has unread items
+                if (!unread || feedSubscription.getUnreadUserArticleCount() > 0) {
+                    rootSubscriptions.put(subscription);
+                    totalUnreadCount += feedSubscription.getUnreadUserArticleCount();
+                }
             }
         }
-    }
-    json.put("subscriptions", subs);
-    
-    // Process child categories recursively
-    JSONArray childCats = new JSONArray();
-    for (Category child : category.getChildren()) {
-        JSONObject childJson = buildCategoryWithSubscriptions(child, feedList, unreadOnly);
-        
-        // Add child's counts to parent
-        unreadCount += childJson.getInt("unread_count");
-        // totalCount += childJson.getInt("total_count");
-        
-        // Only include categories that have unread items or visible subscriptions when in unread mode
-        if (!unreadOnly || 
-            childJson.getInt("unread_count") > 0 || 
-            childJson.getJSONArray("subscriptions").length() > 0 ||
-            childJson.getJSONArray("categories").length() > 0) {
-            
-            childCats.put(childJson);
-        }
-    }
-    
-    // Set the total counts for this category
-    json.put("unread_count", unreadCount);
-    json.put("total_count", 0);
-    json.put("categories", childCats);
-    
-    return json;
-}
+        rootCategoryJson.put("subscriptions", rootSubscriptions);
 
-    
+        // Build the response
+        JSONArray categories = new JSONArray();
+        categories.put(rootCategoryJson);
+
+        JSONObject response = new JSONObject();
+        response.put("categories", categories);
+        response.put("unread_count", totalUnreadCount);
+
+        return Response.ok().entity(response).build();
+    }
+
+    private JSONObject buildCategoryWithSubscriptions(Category category, List<FeedSubscriptionDto> feedList,
+            boolean unreadOnly) throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("id", category.getId());
+        json.put("name", category.getName());
+        json.put("folded", category.isFolded());
+
+        // Track unread and total counts
+        int unreadCount = 0;
+        int totalCount = 0;
+
+        // Process subscriptions in this category
+        JSONArray subs = new JSONArray();
+        for (FeedSubscriptionDto sub : feedList) {
+            if (sub.getCategoryId().equals(category.getId())) {
+                // Add to counts
+                unreadCount += sub.getUnreadUserArticleCount();
+                totalCount += sub.getUnreadUserArticleCount();
+
+                // Only include if not filtered by unread or has unread items
+                if (!unreadOnly || sub.getUnreadUserArticleCount() > 0) {
+                    JSONObject subJson = new JSONObject();
+                    subJson.put("id", sub.getId());
+                    subJson.put("title", sub.getFeedSubscriptionTitle());
+                    subJson.put("url", sub.getFeedRssUrl());
+                    subJson.put("unread_count", sub.getUnreadUserArticleCount());
+                    subJson.put("total_count", 0);
+                    subJson.put("sync_fail_count", sub.getSynchronizationFailCount());
+                    subs.put(subJson);
+                }
+            }
+        }
+        json.put("subscriptions", subs);
+
+        // Process child categories recursively
+        JSONArray childCats = new JSONArray();
+        for (Category child : category.getChildren()) {
+            JSONObject childJson = buildCategoryWithSubscriptions(child, feedList, unreadOnly);
+
+            // Add child's counts to parent
+            unreadCount += childJson.getInt("unread_count");
+            // totalCount += childJson.getInt("total_count");
+
+            // Only include categories that have unread items or visible subscriptions when
+            // in unread mode
+            if (!unreadOnly ||
+                    childJson.getInt("unread_count") > 0 ||
+                    childJson.getJSONArray("subscriptions").length() > 0 ||
+                    childJson.getJSONArray("categories").length() > 0) {
+
+                childCats.put(childJson);
+            }
+        }
+
+        // Set the total counts for this category
+        json.put("unread_count", unreadCount);
+        json.put("total_count", 0);
+        json.put("categories", childCats);
+
+        return json;
+    }
+
     /**
      * Returns the subscription informations and paginated articles.
      * 
