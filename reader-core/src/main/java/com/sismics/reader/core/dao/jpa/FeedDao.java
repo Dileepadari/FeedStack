@@ -107,6 +107,31 @@ public class FeedDao extends BaseDao<FeedDto, FeedCriteria> {
     }
 
     /**
+     * Get feeds by creator user ID.
+     * 
+     * @param creatorUserId Creator user ID
+     * @return List of feeds
+     */
+    public List<Feed> getByCreatorUserId(String creatorUserId) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        
+        // Get the feeds
+        Query q = em.createQuery("select f from Feed f where f.creatorUserId = :creatorUserId and f.deleteDate is null")
+                .setParameter("creatorUserId", creatorUserId);
+        return q.getResultList();
+    }
+
+    /**
+     * Get feed from the Feed_id
+     */
+    public Feed getFeedById(String feed_id) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createQuery("select f from Feed f where f.id = :feed and f.deleteDate is null")
+                .setParameter("id", feed_id);
+        return (Feed) q.getSingleResult();
+    }
+
+    /**
      * Updates a feed.
      * 
      * @param feed Feed to update
@@ -127,7 +152,7 @@ public class FeedDao extends BaseDao<FeedDto, FeedCriteria> {
         feedFromDb.setLanguage(feed.getLanguage());
         feedFromDb.setDescription(feed.getDescription());
         feedFromDb.setLastFetchDate(feed.getLastFetchDate());
-        
+
         return feed;
     }
 }

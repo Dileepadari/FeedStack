@@ -43,6 +43,10 @@ r.util.url = {
   bugs_report_delete: '../api/bugs/delete/{id}',
   bugs_report_updatestatus: '../api/bugs/updatestatus',
   bugs_report_getbyemail: '../api/bugs/getbyemail',
+  myfeeds_get: '../api/myfeeds/getfeeds',
+  myfeeds_create: '../api/myfeeds/create',
+  myfeeds_add: '../api/myfeeds/add',
+  myfeeds_display: '../api/myfeeds/display',
   github_tags: 'https://api.github.com/repos/sismics/reader/tags'
 };
 

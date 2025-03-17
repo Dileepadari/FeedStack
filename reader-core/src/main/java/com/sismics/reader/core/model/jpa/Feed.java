@@ -40,6 +40,12 @@ public class Feed {
      */
     @Column(name = "FED_RSSBASEURI_C", length = 2000)
     private String baseUri;
+
+    /**
+     * Creator user ID.
+     */
+    @Column(name = "FED_CREATOR_USER_ID_C", length = 36)
+    private String creatorUserId = null;
     
     /**
      * Feed title.
@@ -147,6 +153,24 @@ public class Feed {
      */
     public void setBaseUri(String baseUri) {
         this.baseUri = baseUri;
+    }
+
+    /**
+     * Getter of creatorUserId.
+     *
+     * @return creatorUserId
+     */
+    public String getCreatorUserId() {
+        return creatorUserId;
+    }
+
+    /**
+     * Setter of creatorUserId.
+     *
+     * @param creatorUserId creatorUserId
+     */
+    public void setCreatorUserId(String creatorUserId) {
+        this.creatorUserId = creatorUserId;
     }
 
     /**
