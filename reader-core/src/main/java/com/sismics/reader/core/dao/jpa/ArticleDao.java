@@ -151,6 +151,16 @@ public class ArticleDao extends BaseDao<ArticleDto, ArticleCriteria> {
         Query q = em.createQuery("select a from Article a where a.deleteDate is null order by a.id");
         return q.getResultList();
     }
+
+    /**
+     * Returns the list of all articles for a feed.
+     */
+    public List<Article> findByFeed(String feedId) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createQuery("select a from Article a where a.feedId = :feedId and a.deleteDate is null order by a.publicationDate desc")
+                .setParameter("feedId", feedId);
+        return q.getResultList();
+    }
     
     /**
      * Deletes a article.

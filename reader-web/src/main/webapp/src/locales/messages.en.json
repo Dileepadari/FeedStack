@@ -42,6 +42,9 @@
       "placeholder": "Paste a feed or website URL",
       "submit": "Add"
     },
+    "myfeeds": {
+      "title": "My feeds"
+    },
     "edit": {
       "button": "Edit",
       "placeholder": "Title",
