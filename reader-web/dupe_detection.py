@@ -1,17 +1,49 @@
-import spacy
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
 import json
-import os
 import sys
 import subprocess
+import os
 
-# Ensure spaCy is installed
+venv_dir = 'se_p2_env'
+venv_python = os.path.join(venv_dir, 'Scripts', 'python.exe') if os.name == 'nt' else os.path.join(venv_dir, 'bin', 'python')
+
+def try_install_with_fallback(package_command):
+    """
+    Attempt to run installation using venv_python -m pip, 
+    fallback to pip and pip3 if it fails.
+    """
+    try:
+        subprocess.run([venv_python, '-m', 'pip'] + package_command, check=True)
+    except subprocess.CalledProcessError:
+        try:
+            subprocess.run(['pip'] + package_command, check=True)
+        except subprocess.CalledProcessError:
+            subprocess.run(['pip3'] + package_command, check=True)
+
 try:
     import spacy
+    import numpy as np
+    from sklearn.metrics.pairwise import cosine_similarity
 except ImportError:
-    subprocess.run(["python", "-m", "pip", "install", "spacy"], check=True)
+    # Create virtual environment if not present
+    if not os.path.exists(venv_dir):
+        try:
+            subprocess.run([sys.executable, '-m', 'venv', venv_dir], check=True)
+        except subprocess.CalledProcessError:
+            subprocess.run(['sudo', 'apt', 'install', '-y', 'python3.10-venv'], check=True)
+            subprocess.run([sys.executable, '-m', 'venv', venv_dir], check=True)
+
+
+    # Upgrade pip (try/fallback)
+    try_install_with_fallback(['install', '--upgrade', 'pip'])
+
+    # Install dependencies (try/fallback)
+    try_install_with_fallback(['install', '-r', 'requirements.txt'])
+
+    # Try importing again
     import spacy
+    import numpy as np
+    from sklearn.metrics.pairwise import cosine_similarity
+
 
 # Ensure the model is installed
 try:

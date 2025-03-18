@@ -1,10 +1,50 @@
 import sys
+import subprocess
 import os
-from groq import Groq
-from dotenv import load_dotenv
+
+venv_dir = 'se_p2_env'
+venv_python = os.path.join(venv_dir, 'Scripts', 'python.exe') if os.name == 'nt' else os.path.join(venv_dir, 'bin', 'python')
+
+def try_install_with_fallback(package_command):
+    """
+    Attempt to run installation using venv_python -m pip, 
+    fallback to pip and pip3 if it fails.
+    """
+    try:
+        subprocess.run([venv_python, '-m', 'pip'] + package_command, check=True)
+    except subprocess.CalledProcessError:
+        try:
+            subprocess.run(['pip'] + package_command, check=True)
+        except subprocess.CalledProcessError:
+            subprocess.run(['pip3'] + package_command, check=True)
+
+try:
+    from groq import Groq
+    from dotenv import load_dotenv
+except ImportError:
+    # Create virtual environment if not present
+    if not os.path.exists(venv_dir):
+        try:
+            subprocess.run([sys.executable, '-m', 'venv', venv_dir], check=True)
+        except subprocess.CalledProcessError:
+
+            subprocess.run(['sudo', 'apt', 'install', '-y', 'python3.10-venv'], check=True)
+            subprocess.run([sys.executable, '-m', 'venv', venv_dir], check=True)
+
+
+    # Upgrade pip (try/fallback)
+    try_install_with_fallback(['install', '--upgrade', 'pip'])
+
+    # Install dependencies (try/fallback)
+    try_install_with_fallback(['install', '-r', 'requirements.txt'])
+
+    # Try importing again
+    from groq import Groq
+    from dotenv import load_dotenv
+
 
 # Initialize Groq Client
-load_dotenv()
+load_dotenv('tokens.env')
 groq_api_key = os.getenv('GROQ_API')
 client = Groq(api_key=groq_api_key)
 

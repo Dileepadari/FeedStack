@@ -42,7 +42,7 @@ public class DetectorResource extends BaseResource {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
-        double threshold = 0.7;
+        double threshold = 0.6;
         UserArticleDao userArticleDao = new UserArticleDao();
         UserArticleCriteria userArticleCriteria = new UserArticleCriteria()
                 .setUnread(unread)
