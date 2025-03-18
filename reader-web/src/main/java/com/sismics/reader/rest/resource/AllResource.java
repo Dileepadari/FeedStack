@@ -116,4 +116,6 @@ public class AllResource extends BaseResource {
         return Response.ok().entity(response).build();
     }
 
+
+
 }
