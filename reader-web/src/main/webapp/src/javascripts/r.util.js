@@ -29,6 +29,8 @@ r.util.url = {
   starred: '../api/starred',
   articlesummary:"../api/articlesummary",
   generate:"../api/generate",
+  detector:"../api/detector",
+  all_articles:"../api/detector/articles",
   starred_star: '../api/starred/{id}',
   article_read: '../api/article/{id}/read',
   article_unread: '../api/article/{id}/unread',

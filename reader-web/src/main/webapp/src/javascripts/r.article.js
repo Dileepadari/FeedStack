@@ -170,6 +170,10 @@ r.article.build = function(article, classes) {
   if (article.is_starred) {
     item.addClass('starred');
   }
+
+  // if(article.duplicate){
+  //   item.addClass('duplicate');
+  // }
   
   // Copy provided classes
   if (classes) {
@@ -186,7 +190,7 @@ r.article.build = function(article, classes) {
   item.find('.feed-item-date')
     .html(date.fromNow())
     .attr('title', date.format('L LT'));
-  
+    
   if (!r.feed.context.subscriptionId) {
     if (article.subscription.id) {
       item.find('.feed-item-subscription').html($.t('article.subscription', { subscription: '<a href="#/feed/subscription/' + article.subscription.id + '">' + article.subscription.title + '</a>' }));
@@ -195,6 +199,10 @@ r.article.build = function(article, classes) {
     }
   } else {
     item.find('.feed-item-subscription').remove();
+  }
+
+  if(article.duplicate == 'yes'){
+    item.find('.feed-item-duplication').addClass('duplicate');
   }
   
   if (article.creator) {

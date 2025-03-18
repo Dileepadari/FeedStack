@@ -113,6 +113,13 @@ r.feed.init = function() {
       // Specific toolbar actions for welcome
       r.feed.cache.toolbar.find('> .generate').removeClass('hidden');
     }
+    else if(target == 'detector'){
+      r.feed.context.url = r.util.url.detector;
+      r.feed.context.unread = false;
+      $('#detector-feed-button').addClass('active');
+      r.feed.cache.toolbar.find('> .detector').removeClass('hidden');
+    }
+
     else if (target.substring(0, 13) == 'subscription/') {
       // Configuring context for /subscription/id
       r.feed.context.url = '../api/' + target;
