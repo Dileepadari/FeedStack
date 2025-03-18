@@ -122,6 +122,16 @@ public class FeedDao extends BaseDao<FeedDto, FeedCriteria> {
     }
 
     /**
+     * Get feeds which has non NULL creator User id
+     */
+    public List<Feed> getFeedsWithCreatorUserId() {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createQuery("select f from Feed f where f.creatorUserId is not null and f.deleteDate is null");
+        return q.getResultList();
+    }
+
+
+    /**
      * Get feed from the Feed_id
      */
     public Feed getFeedById(String feed_id) {

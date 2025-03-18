@@ -84,6 +84,7 @@ r.article.init = function() {
 
 
   r.article.getmyfeeds();
+  r.article.getallmyfeeds();
 };
 
 /**
@@ -166,6 +167,48 @@ r.article.getmyfeeds = function() {
   
       r.util.ajax({
         url: r.util.url.myfeeds_display,
+        type: 'POST',
+        data: JSON.stringify({ userid: r.user.userInfo.email, feedId: feedId }),
+        contentType: 'application/json',
+        dataType: 'json'
+      }).done(function(data) {
+        // Update the "My Feeds" list
+        // console.log("Data:", data);
+        $('#feed-container').empty();
+        data.forEach(function(article) {
+          $('#feed-container').append(r.article.display(article));
+        });
+      }).fail(function() {
+        // Display an error message
+        $().toastmessage('showErrorToast', $.t('error.unknown'));
+      });
+    });
+
+  }).fail(function() {
+    // Display an error message
+    $().toastmessage('showErrorToast', $.t('error.unknown'));
+  });
+};
+
+r.article.getallmyfeeds = function() {
+  r.util.ajax({
+    url: r.util.url.myfeeds_allget,
+    type: 'POST',
+    data: JSON.stringify({ userid: r.user.userInfo.email }),
+    contentType: 'application/json',
+    dataType: 'json'
+  }).done(function(data) {
+    // Update the "My Feeds" list
+    $('#all-feed-display-list').empty();
+    data.forEach(function(feed) {
+      $('#all-feed-display-list').append('<li class="all-display-li" data-id="'+ feed.id +'">'+ feed.title + '<button>Subscribe</button> </li>');
+    });
+    $('#all-feed-display-list').on('click', '.all-display-li', function() {
+      var feedId = $(this).data('id');
+      console.log("Feed ID:", feedId);
+
+      r.util.ajax({
+        url: r.util.url.myfeeds_alldisplay,
         type: 'POST',
         data: JSON.stringify({ userid: r.user.userInfo.email, feedId: feedId }),
         contentType: 'application/json',

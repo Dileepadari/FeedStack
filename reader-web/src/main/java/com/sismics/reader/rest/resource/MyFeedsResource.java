@@ -9,6 +9,8 @@ import com.sismics.reader.core.model.jpa.Article;
 import com.sismics.reader.core.dao.jpa.dto.FeedDto;
 import com.sismics.rest.exception.ForbiddenClientException;
 import com.sismics.reader.core.service.FeedAdapter;
+import com.sismics.reader.core.model.jpa.User;
+import com.sismics.reader.core.dao.jpa.UserDao;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.POST;
@@ -256,6 +258,66 @@ public class MyFeedsResource extends BaseResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response displayFeed(JSONObject data) throws JSONException {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
+        }
+
+        String user_email = data.getString("userid");
+        String feed_id = data.getString("feedId");
+
+        ArticleDao articleDao = new ArticleDao();
+        List<Article> articles = articleDao.findByFeed(feed_id);
+        JSONArray response = new JSONArray();
+        for (Article article : articles) {
+            JSONObject articleJson = new JSONObject();
+            articleJson.put("id", article.getId());
+            articleJson.put("title", article.getTitle());
+            articleJson.put("url", article.getUrl());
+            articleJson.put("creator", article.getCreator());
+            articleJson.put("description", article.getDescription());
+            articleJson.put("commentUrl", article.getCommentUrl());
+            articleJson.put("commentCount", article.getCommentCount());
+            articleJson.put("publicationDate", article.getPublicationDate());
+            response.put(articleJson);
+        }
+        return Response.ok().entity(response).build();
+    }
+
+    @POST
+    @Path("allget")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getAllFeeds(JSONObject data) throws JSONException {
+        if (!authenticate()) {
+            throw new ForbiddenClientException();
+        }
+
+        FeedDao feedDao = new FeedDao();
+        List<Feed> feeds = feedDao.getFeedsWithCreatorUserId();
+
+        JSONArray response = new JSONArray();
+        for (Feed feed : feeds) {
+            JSONObject feedJson = new JSONObject();
+            feedJson.put("id", feed.getId());
+            String user_email = feed.getCreatorUserId();
+
+            UserDao userDao = new UserDao();
+            User user = userDao.getByEmail(user_email);
+            String user_name = user.getUsername();
+
+            String title = user_name + "/" + feed.getTitle();
+            feedJson.put("title", title);
+            response.put(feedJson);
+        }
+        return Response.ok().entity(response).build();
+    }
+
+
+    @POST
+    @Path("/alldisplay")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response DisplayAllFeeds(JSONObject data) throws JSONException {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }

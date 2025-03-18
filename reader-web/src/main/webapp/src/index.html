@@ -112,12 +112,12 @@
       padding: 10px;
     }
 
-    #modal-body ul, #feed-display-list{
+    #modal-body ul, #feed-display-list, #all-feed-display-list{
       list-style: none;
       padding: 5px;
     }
 
-    #modal-body ul li, #feed-display-list li{
+    #modal-body ul li, #feed-display-list li, #all-feed-display-list li{
       padding: 7px;
     }
 
@@ -126,7 +126,7 @@
       overflow-y: scroll;
     }
 
-    #myfeeds-list ul li, #feed-display-list li {
+    #myfeeds-list ul li, #feed-display-list li,#all-feed-display-list li {
       padding: 7px!important;
     }
 
@@ -146,7 +146,7 @@
     }
 
 
-    #feed-display-list li:hover {
+    #feed-display-list li, #all-feed-display-list li:hover {
       background: #9c9c9c!important;
       cursor: pointer;
     }
@@ -226,6 +226,17 @@
       <div id="display-myfeeds-list">
         <ul id="feed-display-list">
           <!-- Here My feeds -->
+        </ul>
+      </div>
+
+      <!-- All Cuarted Feeds -->
+      <h1>
+        <span data-i18n="curatedfeeds.title">Curated Feeds</span>
+        <div class="feed-ajax-loader hidden"></div>
+      </h1>
+      <div id="display-curatedfeeds-list">
+        <ul id="all-feed-display-list">
+          <!-- Here Curated feeds -->
         </ul>
       </div>
     </div>

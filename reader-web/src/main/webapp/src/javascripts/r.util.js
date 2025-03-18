@@ -48,6 +48,8 @@ r.util.url = {
   myfeeds_create: '../api/myfeeds/create',
   myfeeds_add: '../api/myfeeds/add',
   myfeeds_display: '../api/myfeeds/display',
+  myfeeds_allget: '../api/myfeeds/allget',
+  myfeeds_alldisplay: '../api/myfeeds/alldisplay',
   github_tags: 'https://api.github.com/repos/sismics/reader/tags'
 };
 
