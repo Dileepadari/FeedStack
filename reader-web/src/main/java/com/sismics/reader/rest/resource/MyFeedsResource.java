@@ -28,10 +28,8 @@ import java.util.UUID;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-
 @Path("/myfeeds")
 public class MyFeedsResource extends BaseResource {
-
 
     @POST
     @Path("/getfeeds")
@@ -77,12 +75,12 @@ public class MyFeedsResource extends BaseResource {
         // System.out.println("Article keys: ");
         // Iterator<String> keys = article.keys();
         // while(keys.hasNext()) {
-        //     String key = keys.next();
-        //     System.out.println(key);
+        // String key = keys.next();
+        // System.out.println(key);
         // }
 
         // create a url and local host link
-        String link = "local:// " + feed_title;
+        String link = "local://";
         String Baseuri = "http://localhost:8080/reader-web/";
 
         FeedDao feedDao = new FeedDao();
@@ -92,12 +90,20 @@ public class MyFeedsResource extends BaseResource {
         feed.setBaseUri(Baseuri);
         feed.setRssUrl(link);
         feed.setTitle(feed_title);
-        feed.setLanguage("en-US");  
+        feed.setLanguage("en-US");
         feed.setDescription("Collections of favorites: " + feed_title);
         feed.setLastFetchDate(new Date());
         feed.setDeleteDate(null);
         feed.setCreatorUserId(user_email);
         feedDao.create(feed);
+        EntityManagerUtil.flush();
+
+        // Get thw feed_id and update the feed with new url appended with feed_id
+        String feed_id = feed.getId();
+        String new_url = link + feed_id;
+        feed.setUrl(new_url);
+        feed.setRssUrl(new_url);
+        feedDao.update(feed);
         EntityManagerUtil.flush();
 
         // Create the article
@@ -108,7 +114,7 @@ public class MyFeedsResource extends BaseResource {
         newarticle.setPublicationDate(new Date());
         newarticle.setUrl(article.getString("url"));
         newarticle.setCreator(article.getString("creator"));
-        newarticle.setDescription(article.getString("description"));   
+        newarticle.setDescription(article.getString("description"));
         ArticleDao articleDao = new ArticleDao();
         articleDao.create(newarticle);
         EntityManagerUtil.flush();
@@ -120,34 +126,38 @@ public class MyFeedsResource extends BaseResource {
     }
 
     // private String generateRssContent(Feed feed, Article article) {
-    //     String rssFeed = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-    //                         "<rss version=\"2.0\">\n" +
-    //                         "xmlns:content=\"http://purl.org/rss/1.0/modules/content/\"" +
-    //                         "\n xmlns:wfw=\"http://wellformedweb.org/CommentAPI/\"" +
-    //                         "\n xmlns:dc=\"http://purl.org/dc/elements/1.1/\"" +
-    //                         "\n xmlns:atom=\"http://www.w3.org/2005/Atom\"" +
-    //                         "\n xmlns:sy=\"http://purl.org/rss/1.0/modules/syndication/\"" +
-    //                         "\n xmlns:slash=\"http://purl.org/rss/1.0/modules/slash/\">\n" +
-    //                         "  <channel>\n" +
-    //                         "    <title>" + feed.getTitle() + "</title>\n" +
-    //                         "    <link>" + feed.getUrl() + "</link>\n" +
-    //                         "    <description>" + feed.getDescription() + "</description>\n" +
-    //                         "    <language>" + feed.getLanguage() + "</language>\n" +
-    //                         "       <item>\n" +
-    //                         "       <title>" + article.getTitle() + "</title>\n" +
-    //                         "       <link>" + article.getUrl() + "</link>\n" +
-    //                         "       <guid isPermaLink=\"false\"><![CDATA[" + article.getUrl() + "]]></guid>\n" +
-    //                         "       <comments><![CDATA[" + article.getCommentUrl() + "]]></comments>\n" +
-    //                         "       <slash:comments><![CDATA[" + article.getCommentCount() + "]]></slash:comments>\n" +
-    //                         "       <dc:creator><![CDATA[" + article.getCreator() + "]]></dc:creator>\n" +
-    //                         "       <pubDate>" + article.getPublicationDate() + "</pubDate>\n" +
-    //                         "       <dc:date><![CDATA[" + article.getPublicationDate() + "]]></dc:date>\n" +
-    //                         "       <description><![CDATA[" + article.getDescription() + "]]></description>\n" +
-    //                         "       <content:encoded><![CDATA[" + article.getDescription() + "]]></content:encoded>\n" +
-    //                         "    </item>\n" +
-    //                         "  </channel>\n" +
-    //                         "</rss>";
-    //     return rssFeed;
+    // String rssFeed = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+    // "<rss version=\"2.0\">\n" +
+    // "xmlns:content=\"http://purl.org/rss/1.0/modules/content/\"" +
+    // "\n xmlns:wfw=\"http://wellformedweb.org/CommentAPI/\"" +
+    // "\n xmlns:dc=\"http://purl.org/dc/elements/1.1/\"" +
+    // "\n xmlns:atom=\"http://www.w3.org/2005/Atom\"" +
+    // "\n xmlns:sy=\"http://purl.org/rss/1.0/modules/syndication/\"" +
+    // "\n xmlns:slash=\"http://purl.org/rss/1.0/modules/slash/\">\n" +
+    // " <channel>\n" +
+    // " <title>" + feed.getTitle() + "</title>\n" +
+    // " <link>" + feed.getUrl() + "</link>\n" +
+    // " <description>" + feed.getDescription() + "</description>\n" +
+    // " <language>" + feed.getLanguage() + "</language>\n" +
+    // " <item>\n" +
+    // " <title>" + article.getTitle() + "</title>\n" +
+    // " <link>" + article.getUrl() + "</link>\n" +
+    // " <guid isPermaLink=\"false\"><![CDATA[" + article.getUrl() + "]]></guid>\n"
+    // +
+    // " <comments><![CDATA[" + article.getCommentUrl() + "]]></comments>\n" +
+    // " <slash:comments><![CDATA[" + article.getCommentCount() +
+    // "]]></slash:comments>\n" +
+    // " <dc:creator><![CDATA[" + article.getCreator() + "]]></dc:creator>\n" +
+    // " <pubDate>" + article.getPublicationDate() + "</pubDate>\n" +
+    // " <dc:date><![CDATA[" + article.getPublicationDate() + "]]></dc:date>\n" +
+    // " <description><![CDATA[" + article.getDescription() + "]]></description>\n"
+    // +
+    // " <content:encoded><![CDATA[" + article.getDescription() +
+    // "]]></content:encoded>\n" +
+    // " </item>\n" +
+    // " </channel>\n" +
+    // "</rss>";
+    // return rssFeed;
     // }
 
     @POST
@@ -164,7 +174,7 @@ public class MyFeedsResource extends BaseResource {
         String user_email = data.getString("userid");
         String feed_id = data.getString("feedId");
         JSONObject article = data.getJSONObject("article");
-        
+
         // Create the article
         Article newarticle = new Article();
         newarticle.setFeedId(feed_id);
@@ -173,7 +183,7 @@ public class MyFeedsResource extends BaseResource {
         newarticle.setPublicationDate(new Date());
         newarticle.setUrl(article.getString("url"));
         newarticle.setCreator(article.getString("creator"));
-        newarticle.setDescription(article.getString("description"));   
+        newarticle.setDescription(article.getString("description"));
         ArticleDao articleDao = new ArticleDao();
         articleDao.create(newarticle);
         EntityManagerUtil.flush();
@@ -186,9 +196,9 @@ public class MyFeedsResource extends BaseResource {
         // // Get the String Rss feed from the URL
         // String rssContent;
         // try {
-        //     rssContent = fetchRssFeedContent(rssUrl);
+        // rssContent = fetchRssFeedContent(rssUrl);
         // } catch (Exception e) {
-        //     e.printStackTrace();
+        // e.printStackTrace();
         // }
 
         // // Get String Rss of Article
@@ -205,52 +215,56 @@ public class MyFeedsResource extends BaseResource {
     }
 
     // private void updateRssFeedContent(String rssUrl, String rssContent) {
-    //     URL url = new URL(rssUrl);
-    //     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-    //     connection.setRequestMethod("PUT");
-    //     connection.setDoOutput(true);
+    // URL url = new URL(rssUrl);
+    // HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    // connection.setRequestMethod("PUT");
+    // connection.setDoOutput(true);
 
-    //     try (OutputStream os = connection.getOutputStream()) {
-    //         byte[] input = rssContent.getBytes("utf-8");
-    //         os.write(input, 0, input.length);
-    //     }
+    // try (OutputStream os = connection.getOutputStream()) {
+    // byte[] input = rssContent.getBytes("utf-8");
+    // os.write(input, 0, input.length);
+    // }
 
-    //     int responseCode = connection.getResponseCode();
-    //     if (responseCode != HttpURLConnection.HTTP_OK) {
-    //         throw new RuntimeException("Failed to update RSS feed content. HTTP response code: " + responseCode);
-    //     }
+    // int responseCode = connection.getResponseCode();
+    // if (responseCode != HttpURLConnection.HTTP_OK) {
+    // throw new RuntimeException("Failed to update RSS feed content. HTTP response
+    // code: " + responseCode);
+    // }
     // }
 
     // private String fetchRssFeedContent(String rssUrl) {
-    //     StringBuilder content = new StringBuilder();
-    //     URL url = new URL(feedUrl);
-    //     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-    //     connection.setRequestMethod("GET");
+    // StringBuilder content = new StringBuilder();
+    // URL url = new URL(feedUrl);
+    // HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    // connection.setRequestMethod("GET");
 
-    //     try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-    //         String inputLine;
-    //         while ((inputLine = in.readLine()) != null) {
-    //             content.append(inputLine);
-    //         }
-    //     }
+    // try (BufferedReader in = new BufferedReader(new
+    // InputStreamReader(connection.getInputStream()))) {
+    // String inputLine;
+    // while ((inputLine = in.readLine()) != null) {
+    // content.append(inputLine);
+    // }
+    // }
 
-    //     return content.toString();
+    // return content.toString();
     // }
 
     // private String articleToRssfeed(Article article) {
-    //     String rssFeed = "<item>\n" +
-    //                         "<title>" + article.getTitle() + "</title>\n" +
-    //                         "<link>" + article.getUrl() + "</link>\n" +
-    //                         "<guid isPermaLink=\"false\"><![CDATA[" + article.getUrl() + "]]></guid>\n" +
-    //                         "<comments><![CDATA[" + article.getCommentUrl() + "]]></comments>\n" +
-    //                         "<slash:comments><![CDATA[" + article.getCommentCount() + "]]></slash:comments>\n" +
-    //                         "<dc:creator><![CDATA[" + article.getCreator() + "]]></dc:creator>\n" +
-    //                         "<pubDate>" + article.getPublicationDate() + "</pubDate>\n" +
-    //                         "<dc:date><![CDATA[" + article.getPublicationDate() + "]]></dc:date>\n" +
-    //                         "<description><![CDATA[" + article.getDescription() + "]]></description>\n" +
-    //                         "<content:encoded><![CDATA[" + article.getDescription() + "]]></content:encoded>\n" +
-    //                         "</item>\n";
-    //     return rssFeed;
+    // String rssFeed = "<item>\n" +
+    // "<title>" + article.getTitle() + "</title>\n" +
+    // "<link>" + article.getUrl() + "</link>\n" +
+    // "<guid isPermaLink=\"false\"><![CDATA[" + article.getUrl() + "]]></guid>\n" +
+    // "<comments><![CDATA[" + article.getCommentUrl() + "]]></comments>\n" +
+    // "<slash:comments><![CDATA[" + article.getCommentCount() +
+    // "]]></slash:comments>\n" +
+    // "<dc:creator><![CDATA[" + article.getCreator() + "]]></dc:creator>\n" +
+    // "<pubDate>" + article.getPublicationDate() + "</pubDate>\n" +
+    // "<dc:date><![CDATA[" + article.getPublicationDate() + "]]></dc:date>\n" +
+    // "<description><![CDATA[" + article.getDescription() + "]]></description>\n" +
+    // "<content:encoded><![CDATA[" + article.getDescription() +
+    // "]]></content:encoded>\n" +
+    // "</item>\n";
+    // return rssFeed;
     // }
 
     @POST
@@ -311,7 +325,6 @@ public class MyFeedsResource extends BaseResource {
         }
         return Response.ok().entity(response).build();
     }
-
 
     @POST
     @Path("/alldisplay")

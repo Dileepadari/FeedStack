@@ -190,6 +190,34 @@ r.article.getmyfeeds = function() {
   });
 };
 
+r.article.curatedSubscribe = function(feedId, feedTitle) {
+  feedTitle = feedTitle.split('/')[1];
+
+  // Calling API
+  r.util.ajax({
+    url: r.util.url.subscription_add,
+    type: 'PUT',
+    data: { url: "local://" + feedId, title: feedTitle },
+    done: function(data) {
+      // Display success message
+      if(data){
+        $().toastmessage('showSuccessToast', $.t('success.subscription_added'));
+      }else {
+        $().toastmessage('showErrorToast', $.t('error.subscription_exists'));
+      }
+    },
+    fail: function(jqxhr) {
+      var data = JSON.parse(jqxhr.responseText);
+      alert(data.message);
+    },
+    always: function() {
+      // Enabing button
+      _this.removeAttr('disabled');
+      $('#subscriptions .ajax-loader').addClass('hidden');
+    }
+  });
+};
+
 r.article.getallmyfeeds = function() {
   r.util.ajax({
     url: r.util.url.myfeeds_allget,
@@ -201,7 +229,7 @@ r.article.getallmyfeeds = function() {
     // Update the "My Feeds" list
     $('#all-feed-display-list').empty();
     data.forEach(function(feed) {
-      $('#all-feed-display-list').append('<li class="all-display-li" data-id="'+ feed.id +'">'+ feed.title + '<button>Subscribe</button> </li>');
+      $('#all-feed-display-list').append(`<li class="all-display-li" data-id="`+ feed.id +`">`+ feed.title + `<button class="feed-menu-sub-btn" onclick="r.article.curatedSubscribe('`+ feed.id +`', '` + feed.title + `')">Subscribe</button> </li>`);
     });
     $('#all-feed-display-list').on('click', '.all-display-li', function() {
       var feedId = $(this).data('id');
