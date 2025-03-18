@@ -1,8 +1,5 @@
 package com.sismics.reader.rest.resource;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.*;
 
 import javax.ws.rs.GET;
@@ -45,7 +42,7 @@ public class DetectorResource extends BaseResource {
         if (!authenticate()) {
             throw new ForbiddenClientException();
         }
-        double threshold = 0.8;
+        double threshold = 0.7;
         UserArticleDao userArticleDao = new UserArticleDao();
         UserArticleCriteria userArticleCriteria = new UserArticleCriteria()
                 .setUnread(unread)
@@ -93,6 +90,9 @@ public class DetectorResource extends BaseResource {
         JSONObject duplicates = response.getJSONObject("duplicates");
         List<JSONObject> filteredArticles = filterDuplicates(articles, duplicates);
         response.put("articles", filteredArticles);
+        List<JSONObject> markedArticles = markDuplicates(articles, duplicates);
+        response.put("articles", markedArticles);
+
         System.out.println("\n\n\n\nResponse JSON:\n" + response.toString(4) + "\n\n\n\n");
         return Response.ok().entity(response).build();
     }
@@ -122,4 +122,36 @@ public class DetectorResource extends BaseResource {
         }
         return filteredArticles;
     }
+
+    private List<JSONObject> markDuplicates(List<JSONObject> articles, JSONObject duplicates) {
+        Set<String> duplicateIdSet = new HashSet<>();
+        JSONArray duplicateIds = duplicates.optJSONArray("duplicates");
+    
+        if (duplicateIds != null) {
+            for (int i = 0; i < duplicateIds.length(); i++) {
+                JSONArray pair = duplicateIds.optJSONArray(i);
+                if (pair != null) {
+                    for (int j = 0; j < pair.length(); j++) {
+                        duplicateIdSet.add(pair.optString(j));
+                    }
+                }
+            }
+        }
+    
+        System.out.println("Duplicate IDs: " + duplicateIdSet);
+    
+        for (JSONObject article : articles) {
+            try {
+                String articleId = article.optString("id");
+                boolean isDuplicate = duplicateIdSet.contains(articleId);
+                article.put("duplicate", isDuplicate ? "yes" : "no");
+            } catch (JSONException e) {
+                e.printStackTrace(); // Log the error
+            }
+        }
+    
+        return articles;
+    }
+    
+
 }
