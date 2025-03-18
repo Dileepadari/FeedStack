@@ -1,6 +1,5 @@
 # Project - 2
 
-
 ## Feature - 1: User Registration
 
 ### Frontend Changes
@@ -343,27 +342,114 @@ end note
 @enduml
 ```
 
+This pattern makes the filtering process more maintainable and extensible while keeping each filtering rule focused and independent.
 
-**Example Usage:**
+## Feature-3: Bug Reporting
+Task - Users will be able to submit issues within the RSS Reader itself - to make things simpler an issue is just a statement (description) with a timestamp. The admin will have access to a bug dashboard where they can view, mark bugs as resolved, or delete irrelevant reports. Users should also be able to delete their reported bugs
 
-```java
-// Selecting the appropriate strategy
-ArticleFilterStrategy filterStrategy;
-if (!categoryIds.isEmpty() && !sourceIds.isEmpty()) {
-    filterStrategy = new CombinedFilterStrategy(categoryIds, sourceIds);
-} else if (!categoryIds.isEmpty()) {
-    filterStrategy = new CategoryFilterStrategy(categoryIds);
-} else if (!sourceIds.isEmpty()) {
-    filterStrategy = new SourceFilterStrategy(sourceIds);
-} else {
-    filterStrategy = new DefaultFilterStrategy();
+### Features Implemented:
+- **Users can submit bug reports**
+  - Users can fill out a form to describe the encountered bug.
+  - Upon submission, the bug report is stored in the database and visible in user-specific logs.
+  
+- **Users can delete their reports**
+  - Users are provided with a delete button next to each of their submitted bug reports.
+  
+- **Admin can change the status of the report**
+  - Admins can update the status of any bug report to one of the following statuses: OPEN, CLOSED, IN PROGRESS, RESOLVED.
+  
+- **Admin can delete the reports**
+  - Admins have the ability to delete any bug report from the system.
+
+### Frontend Changes:
+1. **Bug Report Link Update**
+   - Updated the "Report a bug" link in the toolbar to point to an internal page (`#/bugsreport/`) rather than an external GitHub link.
+   
+2. **Bug Reporting Form**
+   - Created a dedicated form for submitting new bug reports, featuring fields for description and email with validation.
+   
+3. **User View of Reports**
+   - Added a table view that lists all bug reports made by the logged-in user.
+   - Each entry includes options to delete the report.
+   
+4. **Admin Dashboard Enhancements**
+   - Admins can see all bug reports in a comprehensive table.
+   - Included dropdown menus to modify the status of each bug report.
+   - Provided delete functionality for each bug report.
+
+5. **Status Dropdown**
+   - Added a dropdown menu allowing users/admins to filter bug reports based on their status (OPEN, CLOSED, IN PROGRESS, RESOLVED). Feature Not Yet Implemented.
+
+### Design Patterns Used
+
+<!-- #### Builder Pattern
+
+The Builder pattern is used to construct complex objects step by step. It allows for the creation of different representations of an object using the same construction process.
+
+In the `BugReport` class, the Builder pattern is used to create instances of `BugReport` with various attributes.
+
+
+**Implementation:**
+```plantuml
+@startuml
+class BugReport {
+    - id
+    - description
+    - timestamp
+    - status
+    - user_id
 }
+@enduml
+``` -->
 
-// Applying the strategy
-UserArticleCriteria userArticleCriteria = filterStrategy.applyCriteria(criteriaBuilder);
+
+### Service Layer Pattern
+
+The Service Layer pattern encapsulates business logic and provides a layer of abstraction between the presentation layer and the data access layer. 
+
+#### Implementation Details:
+- A BugReportService class has been created to handle operations such as creating, updating, deleting, and retrieving bug reports.
+- This layer ensures that all business rules are centralized and not scattered across controllers or DAOs.
+     
+
+
+
+**Implementation:**
+```plantuml
+@startuml
+class BugReportService {
+    +createBugReport(bugReport: BugReport): BugReport
+    +updateBugReport(bugReport: BugReport): BugReport
+    +deleteBugReport(id: int): void
+    +getBugReport(id: int): BugReport
+  }
+@enduml
 ```
 
-This pattern makes the filtering process more maintainable and extensible while keeping each filtering rule focused and independent.
+### Singleton Pattern
+
+Implemented in `BugReportService` to ensure there's a single instance managing bug reports throughout the application lifecycle.
+
+```plantuml
+@startuml
+@startuml
+class BugReportService {
+    - INSTANCE: BugReportService
+    --
+    + getInstance(): BugReportService
+    + createBugReport(email: String, description: String): String
+    + updateBugReportStatus(id: String, status: BugStatus): void
+    + deleteBugReport(id: String): void
+    + getBugReport(id: String): BugReportDto
+    + getAllBugReports(): List<BugReportDto>
+    + getBugReportsByEmail(email: String): List<BugReportDto>
+}
+@enduml
+@enduml
+```
+
+### Future Scope
+- I have added filter to the bug report table. It should be implemented further in the future
 
 ## Feature-4: Making Categories Better 
 Task - Enhance the category system to support nesting, allowing up to 5 levels of subcategories. Each category and subcategory should display metadata such as the number of unread items and the total count of articles. The UI should render nested categories in a collapsible format, allowing categories to host both individual feeds and subcategories simultaneously.
@@ -670,3 +756,131 @@ The tasks we have to implement in this feature are:
     - The user can subscribe to the feeds created by other users by clicking `Subscribe` button in it.
 
 - When we subscribe the feed created by the other user, the feed will be added to the `Subscriptions` section.
+
+## Feature-6A: Daily Report - Using LLM
+
+### 1. Tasks Implemented
+
+#### Article Summarization
+
+- The system fetches articles from the database and applies AI-based summarization using an external Python script (`summarizer.py`).<br>
+
+- The `ArticleSummary` and `ReportSummary` classes handle the summarization logic.
+
+- The summarization is influenced by a weighting mechanism based on the category hierarchy.
+
+
+#### User-Specific Summaries
+- The system generates personalized daily reports for users based on their subscribed feeds.
+- The daily report is generated for `10` most recent subscribed articles.
+- It organizes the latest articles into a structured format for better readability.
+- If no new articles exist, the system ensures an empty response instead of returning errors.
+
+
+
+#### Weighted Summarization
+- Articles from a top-level category receive a higher weight (1.0).
+- Articles from subcategories receive a lower weight (0.7) to emphasize higher-level content.
+- Higher the weight, the llm's response would be more elaborative.
+- The determineCategoryWeight() method (in `ArticleSummaryResource` and `GenerateResource`) applies this logic by analyzing a user’s feed subscriptions.
+
+
+### 2. Design Pattern Used
+#### Strategy Pattern
+The Strategy Pattern is used to separate the summarization logic from the main application logic.
+
+Rationale : 
+- Encapsulation of Summarization Logic: <br>
+The summarization process is abstracted into the SummarizationStrategy interface.
+Concrete implementations (ArticleSummary and ReportSummary) handle different summarization tasks.
+
+- Flexibility & Extensibility : <br>
+New summarization techniques (e.g., different AI models, external APIs) can be introduced by simply creating a new implementation of SummarizationStrategy.
+The system can dynamically switch between different summarization methods (e.g., short summaries for articles, detailed summaries for reports).
+
+
+Implementation : 
+
+```
+@startuml
+
+interface SummarizationStrategy {
+    + summarize(text: String, weight: double): String
+    + callPythonSummarizer(text: String, weight: double, promptType: int): String
+}
+
+class ArticleSummary {
+    + summarize(text: String, weight: double): String
+}
+
+class ReportSummary {
+    + summarize(text: String, weight: double): String
+}
+
+class ArticleSummaryResource {
+    - summarizationStrategy: SummarizationStrategy
+    + get(unread: boolean, limit: Integer, afterArticle: String): Response
+}
+
+class GenerateResource {
+    - articlesummary: SummarizationStrategy
+    - reportsummary: SummarizationStrategy
+    + get(unread: boolean, limit: Integer, afterArticle: String): Response
+}
+
+SummarizationStrategy <|.. ArticleSummary
+SummarizationStrategy <|.. ReportSummary
+
+ArticleSummaryResource --> SummarizationStrategy
+GenerateResource --> SummarizationStrategy
+
+@enduml
+
+```
+
+
+## Feature-6B: - Duplicate Detection
+
+### 1. Tasks Implemented
+####  Article Similarity Detection
+- The system identifies duplicate articles based on Named Entity Recognition (NER) and semantic similarity.
+- It uses spaCy for extracting named entities (e.g., organizations, people, and locations).
+- Cosine similarity is applied to article embeddings for semantic comparison.
+- The final similarity score is computed using a weighted sum:
+    - 40% weight to named entity overlap.
+    - 60% weight to semantic similarity.
+
+#### Duplicate Article Filtering
+- If two articles exceed a similarity threshold (default 0.8), they are marked as duplicates.
+- The system filters out duplicate articles, ensuring users receive only unique content.
+
+
+
+### 2. Design Pattern Used
+#### Command Pattern 
+- Encapsulates duplicate detection logic in a separate command object (DetectorCommand).
+- Allows dynamic execution of commands (e.g., using PythonDetectorCommand for Python-based detection).
+- Decouples request sender (DetectorResource) from the actual detection logic, making the system more flexible.
+
+````
+@startuml
+
+interface DetectorCommand {
+    + execute(articleIds: List<String>, titles: List<String>, descriptions: List<String>, threshold: double): String
+}
+
+class PythonDetectorCommand {
+    + execute(articleIds: List<String>, titles: List<String>, descriptions: List<String>, threshold: double): String
+}
+
+class DetectorResource {
+    - detectorCommand: DetectorCommand
+    + get(unread: boolean, limit: Integer, afterArticle: String): Response
+}
+
+DetectorCommand <|.. PythonDetectorCommand
+DetectorResource --> DetectorCommand
+
+@enduml
+
+````
