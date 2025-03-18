@@ -81,6 +81,10 @@ r.article.init = function() {
     window.open($(this).prop('href'));
     return false;
   });
+
+
+  r.article.getmyfeeds();
+  r.article.getallmyfeeds();
 };
 
 /**
@@ -143,6 +147,220 @@ r.article.read = function(items, read) {
     }
   });
 };
+
+r.article.getmyfeeds = function() {
+  r.util.ajax({
+    url: r.util.url.myfeeds_get,
+    type: 'POST',
+    data: JSON.stringify({ userid: r.user.userInfo.email }),
+    contentType: 'application/json',
+    dataType: 'json'
+  }).done(function(data) {
+    // Update the "My Feeds" list
+    $('#feed-display-list').empty();
+    data.forEach(function(feed) {
+      $('#feed-display-list').append('<li class="display-li" data-id="'+ feed.id +'">'+ feed.title + '</li>');
+    });
+    $('#feed-display-list').on('click', '.display-li', function() {
+      var feedId = $(this).data('id');
+      // console.log("Feed ID:", feedId);
+  
+      r.util.ajax({
+        url: r.util.url.myfeeds_display,
+        type: 'POST',
+        data: JSON.stringify({ userid: r.user.userInfo.email, feedId: feedId }),
+        contentType: 'application/json',
+        dataType: 'json'
+      }).done(function(data) {
+        // Update the "My Feeds" list
+        // console.log("Data:", data);
+        $('#feed-container').empty();
+        data.forEach(function(article) {
+          $('#feed-container').append(r.article.display(article));
+        });
+      }).fail(function() {
+        // Display an error message
+        $().toastmessage('showErrorToast', $.t('error.unknown'));
+      });
+    });
+
+  }).fail(function() {
+    // Display an error message
+    $().toastmessage('showErrorToast', $.t('error.unknown'));
+  });
+};
+
+r.article.curatedSubscribe = function(feedId, feedTitle) {
+  feedTitle = feedTitle.split('/')[1];
+
+  // Calling API
+  r.util.ajax({
+    url: r.util.url.subscription_add,
+    type: 'PUT',
+    data: { url: "local://" + feedId, title: feedTitle },
+    done: function(data) {
+      // Display success message
+      if(data){
+        $().toastmessage('showSuccessToast', $.t('success.subscription_added'));
+      }else {
+        $().toastmessage('showErrorToast', $.t('error.subscription_exists'));
+      }
+    },
+    fail: function(jqxhr) {
+      var data = JSON.parse(jqxhr.responseText);
+      alert(data.message);
+    },
+    always: function() {
+      // Enabing button
+      _this.removeAttr('disabled');
+      $('#subscriptions .ajax-loader').addClass('hidden');
+    }
+  });
+};
+
+r.article.getallmyfeeds = function() {
+  r.util.ajax({
+    url: r.util.url.myfeeds_allget,
+    type: 'POST',
+    data: JSON.stringify({ userid: r.user.userInfo.email }),
+    contentType: 'application/json',
+    dataType: 'json'
+  }).done(function(data) {
+    // Update the "My Feeds" list
+    $('#all-feed-display-list').empty();
+    data.forEach(function(feed) {
+      $('#all-feed-display-list').append(`<li class="all-display-li" data-id="`+ feed.id +`">`+ feed.title + `<button class="feed-menu-sub-btn" onclick="r.article.curatedSubscribe('`+ feed.id +`', '` + feed.title + `')">Subscribe</button> </li>`);
+    });
+    $('#all-feed-display-list').on('click', '.all-display-li', function() {
+      var feedId = $(this).data('id');
+      console.log("Feed ID:", feedId);
+
+      r.util.ajax({
+        url: r.util.url.myfeeds_alldisplay,
+        type: 'POST',
+        data: JSON.stringify({ userid: r.user.userInfo.email, feedId: feedId }),
+        contentType: 'application/json',
+        dataType: 'json'
+      }).done(function(data) {
+        // Update the "My Feeds" list
+        // console.log("Data:", data);
+        $('#feed-container').empty();
+        data.forEach(function(article) {
+          $('#feed-container').append(r.article.display(article));
+        });
+      }).fail(function() {
+        // Display an error message
+        $().toastmessage('showErrorToast', $.t('error.unknown'));
+      });
+    });
+
+  }).fail(function() {
+    // Display an error message
+    $().toastmessage('showErrorToast', $.t('error.unknown'));
+  });
+};
+
+$(document).ready(function() {
+  var currentArticle = null;
+  // Event listener for the "Add to MyFeeds" button
+  $('#feed-container').on('click', '.add-myfeeds-btn', function() {
+    // Get the article data from the closest .feed-item
+    currentArticle = $(this).closest('.feed-item').data('article');
+    
+    // Debugging statement
+    // console.log("Article:", currentArticle);
+    
+    // Fetch the user's feeds
+    r.util.ajax({
+      url: r.util.url.myfeeds_get,
+      type: 'POST',
+      data: JSON.stringify({ userid: r.user.userInfo.email }),
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function(data) {
+      // Update the "My Feeds" list
+      // console.log("Data:", data);
+      $('#myfeeds-list').empty();
+      data.forEach(function(feed) {
+        $('#myfeeds-list').append(`<button class = "button myfeed-li" onclick='r.article.getmyfeedsarticles("`+ feed.id +`")'>`+ feed.title + `</button></br>`);
+        // $('#feed-container').on('click', '.myfeed-li', function() {
+          
+        // });
+      });
+      
+      // Display the modal
+      $("#modal").css("display", "block");
+    }).fail(function() {
+      // Display an error message
+      $().toastmessage('showErrorToast', $.t('error.unknown'));
+    });
+    r.article.getmyfeedsarticles = function(feedUid) {
+      var feedId = feedUid;
+    
+      console.log("Feed ID:", feedId);
+      r.util.ajax({
+        url: r.util.url.myfeeds_add,
+        type: 'POST',
+        data: JSON.stringify({ userid: r.user.userInfo.email, feedId: feedId, article: currentArticle }),
+        contentType: 'application/json',
+        dataType: 'json'
+      }).done(function(data) {
+        $("#modal").css("display", "none");
+        $('#myfeeds-list').empty();
+      }).fail(function() {
+  
+      });
+    };
+  });
+  
+  // Event listener for the close button in the modal
+  $('#modal-close-button').on('click', function() {
+    $("#modal").css("display", "none");
+    $('#myfeeds-list').empty();
+  });
+
+  // Close the modal when clicking outside of the modal content
+  $(window).on('click', function(event) {
+    if ($(event.target).is("#modal")) {
+      $("#modal").css("display", "none");
+      $('#myfeeds-list').empty(); 
+    }
+  });
+
+  // Event listener for the form in the modal
+  $('#modal-title-submit').on('click', function(event) {
+    event.preventDefault();
+    var title = $('#modal-title-input').val();
+
+    // Debugging statements
+    // console.log("Title:", title);
+    // console.log("Article:", currentArticle);
+
+    if (!currentArticle) {
+      console.error("Article data is undefined. Ensure the data-article attribute is set correctly.");
+      return;
+    }
+
+    // Add the feed to the user's list of feeds
+    r.util.ajax({
+      url: r.util.url.myfeeds_create,
+      type: 'POST',
+      data: JSON.stringify({ userid: r.user.userInfo.email, title: title, article: currentArticle }),
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function(data) {
+      // TODO: Handle success
+    }).fail(function() {
+      // Display an error message
+      $().toastmessage('showErrorToast', $.t('error.unknown'));
+    });
+    $('#modal-title-input').val('')
+    $("#modal").css("display", "none");
+    $('#myfeeds-list').empty();
+    r.article.getmyfeeds();
+  });
+  
+});
 
 /**
  * Build an article from server data.
@@ -246,6 +464,136 @@ r.article.build = function(article, classes) {
   
   // Collapsed fields
   item.find('.feed-item-collapsed-subscription').html(article.subscription.title);
+  item.find('.feed-item-collapsed-title').html(article.title);
+  if (article.url) {
+    item.find('.feed-item-collapsed-link').html('<a href="' + article.url + '" target="_blank"><img src="images/external.png" /></a>');
+  }
+  item.find('.feed-item-collapsed-description').html(article.description.replace(/(<([^>]+)>)/ig, '').substring(0, 200));
+  
+  // Mark as unread state
+  if (item.hasClass('forceunread')) {
+    item.find('.feed-item-unread input').attr('checked', 'checked');
+  }
+  
+  // Sharing links
+  if (article.url) {
+    item.find('.feed-item-share a').each(function(i, link) {
+      var href = $(link).attr('href');
+      href = href
+        .replace('${title}', article.title)
+        .replace('${url}', article.url);
+      $(link).attr('href', href);
+    });
+  } else {
+    item.find('.feed-item-share').remove();
+  }
+  
+  return item;
+};
+
+/**
+ * Returns article item top position.
+ */
+r.article.top = function(item, scroll) {
+  var top = item[0].offsetTop - scroll;
+  item.data('top', top);
+  return top;
+};
+
+/**
+ * Display the articles with out subscrpition
+ */
+r.article.display = function(article, classes) {
+  var item = $('#template').find('.feed-item').clone();
+  var date = moment(article.date);
+  
+  if (!r.user.isDisplayTitle()) {
+    // Remove collapsed container in full mode
+    item.find('.collapsed').remove();
+  } else {
+    // Remove title header star button in list mode
+    item.find('.header .feed-item-star').remove();
+  }
+  
+  // Store server data in element
+  item.data('article', article);
+  
+  // Article state
+  item.attr('data-article-id', article.id);
+  if (article.is_read) {
+    item.addClass('read');
+  }
+  if (article.is_starred) {
+    item.addClass('starred');
+  }
+  
+  // Copy provided classes
+  if (classes) {
+    item.attr('class', classes);
+  }
+  
+  // Articles fields
+  var title = article.title;
+  if (article.url) {
+    title = '<a href="' + article.url + '" target="_blank">' + title + '</a>';
+  }
+  item.find('.feed-item-title').html(title);
+  
+  item.find('.feed-item-date')
+    .html(date.fromNow())
+    .attr('title', date.format('L LT'));
+  
+  // if (!r.feed.context.subscriptionId) {
+  //   if (article.subscription.id) {
+  //     item.find('.feed-item-subscription').html($.t('article.subscription', { subscription: '<a href="#/feed/subscription/' + article.subscription.id + '">' + article.subscription.title + '</a>' }));
+  //   } else {
+  //     item.find('.feed-item-subscription').html($.t('article.subscription', { subscription: article.subscription.title }));
+  //   }
+  // } else {
+  //   item.find('.feed-item-subscription').remove();
+  // }
+  
+  if (article.creator) {
+    item.find('.feed-item-creator').html($.t('article.creator', { creator: article.creator }));
+  }
+  
+  // In list mode, don't fill the description now
+  if (!r.user.isDisplayTitle()) {
+    item.find('.feed-item-description').html(article.description);
+  }
+  
+  if (article.comment_count > 0) {
+    var html = article.comment_count + ' comments';
+    if (article.comment_url) {
+      html = '<a href="' + article.comment_url + '" target="_blank">' + html + '</a>';
+    }
+    item.find('.feed-item-comments').html(html);
+  }
+  
+  if (article.is_starred) {
+    item.find('.feed-item-star').addClass('starred');
+  }
+  
+  // Enclosure
+  if (article.enclosure) {
+    var html = '<a href="' + article.enclosure.url + '" target="_blank">';
+    if (article.enclosure.type) {
+      var type = article.enclosure.type.split('/');
+      html += '<img src="images/mime/' + type[0] + '.png" title="' + article.enclosure.type + '" />';
+    } else {
+      html += '<img src="images/mime/text.png" />';
+    }
+    var url = article.enclosure.url.split('/');
+    html += ' ' + url[url.length - 1];
+    if (article.enclosure.length) {
+      html += ' (' + Math.round(article.enclosure.length / 104858) / 10 + 'MB)';
+    }
+    html += '</a>';
+    item.find('.feed-item-enclosure').html(html);
+  }
+  
+  // Collapsed fields
+  // item.find('.feed-item-collapsed-subscription').html(article.subscription.title);
   item.find('.feed-item-collapsed-title').html(article.title);
   if (article.url) {
     item.find('.feed-item-collapsed-link').html('<a href="' + article.url + '" target="_blank"><img src="images/external.png" /></a>');

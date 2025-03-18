@@ -387,7 +387,7 @@ public class User {
                 .toString();
     }
 
-    public static User createNewUser(String username, String password, String email, String localeId) {
+    public static User createNewUser(String username, String password, String email, String localeId, boolean firstConnection) {
         User user = new User();
         user.setRoleId(SecurityConfig.DEFAULT_USER_ROLE);
         user.setUsername(username);
@@ -397,6 +397,7 @@ public class User {
         user.setDisplayTitleMobile(true);
         user.setDisplayUnreadWeb(true);
         user.setDisplayUnreadMobile(true);
+        user.setFirstConnection(firstConnection);
         user.setCreateDate(new Date());
         user.setLocaleId(localeId);
         return user;

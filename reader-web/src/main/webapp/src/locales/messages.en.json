@@ -9,14 +9,15 @@
     "password": "Password",
     "remember": "Remember me",
     "submit": "Login",
-    "error": "Bad username or password"
+    "error": "Bad username or password",
+    "createtext": "Don't have an Account?"
   },
   "jobs": {
     "inprogress": "Import in progress",
     "done": "Import done",
     "dismiss": "Dismiss",
     "feeds": "Feeds:",
-    "starred": "Starred:",
+    "starred": "Starred",
     "failed": "failed"
   },
   "defaultpassword": {
@@ -40,6 +41,9 @@
       "help": "To add a new feed, you can copy/paste the homepage URL of the website you want to follow here. If this does not work, search for this icon to be directed to a direct feed URL.",
       "placeholder": "Paste a feed or website URL",
       "submit": "Add"
+    },
+    "myfeeds": {
+      "title": "My feeds"
     },
     "edit": {
       "button": "Edit",
@@ -76,6 +80,18 @@
     "about": "About",
     "logout": "Logout",
     "reportbug": "Report a bug"
+  },
+  "bugsreport": {
+    "title": "Report a bug",
+    "message": "Please describe the bug you encountered. If you can, please provide steps to reproduce the bug. We will do our best to fix it as soon as possible",
+    "cancel": "Cancel",
+    "button": "Report",
+    "msglabel": "Bug Description",
+    "success": "Bug reported",
+    "error": "Error while reporting bug",
+    "logs": {
+      "title": "Browse Bug Reports"
+    }
   },
   "settings": {
     "tabs": {
@@ -367,5 +383,10 @@
     "zh_HK": "Chinese (Hong Kong)",
     "zh_SG": "Chinese (Singapore)",
     "zh_TW": "Chinese (Taiwan)"
+  },
+  "filter": {
+    "all": "All Sources",
+    "categories": "Categories",
+    "sources": "Sources"
   }
 }

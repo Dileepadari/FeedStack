@@ -51,7 +51,9 @@ public class CategoryDao {
         categoryFromDb.setName(category.getName());
         categoryFromDb.setOrder(category.getOrder());
         categoryFromDb.setFolded(category.isFolded());
-        
+        //4_se
+        categoryFromDb.setParentId(category.getParentId());
+
         return category;
     }
     
@@ -171,6 +173,27 @@ public class CategoryDao {
                 .setParameter("parentId", parentId)
                 .setParameter("userId", userId);
         return q.getResultList();
+    }
+    //4_se
+        public List<Category> buildCategoryTree(String parentId, String userId) {
+        List<Category> roots = findSubCategory(parentId, userId);
+        for (Category category : roots) {
+            List<Category> children = buildCategoryTree(category.getId(), userId);
+            category.setChildren(children);
+        }
+        return roots;
+    }
+    public int computeDepth(Category category, String userId) {
+        int depth = 0;
+        String parentId = category.getParentId();
+        while (parentId != null) {
+            Category parent = getCategory(parentId, userId);
+            if (parent == null) break;
+            depth++;
+            parentId = parent.getParentId();
+            if (depth > 5) break;
+        }
+        return depth;
     }
 
 }

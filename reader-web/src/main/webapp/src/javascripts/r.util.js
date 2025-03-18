@@ -42,6 +42,18 @@ r.util.url = {
   app_log: '../api/app/log',
   app_version: '../api/app',
   app_map_port: '../api/app/map_port',
+  filter: '../api/filter',
+  report_bug: '../api/bugs/report',
+  bugs_report_getall: '../api/bugs/getall',
+  bugs_report_delete: '../api/bugs/delete/{id}',
+  bugs_report_updatestatus: '../api/bugs/updatestatus',
+  bugs_report_getbyemail: '../api/bugs/getbyemail',
+  myfeeds_get: '../api/myfeeds/getfeeds',
+  myfeeds_create: '../api/myfeeds/create',
+  myfeeds_add: '../api/myfeeds/add',
+  myfeeds_display: '../api/myfeeds/display',
+  myfeeds_allget: '../api/myfeeds/allget',
+  myfeeds_alldisplay: '../api/myfeeds/alldisplay',
   github_tags: 'https://api.github.com/repos/sismics/reader/tags'
 };
 

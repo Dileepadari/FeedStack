@@ -69,9 +69,14 @@ public class SubscriptionResource extends BaseResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response list(
-            @QueryParam("unread") boolean unread) throws JSONException {
+            @QueryParam("unread") Boolean unread) throws JSONException {
         if (!authenticate()) {
             throw new ForbiddenClientException();
+        }
+
+        // Default value
+        if (unread == null) {
+            unread = Boolean.FALSE;
         }
 
         // Search this user's subscriptions
@@ -85,77 +90,130 @@ public class SubscriptionResource extends BaseResource {
         // Get the root category
         CategoryDao categoryDao = new CategoryDao();
         Category rootCategory = categoryDao.getRootCategory(principal.getId());
+
+        // Build the root category JSON
         JSONObject rootCategoryJson = new JSONObject();
         rootCategoryJson.put("id", rootCategory.getId());
+        rootCategoryJson.put("name", "");
+        rootCategoryJson.put("folded", false);
 
-        // Construct the response
-        List<JSONObject> rootCategories = new ArrayList<JSONObject>();
-        rootCategories.add(rootCategoryJson);
-        String oldCategoryId = null;
-        JSONObject categoryJson = rootCategoryJson;
+        // Always build the complete tree structure regardless of unread mode
+        List<Category> tree = categoryDao.buildCategoryTree(rootCategory.getId(), principal.getId());
+        JSONArray fullTreeJson = new JSONArray();
+
+        // Track total unread count
         int totalUnreadCount = 0;
-        int categoryUnreadCount = 0;
+
+        // Build categories with subscriptions, filtering based on unread status
+        for (Category cat : tree) {
+            JSONObject catJson = buildCategoryWithSubscriptions(cat, feedSubscriptionList, unread);
+            if (!unread ||
+                    catJson.getInt("unread_count") > 0 ||
+                    catJson.getJSONArray("subscriptions").length() > 0 ||
+                    catJson.getJSONArray("categories").length() > 0) {
+
+                // Add to total unread count
+                totalUnreadCount += catJson.getInt("unread_count");
+
+                // Add to tree
+                fullTreeJson.put(catJson);
+            }
+        }
+        rootCategoryJson.put("categories", fullTreeJson);
+
+        // Add subscriptions directly in root category
+        JSONArray rootSubscriptions = new JSONArray();
         for (FeedSubscriptionDto feedSubscription : feedSubscriptionList) {
-            String categoryId = feedSubscription.getCategory().getId();
-            String categoryParentId = feedSubscription.getCategory().getParentId();
+            if (feedSubscription.getCategoryId().equals(rootCategory.getId())) {
+                JSONObject subscription = new JSONObject();
+                subscription.put("id", feedSubscription.getId());
+                subscription.put("title", feedSubscription.getFeedSubscriptionTitle());
+                subscription.put("url", feedSubscription.getFeedRssUrl());
+                subscription.put("unread_count", feedSubscription.getUnreadUserArticleCount());
+                // subscription.put("total_count",
+                // feedSubscription.getUnreadUserArticleCount());
+                subscription.put("sync_fail_count", feedSubscription.getSynchronizationFailCount());
 
-            if (!categoryId.equals(oldCategoryId)) {
-                if (categoryParentId != null) {
-                    if (categoryJson != rootCategoryJson) {
-                        categoryJson.put("unread_count", categoryUnreadCount);
-                        JsonUtil.append(rootCategoryJson, "categories", categoryJson);
-                    }
-                    categoryJson = new JSONObject();
-                    categoryJson.put("id", categoryId);
-                    categoryJson.put("name", feedSubscription.getCategory().getName());
-                    categoryJson.put("folded", feedSubscription.getCategory().isFolded());
-                    categoryJson.put("subscriptions", new JSONArray());
-                    categoryUnreadCount = 0;
+                // In unread mode, only include if has unread items
+                if (!unread || feedSubscription.getUnreadUserArticleCount() > 0) {
+                    rootSubscriptions.put(subscription);
+                    totalUnreadCount += feedSubscription.getUnreadUserArticleCount();
                 }
             }
-            JSONObject subscription = new JSONObject();
-            subscription.put("id", feedSubscription.getId());
-            subscription.put("title", feedSubscription.getFeedSubscriptionTitle());
-            subscription.put("url", feedSubscription.getFeed().getRssUrl());
-            subscription.put("unread_count", feedSubscription.getUnreadUserArticleCount());
-            subscription.put("sync_fail_count", feedSubscription.getSynchronizationFailCount());
-            JsonUtil.append(categoryJson, "subscriptions", subscription);
+        }
+        rootCategoryJson.put("subscriptions", rootSubscriptions);
 
-            oldCategoryId = categoryId;
-            categoryUnreadCount += feedSubscription.getUnreadUserArticleCount();
-            totalUnreadCount += feedSubscription.getUnreadUserArticleCount();
-        }
-        if (categoryJson != rootCategoryJson) {
-            categoryJson.put("unread_count", categoryUnreadCount);
-            JsonUtil.append(rootCategoryJson, "categories", categoryJson);
-        }
-
-        // Add the categories without subscriptions
-        if (!unread) {
-            List<Category> allCategoryList = categoryDao.findSubCategory(rootCategory.getId(), principal.getId());
-            JSONArray categoryArrayJson = rootCategoryJson.optJSONArray("categories");
-            List<JSONObject> fullCategoryListJson = new ArrayList<JSONObject>();
-            int i = 0;
-            for (Category category : allCategoryList) {
-                if (categoryArrayJson != null && i < categoryArrayJson.length()
-                        && categoryArrayJson.getJSONObject(i).getString("id").equals(category.getId())) {
-                    categoryJson = categoryArrayJson.getJSONObject(i++);
-                } else {
-                    categoryJson = new JSONObject();
-                    categoryJson.put("id", category.getId());
-                    categoryJson.put("name", category.getName());
-                    categoryJson.put("folded", category.isFolded());
-                    categoryJson.put("unread_count", 0);
-                }
-                fullCategoryListJson.add(categoryJson);
-            }
-            rootCategoryJson.put("categories", fullCategoryListJson);
-        }
+        // Build the response
+        JSONArray categories = new JSONArray();
+        categories.put(rootCategoryJson);
 
         JSONObject response = new JSONObject();
-        response.put("categories", rootCategories);
+        response.put("categories", categories);
         response.put("unread_count", totalUnreadCount);
+
         return Response.ok().entity(response).build();
+    }
+
+    private JSONObject buildCategoryWithSubscriptions(Category category, List<FeedSubscriptionDto> feedList,
+            boolean unreadOnly) throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("id", category.getId());
+        json.put("name", category.getName());
+        json.put("folded", category.isFolded());
+
+        // Track unread and total counts
+        int unreadCount = 0;
+        int totalCount = 0;
+
+        // Process subscriptions in this category
+        JSONArray subs = new JSONArray();
+        for (FeedSubscriptionDto sub : feedList) {
+            if (sub.getCategoryId().equals(category.getId())) {
+                // Add to counts
+                unreadCount += sub.getUnreadUserArticleCount();
+                totalCount += sub.getUnreadUserArticleCount();
+
+                // Only include if not filtered by unread or has unread items
+                if (!unreadOnly || sub.getUnreadUserArticleCount() > 0) {
+                    JSONObject subJson = new JSONObject();
+                    subJson.put("id", sub.getId());
+                    subJson.put("title", sub.getFeedSubscriptionTitle());
+                    subJson.put("url", sub.getFeedRssUrl());
+                    subJson.put("unread_count", sub.getUnreadUserArticleCount());
+                    subJson.put("total_count", 0);
+                    subJson.put("sync_fail_count", sub.getSynchronizationFailCount());
+                    subs.put(subJson);
+                }
+            }
+        }
+        json.put("subscriptions", subs);
+
+        // Process child categories recursively
+        JSONArray childCats = new JSONArray();
+        for (Category child : category.getChildren()) {
+            JSONObject childJson = buildCategoryWithSubscriptions(child, feedList, unreadOnly);
+
+            // Add child's counts to parent
+            unreadCount += childJson.getInt("unread_count");
+            // totalCount += childJson.getInt("total_count");
+
+            // Only include categories that have unread items or visible subscriptions when
+            // in unread mode
+            if (!unreadOnly ||
+                    childJson.getInt("unread_count") > 0 ||
+                    childJson.getJSONArray("subscriptions").length() > 0 ||
+                    childJson.getJSONArray("categories").length() > 0) {
+
+                childCats.put(childJson);
+            }
+        }
+
+        // Set the total counts for this category
+        json.put("unread_count", unreadCount);
+        json.put("total_count", 0);
+        json.put("categories", childCats);
+
+        return json;
     }
 
     /**
@@ -307,9 +365,13 @@ public class SubscriptionResource extends BaseResource {
         }
 
         // Validate input data
-        ValidationUtil.validateRequired(url, "url");
-        url = ValidationUtil.validateHttpUrl(url, "url");
-        title = ValidationUtil.validateLength(title, "title", null, 100, true);
+        if (url.startsWith("local://")) {
+            
+        } else {
+            ValidationUtil.validateRequired(url, "url");
+            url = ValidationUtil.validateHttpUrl(url, "url");
+            title = ValidationUtil.validateLength(title, "title", null, 100, true);
+        }
 
         // Check if the user is already subscribed to this feed
         FeedSubscriptionCriteria feedSubscriptionCriteria = new FeedSubscriptionCriteria()

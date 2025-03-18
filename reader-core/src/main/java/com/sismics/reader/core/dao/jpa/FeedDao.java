@@ -50,7 +50,8 @@ public class FeedDao extends BaseDao<FeedDto, FeedCriteria> {
 
         SortCriteria sortCriteria = new SortCriteria("  order by f.FED_CREATEDATE_D asc");
 
-        return new QueryParam(sb.toString(), criteriaList, parameterMap, sortCriteria, filterCriteria, new FeedMapper());
+        return new QueryParam(sb.toString(), criteriaList, parameterMap, sortCriteria, filterCriteria,
+                new FeedMapper());
     }
 
     /**
@@ -62,15 +63,15 @@ public class FeedDao extends BaseDao<FeedDto, FeedCriteria> {
     public String create(Feed feed) {
         // Create the UUID
         feed.setId(UUID.randomUUID().toString());
-        
+
         // Create the feed
         EntityManager em = ThreadLocalContext.get().getEntityManager();
         feed.setCreateDate(new Date());
         em.persist(feed);
-        
+
         return feed.getId();
     }
-    
+
     /**
      * Deletes a feed.
      * 
@@ -78,7 +79,7 @@ public class FeedDao extends BaseDao<FeedDto, FeedCriteria> {
      */
     public void delete(String id) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        
+
         // Get the feed
         Query q = em.createQuery("select f from Feed f where f.id = :id and f.deleteDate is null")
                 .setParameter("id", id);
@@ -87,7 +88,7 @@ public class FeedDao extends BaseDao<FeedDto, FeedCriteria> {
         // Delete the feed
         feedFromDb.setDeleteDate(new Date());
     }
-    
+
     /**
      * Get an active feed by its URL.
      * 
@@ -95,7 +96,7 @@ public class FeedDao extends BaseDao<FeedDto, FeedCriteria> {
      */
     public Feed getByRssUrl(String rssUrl) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        
+
         // Get the feed
         Query q = em.createQuery("select f from Feed f where f.rssUrl = :rssUrl and f.deleteDate is null")
                 .setParameter("rssUrl", rssUrl);
@@ -107,6 +108,51 @@ public class FeedDao extends BaseDao<FeedDto, FeedCriteria> {
     }
 
     /**
+     * Get feeds by creator user ID.
+     * 
+     * @param creatorUserId Creator user ID
+     * @return List of feeds
+     */
+    public List<Feed> getByCreatorUserId(String creatorUserId) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+
+        // Get the feeds
+        Query q = em.createQuery("select f from Feed f where f.creatorUserId = :creatorUserId and f.deleteDate is null")
+                .setParameter("creatorUserId", creatorUserId);
+        return q.getResultList();
+    }
+
+    /**
+     * Get feeds which has non NULL creator User id
+     */
+    public List<Feed> getFeedsWithCreatorUserId() {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createQuery("select f from Feed f where f.creatorUserId is not null and f.deleteDate is null");
+        return q.getResultList();
+    }
+
+    /**
+     * Get feeds which has non Null creator User id and also not contains one particular user id
+     */
+    public List<Feed> getFeedsWithCreatorUserIdNotContains(String userId) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createQuery("select f from Feed f where f.creatorUserId is not null and f.creatorUserId != :userId and f.deleteDate is null")
+                .setParameter("userId", userId);
+        return q.getResultList();
+    }
+
+
+    /**
+     * Get feed from the Feed_id
+     */
+    public Feed getFeedById(String feed_id) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createQuery("select f from Feed f where f.id = :feed and f.deleteDate is null")
+                .setParameter("feed", feed_id);
+        return (Feed) q.getSingleResult();
+    }
+
+    /**
      * Updates a feed.
      * 
      * @param feed Feed to update
@@ -114,7 +160,7 @@ public class FeedDao extends BaseDao<FeedDto, FeedCriteria> {
      */
     public Feed update(Feed feed) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
-        
+
         // Get the feed
         Query q = em.createQuery("select f from Feed f where f.id = :id and f.deleteDate is null")
                 .setParameter("id", feed.getId());
@@ -127,7 +173,7 @@ public class FeedDao extends BaseDao<FeedDto, FeedCriteria> {
         feedFromDb.setLanguage(feed.getLanguage());
         feedFromDb.setDescription(feed.getDescription());
         feedFromDb.setLastFetchDate(feed.getLastFetchDate());
-        
+
         return feed;
     }
 }

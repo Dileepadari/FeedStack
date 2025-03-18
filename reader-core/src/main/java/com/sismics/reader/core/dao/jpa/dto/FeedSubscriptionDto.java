@@ -65,7 +65,14 @@ public class FeedSubscriptionDto {
     public void setId(String id) {
         this.id = id;
     }
-
+    /**
+     * Getter of feedRssUrl.
+     *
+     * @return feedRssUrl
+     */
+    public String getFeedRssUrl() {
+        return feed.getRssUrl();
+    }
     /**
      * Getter of feedSubscriptionTitle.
      *
@@ -155,7 +162,14 @@ public class FeedSubscriptionDto {
     public void setCategory(CategoryDto category) {
         this.category = category;
     }
-
+        /**
+     * Getter of categoryId.
+     *
+     * @return categoryId
+     */
+    public String getCategoryId() {
+        return category.getId();
+    }
     /**
      * Getter of createDate.
      *
