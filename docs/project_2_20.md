@@ -432,7 +432,6 @@ Implemented in `BugReportService` to ensure there's a single instance managing b
 
 ```plantuml
 @startuml
-@startuml
 class BugReportService {
     - INSTANCE: BugReportService
     --
@@ -444,7 +443,6 @@ class BugReportService {
     + getAllBugReports(): List<BugReportDto>
     + getBugReportsByEmail(email: String): List<BugReportDto>
 }
-@enduml
 @enduml
 ```
 
