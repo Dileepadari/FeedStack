@@ -1,0 +1,5 @@
+spacy
+numpy
+scikit-learn
+groq
+python-dotenv
