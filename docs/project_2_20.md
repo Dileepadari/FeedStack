@@ -649,3 +649,24 @@ I asked llm what are the different techniques to optimize the API calls. It sugg
 But NewsApi does not support the `ETag` and `Last-Modified` headers. So, we cannot use the `Conditional Requests` technique.
 
 - Batch Requesting is better in this case than caching but NewsApi does not support the Batch Requesting. So, we cannot use the `Batch Requesting` technique.
+
+## Feature-5B: User-Created Feeds
+
+The tasks we have to implement in this feature are:
+
+1. Allow users to create custom feeds by adding articles from the already existing articles into the feed.
+2. Users should be able to subscribe the customized the feeds of the other users
+
+### Flow:
+- Every article has `Add to My Feeds` button.
+- When we click `Add to My Feeds` button, the dialogue box will create with the list of feeds created by that user and text box to create a new feed.
+    - we have to give the title of the feed we want to create. Now, we will create the feed with the title we have given and adds the article to that feed.
+    - If we select the feed from the list, the article will be added to that feed.
+
+- The user can see the feeds created by him in the `My Feeds` section.
+
+- The user can see the feeds created by the other users in the `Curated Feeds` section.
+    - List of feeds created by all users will be displayed.
+    - The user can subscribe to the feeds created by other users by clicking `Subscribe` button in it.
+
+- When we subscribe the feed created by the other user, the feed will be added to the `Subscriptions` section.
