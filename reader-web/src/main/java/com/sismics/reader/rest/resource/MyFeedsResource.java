@@ -307,7 +307,7 @@ public class MyFeedsResource extends BaseResource {
         }
 
         FeedDao feedDao = new FeedDao();
-        List<Feed> feeds = feedDao.getFeedsWithCreatorUserId();
+        List<Feed> feeds = feedDao.getFeedsWithCreatorUserIdNotContains(data.getString("userid"));
 
         JSONArray response = new JSONArray();
         for (Feed feed : feeds) {
