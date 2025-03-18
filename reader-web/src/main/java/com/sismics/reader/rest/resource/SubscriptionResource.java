@@ -365,9 +365,13 @@ public class SubscriptionResource extends BaseResource {
         }
 
         // Validate input data
-        ValidationUtil.validateRequired(url, "url");
-        url = ValidationUtil.validateHttpUrl(url, "url");
-        title = ValidationUtil.validateLength(title, "title", null, 100, true);
+        if (url.startsWith("local://")) {
+            
+        } else {
+            ValidationUtil.validateRequired(url, "url");
+            url = ValidationUtil.validateHttpUrl(url, "url");
+            title = ValidationUtil.validateLength(title, "title", null, 100, true);
+        }
 
         // Check if the user is already subscribed to this feed
         FeedSubscriptionCriteria feedSubscriptionCriteria = new FeedSubscriptionCriteria()

@@ -72,15 +72,15 @@ public class MyFeedsResource extends BaseResource {
         JSONObject article = data.getJSONObject("article");
 
         // show me all the keys in article object
-        System.out.println("Article keys: ");
-        Iterator<String> keys = article.keys();
-        while(keys.hasNext()) {
-            String key = keys.next();
-            System.out.println(key);
-        }
+        // System.out.println("Article keys: ");
+        // Iterator<String> keys = article.keys();
+        // while(keys.hasNext()) {
+        //     String key = keys.next();
+        //     System.out.println(key);
+        // }
 
         // create a url and local host link
-        String link = "local : " + feed_title;
+        String link = "local:// " + feed_title;
         String Baseuri = "http://localhost:8080/reader-web/";
 
         FeedDao feedDao = new FeedDao();

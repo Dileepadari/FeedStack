@@ -127,7 +127,7 @@ public class FeedDao extends BaseDao<FeedDto, FeedCriteria> {
     public Feed getFeedById(String feed_id) {
         EntityManager em = ThreadLocalContext.get().getEntityManager();
         Query q = em.createQuery("select f from Feed f where f.id = :feed and f.deleteDate is null")
-                .setParameter("id", feed_id);
+                .setParameter("feed", feed_id);
         return (Feed) q.getSingleResult();
     }
 

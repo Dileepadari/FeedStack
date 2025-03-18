@@ -226,7 +226,7 @@ $(document).ready(function() {
     r.article.getmyfeedsarticles = function(feedUid) {
       var feedId = feedUid;
     
-      // console.log("Feed ID:", feedId);
+      console.log("Feed ID:", feedId);
       r.util.ajax({
         url: r.util.url.myfeeds_add,
         type: 'POST',

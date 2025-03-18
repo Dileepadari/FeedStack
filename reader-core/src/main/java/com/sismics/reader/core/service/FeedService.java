@@ -138,12 +138,32 @@ public class FeedService extends AbstractScheduledService {
     }
 
     /**
+     * Synchronize a local feed.
+     * 
+     * @param url URL of the feed
+     */
+    public Feed synchronizeLocal(String url) {
+        FeedDao feedDao = new FeedDao();
+        System.out.println("here1.4");
+        System.out.println(url);
+        Feed feed = feedDao.getFeedById(url);
+        return feed;
+    }
+
+    /**
      * Synchronize the feed to local database.
      * 
      * @param url RSS url of a feed or page containing a feed to synchronize
      */
     public Feed synchronize(String url) throws Exception {
         long startTime = System.currentTimeMillis();
+
+        // check whether the url starts with local://
+        if (url.startsWith("local://")) {
+            url = url.replace("local://", "");
+            System.out.println("here1.3");
+            return synchronizeLocal(url);
+        }
 
         UrlStrategy urlStrategy = getUrlStrategy(url);
 
