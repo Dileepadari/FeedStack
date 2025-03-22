@@ -19,7 +19,8 @@ var r = {
   util: {},
   filter: {},
   bugsreport: {},
-  filter: {}
+  filter: {},
+  trending: {}
 };
 
 /**
@@ -52,6 +53,13 @@ r.main.initModules = function() {
   r.filter.init();
   r.bugsreport.init();
   r.filter.init();
+  
+  // Check if trending module is loaded before initializing it
+  if (r.trending && typeof r.trending.init === 'function') {
+    r.trending.init();
+  } else {
+    console.error("Trending module not properly loaded");
+  }
   
   // First page
   if (r.user.hasBaseFunction('ADMIN') && r.user.userInfo.first_connection) {

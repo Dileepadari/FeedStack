@@ -882,3 +882,48 @@ DetectorResource --> DetectorCommand
 @enduml
 
 ````
+
+## Feature-Bonus : Top News Items
+The system should highlight the top 5 trending articles based on the number of users who have liked (starred) them. Efficieny is key - avoid iterating over individual articles to get full marks. Some possible optimizations could be leveraging the schema or external caching mechanisms (feel free to use any other mechanism).
+
+### Design Patterns 
+#### Singleton Pattern
+Implemented in TrendingArticleService to ensure there's only one instance managing trending articles throughout the application lifecycle.
+Also somewhat Observer Pattern - 
+Articles "observe" changes in star counts which trigger updates to the trending list. When an article is starred/unstarred, the trending service is notified to update its state.
+### Implementation
+- The TrendingArticleService maintains a cache of the top 5 articles ranked by star count - very efficient - O(1) comparisons.
+- The UI has a "Top 5 Articles" section after the "Latest" section
+- Added a column in the Database for star count.
+- Created the necessary methods, classes, attributes, services in the backend, frontend and APIs. 
+#### Features
+1. Real-time Star Count Tracking
+- Articles accumulate stars as users mark them as favorites
+- Star counts persist across user sessions
+2. Automatic Trending List Updates
+- When articles are starred/unstarred, the trending list updates
+- The list is always sorted by star count (highest to lowest)
+3. Top 5 Display
+- Shows only the 5 most starred articles
+- Visual ranking indicators (1-5)
+- Displays star counts beside each article
+4. Article Links
+- Direct links to each trending article
+- Opens articles in a new tab
+5. Responsive UI Integration
+- Seamlessly integrated into the existing sidebar
+- Consistent styling with the rest of the application
+
+
+
+
+
+
+
+## Contributions
+
+#### Dileepadari - Worked on Task 2 and 3
+#### Ritvik - Worked on Task 1 and 2
+#### Shailender - Worked on Task 4 and Bonus
+#### Keshava - Worked on Task 5
+#### Revanth - Worked on Task 6

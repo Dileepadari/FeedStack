@@ -64,6 +64,11 @@ public class ArticleDto {
     private String feedId;
 
     /**
+     * Star count.
+     */
+    private Integer starCount;
+
+    /**
      * Getter of id.
      *
      * @return id
@@ -249,5 +254,23 @@ public class ArticleDto {
      */
     public void setFeedId(String feedId) {
         this.feedId = feedId;
+    }
+
+    /**
+     * Getter of starCount.
+     *
+     * @return starCount
+     */
+    public Integer getStarCount() {
+        return starCount == null ? 0 : starCount;
+    }
+
+    /**
+     * Setter of starCount.
+     *
+     * @param starCount starCount
+     */
+    public void setStarCount(Integer starCount) {
+        this.starCount = starCount;
     }
 }

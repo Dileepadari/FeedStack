@@ -1,9 +1,11 @@
 package com.sismics.reader.rest.resource;
 
+import com.sismics.reader.core.dao.jpa.ArticleDao;
 import com.sismics.reader.core.dao.jpa.UserArticleDao;
 import com.sismics.reader.core.dao.jpa.criteria.UserArticleCriteria;
 import com.sismics.reader.core.dao.jpa.dto.UserArticleDto;
 import com.sismics.reader.core.model.jpa.UserArticle;
+import com.sismics.reader.core.service.TrendingArticleService;
 import com.sismics.reader.core.util.jpa.PaginatedList;
 import com.sismics.reader.core.util.jpa.PaginatedLists;
 import com.sismics.reader.rest.assembler.ArticleAssembler;
@@ -104,9 +106,16 @@ public class StarredResource extends BaseResource {
             throw new ClientException("ArticleAlreadyStarred", MessageFormat.format("Article already starred: {0}", id));
         }
         
+        // Get the article
+        ArticleDao articleDao = new ArticleDao();
+        
         // Update the article
         userArticle.setStarredDate(new Date());
         userArticleDao.update(userArticle);
+        
+        // Increment star count and update trending articles
+        int newStarCount = articleDao.incrementStarCount(userArticle.getArticleId());
+        TrendingArticleService.getInstance().updateArticleStarCount(userArticle.getArticleId(), newStarCount);
         
         // Always return ok
         JSONObject response = new JSONObject();
@@ -139,9 +148,16 @@ public class StarredResource extends BaseResource {
             throw new ClientException("ArticleNotStarred", MessageFormat.format("The article is not starred: {0}", id));
         }
         
+        // Get the article
+        ArticleDao articleDao = new ArticleDao();
+        
         // Update the article
         userArticle.setStarredDate(null);
         userArticleDao.update(userArticle);
+        
+        // Decrement star count and update trending articles
+        int newStarCount = articleDao.decrementStarCount(userArticle.getArticleId());
+        TrendingArticleService.getInstance().updateArticleStarCount(userArticle.getArticleId(), newStarCount);
         
         // Always return ok
         JSONObject response = new JSONObject();

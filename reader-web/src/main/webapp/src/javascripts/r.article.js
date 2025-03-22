@@ -34,7 +34,13 @@ r.article.init = function() {
     // Calling API
     r.util.ajax({
       url: r.util.url.starred_star.replace('{id}', article.id),
-      type: article.is_starred ? 'PUT' : 'DELETE'
+      type: article.is_starred ? 'PUT' : 'DELETE',
+      complete: function() {
+        // Refresh trending articles after starring/unstarring
+        if (typeof r.trending !== 'undefined') {
+          r.trending.refreshAfterStar();
+        }
+      }
     });
     
     e.stopPropagation();

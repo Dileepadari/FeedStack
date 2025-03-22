@@ -54,6 +54,7 @@ r.util.url = {
   myfeeds_display: '../api/myfeeds/display',
   myfeeds_allget: '../api/myfeeds/allget',
   myfeeds_alldisplay: '../api/myfeeds/alldisplay',
+  trending: '../api/trending',
   github_tags: 'https://api.github.com/repos/sismics/reader/tags'
 };
 
