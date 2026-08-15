@@ -78,20 +78,21 @@ r.wizard.onNextStep[0] = function () {
   
   // Form validation
   if (passwordInput.val() == '') {
-    if (confirm($.t('wizard.keepdefaultpassword'))) {
-      return true;
-    } else {
-      return false;
-    }
+    // Non-blocking confirmation: this validator cannot wait for an answer, so advance
+    // from the callback and tell the caller not to advance now.
+    r.util.confirm($.t('wizard.keepdefaultpassword'), function() {
+      r.wizard.changePage(1);
+    });
+    return false;
   }
   
   if (passwordInput.val() != password2Input.val()) {
-    alert($.t('wizard.passwordconfirmerror'));
+    $().toastmessage('showErrorToast', $.t('wizard.passwordconfirmerror'));
     return false;
   }
   
   if (passwordInput.val().length < 8) {
-    alert($.t('wizard.passwordtooshort'));
+    $().toastmessage('showErrorToast', $.t('wizard.passwordtooshort'));
     return false;
   }
   
@@ -121,7 +122,7 @@ r.wizard.onNextStep[1] = function () {
       url: r.util.url.app_map_port,
       type: 'POST',
       fail: function() {
-        alert($.t('wizard.upnperror'));
+        $().toastmessage('showErrorToast', $.t('wizard.upnperror'));
       }
     });
   }

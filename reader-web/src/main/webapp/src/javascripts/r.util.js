@@ -78,6 +78,70 @@ r.util.init = function() {
 };
 
 /**
+ * On-screen replacement for window.confirm().
+ * Native dialogs block the whole page, so everything here is rendered in the document.
+ *
+ * @param message Message to show
+ * @param onConfirm Called when the user confirms
+ * @param onCancel Called when the user cancels (optional)
+ */
+r.util.confirm = function(message, onConfirm, onCancel) {
+  $('#confirm-overlay').remove();
+
+  var overlay = $('<div id="confirm-overlay"></div>').css({
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(0, 0, 0, 0.45)', zIndex: 10000,
+    display: 'flex', alignItems: 'center', justifyContent: 'center'
+  });
+
+  var box = $('<div class="confirm-box"></div>').css({
+    background: '#fff', color: '#333', borderRadius: '4px',
+    padding: '20px 24px', maxWidth: '420px', minWidth: '260px',
+    boxShadow: '0 2px 12px rgba(0, 0, 0, 0.3)', textAlign: 'center'
+  });
+
+  $('<p></p>').text(message).css({ margin: '0 0 18px 0' }).appendTo(box);
+
+  var buttons = $('<div></div>').appendTo(box);
+  var cancelButton = $('<button type="button" class="btn"></button>')
+      .text($.t('confirm.cancel') === 'confirm.cancel' ? 'Cancel' : $.t('confirm.cancel'))
+      .css({ margin: '0 6px' });
+  var okButton = $('<button type="button" class="btn btn-primary"></button>')
+      .text($.t('confirm.ok') === 'confirm.ok' ? 'OK' : $.t('confirm.ok'))
+      .css({ margin: '0 6px' });
+
+  var close = function() {
+    $(document).off('keydown.confirm');
+    overlay.remove();
+  };
+
+  okButton.click(function() {
+    close();
+    if (onConfirm) {
+      onConfirm();
+    }
+  });
+
+  cancelButton.click(function() {
+    close();
+    if (onCancel) {
+      onCancel();
+    }
+  });
+
+  // Escape cancels, matching the native dialog.
+  $(document).on('keydown.confirm', function(e) {
+    if (e.which === 27) {
+      cancelButton.click();
+    }
+  });
+
+  buttons.append(cancelButton).append(okButton);
+  overlay.append(box).appendTo('body');
+  okButton.focus();
+};
+
+/**
  * Wrapper around $.ajax().
  */
 r.util.ajax = function(args) {

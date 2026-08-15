@@ -150,9 +150,9 @@ r.bugsreport.getAllBugs = function() {
 
             $('.delete-bug').on('click', function() {
                 var bugId = $(this).data('id');
-                if (confirm('Are you sure you want to delete this bug?')){
+                r.util.confirm('Are you sure you want to delete this bug?', function() {
                     r.bugsreport.deleteBugReport(bugId);
-                }
+                });
             });
         },
         error: function(data) {
@@ -184,9 +184,9 @@ r.bugsreport.getUserBugs = function(email) {
 
             $('.delete-bug').on('click', function() {
                 var bugId = $(this).data('id');
-                if (confirm('Are you sure you want to delete this bug?')){
+                r.util.confirm('Are you sure you want to delete this bug?', function() {
                     r.bugsreport.deleteBugReport(bugId);
-                }
+                });
             });
         },
         error: function(data) {

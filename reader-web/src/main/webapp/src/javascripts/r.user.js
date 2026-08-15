@@ -23,7 +23,7 @@ r.user.init = function() {
       },
       fail: function(data) {
         // Login fail
-        alert($.t('login.error'));
+        $().toastmessage('showErrorToast', $.t('login.error'));
       }
     });
     
@@ -62,12 +62,12 @@ r.user.signup = function() {
 
   // Basic validation
   if (!username || !email || !password || !password2) {
-    alert($.t('signup.error.empty'));
+    $().toastmessage('showErrorToast', $.t('signup.error.empty'));
     return;
   }
 
   if (password !== password2) {
-    alert($.t('signup.error.password_match'));
+    $().toastmessage('showErrorToast', $.t('signup.error.password_match'));
     return;
   }
 
@@ -83,22 +83,24 @@ r.user.signup = function() {
     },
     contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
     accept: 'application/json, text/javascript, */*; q=0.01',
-    success: function(data) {
+    // r.util.ajax dispatches through done/fail, not success/error. Using the jQuery names
+    // here would leave the wrapper's generic handler to report every failure as "unknown",
+    // hiding the validation message the server actually sent.
+    done: function(data) {
       // Show success message
-      alert($.t('signup.success'));
+      $().toastmessage('showSuccessToast', $.t('signup.success'));
 
       // Switch back to login form and pre-fill username
       $('#signup-form').hide();
       $('#login-form').show();
       $('#login-username-input').val(username).focus();
     },
-    error: function(jqXHR, textStatus, errorThrown) {
-      console.error('Signup error:', textStatus, errorThrown);
-      // Signup fail
+    fail: function(jqXHR) {
+      // Surface the server's own message, which says exactly which field is wrong.
       if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
-        alert(jqXHR.responseJSON.message);
+        $().toastmessage('showErrorToast', jqXHR.responseJSON.message);
       } else {
-        alert($.t('signup.error.general'));
+        $().toastmessage('showErrorToast', $.t('signup.error.general'));
       }
     }
   });

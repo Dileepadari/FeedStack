@@ -214,7 +214,7 @@ r.article.curatedSubscribe = function(feedId, feedTitle) {
     },
     fail: function(jqxhr) {
       var data = JSON.parse(jqxhr.responseText);
-      alert(data.message);
+      $().toastmessage('showErrorToast', data.message);
     },
     always: function() {
       // Enabing button

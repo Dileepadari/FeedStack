@@ -61,7 +61,7 @@ r.subscription.init = function() {
         },
         fail: function(jqxhr) {
           var data = JSON.parse(jqxhr.responseText);
-          alert(data.message);
+          $().toastmessage('showErrorToast', data.message);
         },
         always: function() {
           // Enabing button
@@ -535,9 +535,9 @@ r.subscription.initSorting = function(rootCategoryId) {
             var response;
             try {
               response = JSON.parse(jqxhr.responseText);
-              alert(response.message || $.t("error.unknown"));
+              $().toastmessage('showErrorToast', response.message || $.t("error.unknown"));
             } catch(e) {
-              alert($.t("error.unknown"));
+              $().toastmessage('showErrorToast', $.t("error.unknown"));
             }
             r.subscription.update();
           }
@@ -608,7 +608,7 @@ r.subscription.initEditing = function() {
     
     // Calling API delete
     $('.subscription-edit-delete-button', content).click(function() {
-      if (confirm($.t('subscription.edit.deleteconfirm'))) {
+      r.util.confirm($.t('subscription.edit.deleteconfirm'), function() {
         r.util.ajax({
           url: r.util.url.subscription_delete.replace('{id}', subscriptionId),
           type: 'DELETE',
@@ -619,7 +619,7 @@ r.subscription.initEditing = function() {
             window.location.hash = '#/feed/unread';
           }
         });
-      }
+      });
     });
     
     // Calling API edit
@@ -734,7 +734,7 @@ r.subscription.initEditing = function() {
     
     // Calling API delete
     $('.category-edit-delete-button', content).click(function() {
-      if (confirm($.t('category.edit.deleteconfirm'))) {
+      r.util.confirm($.t('category.edit.deleteconfirm'), function() {
         r.util.ajax({
           url: r.util.url.category_delete.replace('{id}', categoryId),
           type: 'DELETE',
@@ -745,7 +745,7 @@ r.subscription.initEditing = function() {
             window.location.hash = '#/feed/unread';
           }
         });
-      }
+      });
     });
     
     // Calling API edit

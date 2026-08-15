@@ -85,14 +85,14 @@ r.settings.init = function() {
       processData: false,
       contentType: false,
       done: function(data) {
-        alert($.t('settings.import.success'));
+        $().toastmessage('showSuccessToast', $.t('settings.import.success'));
         
         // Start feedback on job progression
         r.user.pollJobs();
       },
       fail: function(data) {
         // Login fail
-        alert($.t('settings.import.error'));
+        $().toastmessage('showErrorToast', $.t('settings.import.error'));
       },
       always: function() {
         // Enabling button
@@ -366,24 +366,22 @@ r.settings.onTabUsers = function(panel, initialize) {
     
     // User delete
     deleteButton.click(function() {
-      if (!confirm($.t('settings.users.edit.deleteconfirm'))) {
-        return;
-      }
-      
-      var username = usernameInput.val();
-      
-      // Calling API
-      r.util.ajax({
-        url: r.util.url.user_username_delete.replace('{username}', username),
-        type: 'DELETE',
-        done: function(data) {
-          // Remove user from select
-          selectInput
-            .val('')
-            .change()
-            .find('option[value="' + username + '"]')
-            .remove();
-        }
+      r.util.confirm($.t('settings.users.edit.deleteconfirm'), function() {
+        var username = usernameInput.val();
+
+        // Calling API
+        r.util.ajax({
+          url: r.util.url.user_username_delete.replace('{username}', username),
+          type: 'DELETE',
+          done: function(data) {
+            // Remove user from select
+            selectInput
+              .val('')
+              .change()
+              .find('option[value="' + username + '"]')
+              .remove();
+          }
+        });
       });
     });
     

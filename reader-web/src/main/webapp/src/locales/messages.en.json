@@ -10,7 +10,8 @@
     "remember": "Remember me",
     "submit": "Login",
     "error": "Bad username or password",
-    "createtext": "Don't have an Account?"
+    "createtext": "Don't have an Account?",
+    "signup": "Sign up"
   },
   "jobs": {
     "inprogress": "Import in progress",
@@ -388,5 +389,17 @@
     "all": "All Sources",
     "categories": "Categories",
     "sources": "Sources"
+  },
+  "signup": {
+    "success": "Account created. You can log in now.",
+    "error": {
+      "empty": "Please fill in every field.",
+      "password_match": "The two passwords do not match.",
+      "general": "Could not create the account. Please try again."
+    }
+  },
+  "confirm": {
+    "ok": "OK",
+    "cancel": "Cancel"
   }
 }
