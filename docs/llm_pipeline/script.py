@@ -16,14 +16,16 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 # Load environment variables and configure API
 load_dotenv()
-GITHUB_TOKEN = os.getenv("GIT_TOKEN")
+# GITHUB_TOKEN is what Actions injects; GIT_TOKEN is the name used when running locally.
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN") or os.getenv("GIT_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 USERNAME = os.getenv("USERNAME")
 genai.configure(api_key=GEMINI_API_KEY)
 
 # Constants
-REPO_NAME = "project-1-team-20"
-REPO_OWNER = "SE-course-serc"
+# Under Actions, GITHUB_REPOSITORY is "owner/repo"; fall back to this repo when running locally.
+REPO_SLUG = os.getenv("GITHUB_REPOSITORY") or "Dileepadari/FeedStack"
+REPO_OWNER, REPO_NAME = REPO_SLUG.split("/", 1)
 REPO_URL = f"https://github.com/{REPO_OWNER}/{REPO_NAME}"
 REPO_DIR = "./repository"
 BRANCH_NAME = "refactored-code"

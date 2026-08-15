@@ -1,10 +1,66 @@
+# Maven / Java build output
+target/
+/*/target
+*.class
+*.jar
+*.war
+*.ear
+
+# Eclipse / IntelliJ / NetBeans
 /*/.classpath
 /*/.project
 /*/.settings
 /*/bin
 /*/gen
-/*/target
 *.iml
-.idea/
+.idea
+.vscode/*
+!.vscode/extensions.json
+nbproject/
+
+# Android / Gradle
+.gradle/
+/reader-android/local.properties
+/reader-android/app/build
+/reader-android/build
+
+# Front-end assets fetched at build time
 /reader-web/src/main/webapp/sismicsreader
 /reader-web/src/main/webapp/node
+node_modules
+dist
+dist-ssr
+
+# Python (LLM pipeline and bonus scripts)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Secrets - never commit these
+.env
+.env.*
+!.env.example
+tokens.env
+*.env
+!*.env.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Reader runtime data
+/reader-web/target
+db/
+lucene/
+
+# OS and editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+*.orig
+*.rej
+*.bak

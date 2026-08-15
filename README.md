@@ -1,140 +1,98 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/51CAWZT5)
-Sismics Rudra's Subscription Service (RSS) - Reader: Project 1
-==============
+<p align="center">
+  <img src="./docs/assets/logo-full-dark.png#gh-light-mode-only" width="360" alt="ADK DEV">
+  <img src="./docs/assets/logo-full-light.png#gh-dark-mode-only" width="360" alt="ADK DEV">
+</p>
 
-**Do not modify this README. Use the docs directory for anything you might want to submit**
+# FeedStack
 
-What is RSS-Reader?
----------------
+A self-hosted RSS and Atom reader. You subscribe to feeds, FeedStack polls them on a schedule, and everything new lands in one list you can organise, search, star and read from a browser or an Android phone.
 
-RSS-Reader is an open source, Web-based aggregator of content served by Web Feeds (RSS, Atom).
+It started as a fork of [Sismics Reader](https://github.com/sismics/reader) used for a two-part software engineering project: part one refactored the codebase to remove design smells, part two added new reader features on top. Both parts live in this repository. For architecture, data model, and setup, see **[DEVDOC.md](./DEVDOC.md)**.
 
-RSS-Reader is written in Java, and may be run on any operating system with Java support.
+## Features
 
-Features
---------
+### Reading
 
-- Supports RSS and Atom standards
-- Organize your feeds into categories and keep track of your favorite articles
-- Supports Web based and mobile user interfaces
-- Keyboard shortcuts
-- RESTful Web API
-- Full text search
-- OPML import / export
-- Skinnable
-- Android application
+- Subscribe to any RSS or Atom feed by URL
+- Unread counts per subscription, per category, and across everything
+- Mark a single article, a whole subscription, or a whole category as read
+- Star articles you want to come back to, with a separate starred view
+- Full text search across every article you have ever received
+- Keyboard shortcuts for moving through the article list
+- Themes, including a dark theme and a high contrast theme
+- Eleven interface languages
 
-License
--------
+### Organising
 
-RSS-Reader is released under the terms of the GPL license. See `COPYING` for more
-information or see <http://opensource.org/licenses/GPL-2.0>.
+- Group subscriptions into categories, and fold categories you are not using
+- Import an existing setup from an OPML file, and export yours back out
+- Feed favicons are fetched and cached so the list stays scannable
 
-<!-- How to run
-------------------------------------
+### Clients
 
-RSS-Reader is packaged in several convenient formats. You can download an installer for your system on the [Download Page](https://www.sismics.com/reader/#!/download).
+- Web interface, laid out for desktop and for phones
+- Native Android app in `reader-android`
+- A REST API that both clients use, so you can drive it from your own scripts
 
-If you use Docker, you can try Reader easily with the following command :
+### Added in part two (on the `project2_20` branch)
 
-    docker-compose -p reader -f reader-distribution-docker/docker-compose.yml up -->
+These are built and merged on `project2_20`, not on `master`:
 
-# Building RSS-Reader from source
-------------------------------------
+- Self service registration with username, email and password validation
+- Filter the article list by source or by other criteria without leaving the page
+- Report a bug from inside the app, with a status that moves as it gets handled
+- Richer category management
+- Simulated and user-created feeds, so you can build a feed out of an API that does not publish one
+- A daily report that summarises your unread articles with an LLM
+- Duplicate article detection, so the same story from two sources collapses
+- A trending view of the top news items
 
-Prerequisites: JDK 8, Maven 3
+## Roles
 
-### Changing Java Version
-You will need two versions of Java to work on this project. RSS-Reader requires JDK 8 and Sonarqube requires Java 11. You will need to change Java versions for working on different parts. The easiest way to do this is to install both versions for your platform and then changing the SDK for the project in IntelliJ IDEA. 
+| Role | Can do |
+|---|---|
+| **user** | Everything above for their own account: subscriptions, categories, starred articles, search, import and export |
+| **admin** | All of the above, plus create and delete users, reindex the search index, and read the application log |
 
-### For Globally Changing Java Version (Only on Ubuntu)
-* Run the following command and select the version of Java you want to use.
+The first run wizard creates the `admin` account. The default credentials are `admin` / `admin`, and the app asks you to change the password on first login.
 
-```bash
-sudo update-alternatives --config java
-```
-* Similarly for javac.
+## Running it
 
-```bash
-sudo update-alternatives --config javac
-```
-> Make sure you set the same version for both.
-
-### Or you can follow this method for Updating in Specific Runtime (Mac & Linux)
-* Instead of globally updating your Java version, it is better to temporarily change the Java version i.e. for as long as the terminal is open.
-* This is done by setting the path variable JAVA_HOME to the version of Java you want to use.
-* The command would be export `JAVA_HOME=<path to java installation>` for Mac and Linux.
-
-> The paths mentioned here are only sample paths. Make sure you find out the actual path for your JDK and use that.
-
-**On Mac**:
-It is recommended to use homebrew to manage manage different openjdk versions. This is an example command and the actual command would look something like this -
-
-```bash 
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/<jdk-version-something>/Contents/Home/
-```
-
-**On Linux**:
-This is an example command and the actual command would look something like this -
-
-```bash 
-export JAVA_HOME=/usr/lib/jvm/<jdk-version-something>
-```
-
-**On Windows**:
-Windows users, this is your cross to bear. [Here's](https://confluence.atlassian.com/doc/setting-the-java_home-variable-in-windows-8895.html) a guide that might be of use. Again, feel free to contact us for any help, but try to use Linux or WSL first if possible. 
-
-### Reader is organized in several Maven modules:
-
-  - reader-core
-  - reader-web
-  - reader-web-common
-  - reader-android
-
-<!-- First off, clone the repository: `git clone git@github.com:Meghanatedla/RSS-Reader.git` or download the sources from GitHub. -->
-
-#### Launch the build
-
-From the root directory:
-
-    mvn clean -DskipTests install -e
-
-#### Run a stand-alone version
-
-From the `reader-web` directory:
-
-    mvn jetty:run
-
-#### Navigate to the following URL on your browser:
-
-http://localhost:8080/reader-web/src/#/wizard
-
-Use default credentials as admin(username) and admin(password).
-
-#### [Optional] Build a .war to deploy to your servlet container
-
-From the `reader-web` directory:
+You need JDK 8 and Maven 3. From the repository root:
 
 ```bash
-mvn -Pprod -DskipTests clean install
+mvn clean -DskipTests install -e
 ```
 
-You will get your deployable WAR in the `target` directory.
+Then from `reader-web`:
 
-#### [Optional] Build the Android app
-
-Prerequisites :
-  - Gradle
-  - Android SDK
-  - Environment variables pointing to the keystore (see `build.gradle`)
-
-Then, from the `reader-android` directory:
-
-```bash 
-gradlew build
+```bash
+mvn jetty:run
 ```
-    
-The generated APK will be in `app/build/apk/app-release.apk`
 
----
-**Note**: Mr. Rudra Dhar is not associated with the development of this project (code or SE project 1). Any code smell, design smell, bug or fault is through no fault of Mr. Rudra Dhar.
+Open <http://localhost:8080/reader-web/src/#/wizard> and complete the setup wizard.
+
+Full build options, including the WAR, the Docker image, the native installers and the Android APK, are in [DEVDOC.md](./DEVDOC.md).
+
+## Tech stack
+
+Java 8, Jersey (JAX-RS), Hibernate over HSQLDB or PostgreSQL, Lucene for search, Jetty for serving, and a jQuery and Backbone front end built with LESS. The Android client is a separate Gradle project.
+
+## Project documentation
+
+The coursework write-ups live in `docs/`:
+
+| Document | What is in it |
+|---|---|
+| [`docs/designSmells.md`](./docs/designSmells.md) | The eight design smells found and how each was refactored |
+| [`docs/Task1_UMLdiagrams/`](./docs/Task1_UMLdiagrams/) | UML for the user management, feed organisation and subscription subsystems |
+| [`docs/Task2B_Code_Metrics/`](./docs/Task2B_Code_Metrics/) | Code metrics before and after the refactoring |
+| [`docs/designite/`](./docs/designite/) | Raw DesigniteJava output |
+| [`docs/llm_pipeline/`](./docs/llm_pipeline/) | The automated LLM refactoring pipeline |
+| [`docs/llm_responses/`](./docs/llm_responses/) | LLM transcripts for each smell |
+| [`docs/bonus/`](./docs/bonus/) | Bonus task: comparing free LLMs at code analysis |
+| `docs/project_2_20.md` (on `project2_20`) | The part two features and the design patterns behind each |
+
+## Licence
+
+GPL 2.0, inherited from Sismics Reader. See [`COPYING`](./COPYING).

@@ -1,10 +1,10 @@
 name: Automated Code Refactoring
 
 on:
-  # Run every Monday at 00:00 UTC
-  schedule:
-    - cron: '0 0 * * 1'
-  # Optional: Allow manual trigger
+  # Manual trigger only. This job force-pushes the refactored-code branch and opens a PR,
+  # so the weekly cron ('0 0 * * 1') is left commented out until you opt in.
+  # schedule:
+  #   - cron: '0 0 * * 1'
   workflow_dispatch:
 
 jobs:
@@ -34,7 +34,7 @@ jobs:
           pip install requests
           
       - name: Run refactoring pipeline
-        run: python llm_pipeline/script.py
+        run: python docs/llm_pipeline/script.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
