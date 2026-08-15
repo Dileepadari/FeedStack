@@ -62,6 +62,7 @@ public class TestFaviconDownloader {
     }
 
     @Test
+    @Ignore // abstrusegoose.com no longer resolves, same as the two ignored tests above
     public void faviconDownloaderAbstruseGooseTest() {
         // Download from page
         FaviconDownloader downloader = new FaviconDownloader();
