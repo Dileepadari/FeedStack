@@ -34,9 +34,9 @@ It started as a fork of [Sismics Reader](https://github.com/sismics/reader) used
 - Native Android app in `reader-android`
 - A REST API that both clients use, so you can drive it from your own scripts
 
-### Added in part two (on the `project2_20` branch)
+### Added in part two
 
-These are built and merged on `project2_20`, not on `master`:
+All merged into `master` as of v2.0.0:
 
 - Self service registration with username, email and password validation
 - Filter the article list by source or by other criteria without leaving the page

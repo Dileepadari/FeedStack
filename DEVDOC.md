@@ -147,6 +147,7 @@ There is no `.env` file. Configuration is JVM system properties, read in `Enviro
 | `application.log.enabled` | Whether the in-app log viewer collects entries |
 | `ssl.trust.all` | Skip certificate validation when fetching feeds. Development only |
 | `test` | Set by the test harness; switches the data directory to a temp dir |
+| `news.api.key` | NewsAPI key for `ContentUrlStrategy`. Also read from the `NEWS_API_KEY` environment variable. No default: it was hardcoded and has been removed |
 
 When `reader.home` is unset the base directory is `/var/reader` on Unix, `%APPDATA%\Sismics\Reader` on Windows, and `~/Library/Sismics/Reader` on macOS. `DirectoryUtil` then derives `db/`, `lucene/`, `favicon/` and `log/` beneath it. The Docker distribution sets `reader.home` to `/data` through `reader.xml`.
 
@@ -205,13 +206,13 @@ The full history of both project phases is preserved here, 120 commits across 18
 
 | Branch | Contains |
 |---|---|
-| `master` | Default branch. Phase one: the codebase with all eight design smells refactored |
-| `project2_20` | Phase two. The most complete branch: every new feature merged, plus `docs/project_2_20.md` |
+| `master` | Default branch, tagged `v2.0.0`. Both phases: the design smell refactoring plus every phase two feature merged in |
+| `project2_20` | Phase two as it was developed. Now merged into `master`, kept for history |
 | `broken-mod`, `cyclic-dependency`, `insuff-mod-smell`, `broken-heirarchy`, `unutil-abstraction`, `feature-envy`, `god-class` | One design smell fix each, all merged into `master` |
 | `refactored-code` | Output branch of the automated LLM refactoring pipeline |
 | `user_registration`, `filtering_rss`, `bug_report`, `categories`, `Simulating_rssfeeds`, `Curated-Feeds`, `dailyreport`, `detection` | One phase two feature each, all merged into `project2_20` |
 
-`master` is deliberately behind `project2_20`. If you want the app with the new features, build from `project2_20`.
+Everything is on `master` now. `v2.0.0` is the merge of both phases, with the Maven and Android versions set to match.
 
 ## The design smell work
 
@@ -241,8 +242,10 @@ It needs three repository secrets to do anything: `GEMINI_API_KEY`, `USERNAME` (
 ## Gotchas
 
 - **Java 8 only.** Jersey 1.x and this Hibernate version fail on newer JDKs. SonarQube, if you run it, wants Java 11, so keep both installed and switch per task.
-- **`master` is not the feature branch.** Phase two work is on `project2_20`. Diffing the two is the fastest way to see what phase two added.
-- **Secrets were purged from history.** Two Groq API keys were committed to this project in March 2025, in `reader-web/summarizer.py` and `reader-web/tokens.env`. Both were removed from every commit before this repository was published, and `tokens.env` is gone entirely. `.gitignore` now blocks `.env`, `*.env` and `tokens.env`. The summariser on `project2_20` reads `GROQ_API` from `reader-web/tokens.env`, so create that file locally; do not commit it.
+- **Tests must not run in parallel forks.** Every REST test binds the Grizzly container to the hardcoded port 9998, so `reader-web/pom.xml` pins `<forkCount>1</forkCount>`. Raising it produces a wall of `BindException: Address already in use`.
+- **Some tests hit live third-party sites.** `TestFaviconDownloader` fetches real domains and several cases are `@Ignore`d because those sites died or stopped exposing a favicon. Treat new failures there as environmental until proven otherwise.
+- **A failed feed fetch must never be recorded as a successful sync.** `FeedService.checkUrl` rethrows connection-level failures, and `getUrlStrategy` rejects URLs that resolve to no feed rather than falling back to `ContentUrlStrategy`, which would answer with unrelated News API results.
+- **Secrets were purged from history.** Two Groq API keys were committed to this project in March 2025, in `reader-web/summarizer.py` and `reader-web/tokens.env`. Both were removed from every commit before this repository was published, and `tokens.env` is gone entirely. `.gitignore` now blocks `.env`, `*.env` and `tokens.env`. The summariser reads `GROQ_API` from `reader-web/tokens.env`, so copy `tokens.env.example` and fill it in locally; do not commit it. A third key, for NewsAPI, was hardcoded in `ContentUrlStrategy` and is now read from the environment. All three should be treated as compromised and rotated.
 - **`.travis.yml` is dead.** It predates the fork and points at Sismics' own Docker Hub account. It is kept for reference, not because it runs.
 - **The data directory is outside the repository.** Wiping `target/` does not reset the app. Delete `<reader.home>/db` and `<reader.home>/lucene` for that.
 - **The Lucene index can drift** from the database if the process is killed mid-write. `POST /api/app/batch/reindex` rebuilds it.
