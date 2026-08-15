@@ -44,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.ConnectException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
@@ -60,8 +62,6 @@ public class FeedService extends AbstractScheduledService {
      * Logger.
      */
     private static final Logger log = LoggerFactory.getLogger(FeedService.class);
-
-    private UrlStrategy urlStrategy;
 
     @Override
     protected void startUp() throws Exception {
@@ -144,8 +144,6 @@ public class FeedService extends AbstractScheduledService {
      */
     public Feed synchronizeLocal(String url) {
         FeedDao feedDao = new FeedDao();
-        System.out.println("here1.4");
-        System.out.println(url);
         Feed feed = feedDao.getFeedById(url);
         return feed;
     }
@@ -161,7 +159,6 @@ public class FeedService extends AbstractScheduledService {
         // check whether the url starts with local://
         if (url.startsWith("local://")) {
             url = url.replace("local://", "");
-            System.out.println("here1.3");
             return synchronizeLocal(url);
         }
 
@@ -504,20 +501,34 @@ public class FeedService extends AbstractScheduledService {
         }
     }
 
-    private UrlStrategy getUrlStrategy(String url) {
+    private UrlStrategy getUrlStrategy(String url) throws Exception {
         int check = checkUrl(url);
         if (check == 0) {
-            System.out.println("here1.2");
-            return new ContentUrlStrategy();
+            // Reached the server but found no feed. Falling back to ContentUrlStrategy here would
+            // answer with unrelated News API results and report a broken subscription as a
+            // successful sync, so treat it as the error it is. Curated feeds are served by the
+            // local:// branch in synchronize() and never reach this point.
+            throw new IllegalArgumentException("URL is not a valid RSS feed or page: " + url);
         } else if (check == 1 || check == 2) {
-            System.out.println("here1.1");
             return new RssUrlStrategy();
         } else {
             throw new IllegalArgumentException("URL is not a valid RSS feed or page");
         }
     }
 
-    private int checkUrl(String url) {
+    /**
+     * True if the exception means we never reached the server, as opposed to reaching it and
+     * finding something that is not a feed. A network failure must not be reported as a
+     * successful synchronization.
+     */
+    private boolean isNetworkFailure(Exception e) {
+        return e instanceof UnknownHostException
+                || e instanceof ConnectException
+                || e instanceof SocketException
+                || e instanceof SocketTimeoutException;
+    }
+
+    private int checkUrl(String url) throws Exception {
         if (url == null || url.trim().isEmpty()) {
             throw new IllegalArgumentException("URL is null or empty");
         }
@@ -535,8 +546,12 @@ public class FeedService extends AbstractScheduledService {
             // If parsing succeeds, it's a valid RSS feed
             return 1; // RSS feed detected
         } catch (Exception eRss) {
-            boolean recoverable = !(eRss instanceof UnknownHostException || 
-                                    eRss instanceof FileNotFoundException);
+            // The server was unreachable: fail the synchronization instead of falling through
+            // to a strategy, which would record a sync that never happened.
+            if (isNetworkFailure(eRss)) {
+                throw eRss;
+            }
+            boolean recoverable = !(eRss instanceof FileNotFoundException);
             if (recoverable) {
                 try {
                     RssExtractor extractor = new RssExtractor(url);
@@ -553,6 +568,9 @@ public class FeedService extends AbstractScheduledService {
                         return 2; // Page contains RSS feed links
                     }
                 } catch (Exception ePage) {
+                    if (isNetworkFailure(ePage)) {
+                        throw ePage;
+                    }
                     logParsingError(url, ePage);
                 }
             }

@@ -1,7 +1,6 @@
 package com.sismics.reader.rest.resource;
 
 import com.sismics.reader.rest.dao.ThemeDao;
-import com.sismics.rest.exception.ForbiddenClientException;
 import com.sismics.rest.exception.ServerException;
 import com.sismics.util.EnvironmentUtil;
 import org.codehaus.jettison.json.JSONException;
@@ -21,7 +20,7 @@ import java.util.List;
  * @author jtremeaux
  */
 @Path("/theme")
-public class ThemeResource extends AuthenticatedResource {
+public class ThemeResource extends BaseResource {
     private final ThemeService themeService;
 
     public ThemeResource() {
@@ -34,10 +33,7 @@ public class ThemeResource extends AuthenticatedResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response list() throws JSONException {
-        // Only authenticate if needed
-        if (!authenticate()) {
-            throw new ForbiddenClientException();
-        }
+        // Public on purpose: the login page needs the theme list before anyone is logged in.
 
         // Get themes using service
         List<String> themeList = themeService.getThemes(

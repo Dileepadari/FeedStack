@@ -39,11 +39,12 @@ public class TestSecurity extends BaseJerseyTest {
         // User testsecurity logs in
         login("testsecurity");
 
-        // User testsecurity creates a new user KO : no permission
+        // Registration is public since the sign-up feature was added, so PUT /user is no longer
+        // an admin-only endpoint. With no parameters it fails validation rather than authorization.
         PUT("/user");
-        assertIsForbidden();
-        assertEquals("ForbiddenError", json.getString("type"));
-        assertEquals("You don't have access to this resource", json.getString("message"));
+        assertIsBadRequest();
+        json = getJsonResult();
+        assertEquals("ValidationError", json.getString("type"));
 
         // User testsecurity changes his email OK
         POST("/user", ImmutableMap.of(

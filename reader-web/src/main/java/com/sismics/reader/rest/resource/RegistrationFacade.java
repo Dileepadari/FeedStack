@@ -46,6 +46,21 @@ public class RegistrationFacade {
 
         //validate
         validationChain.validate(request);
+
+        // Read back the normalised values: the chain strips whitespace as it validates.
+        username = request.getUsername();
+        password = request.getPassword();
+        email = request.getEmail();
+
+        // Username availability is checked before email uniqueness so that re-registering an
+        // existing account reports the username, not the email it happens to share.
+        if (userDao.getActiveByUsername(username) != null) {
+            throw new UserExistsException("Username already exists", null);
+        }
+        if (isEmailInUse(email)) {
+            throw new ValidationException("email is already in use");
+        }
+
         // Create user
         User user = User.createNewUser(username, password, email, localeId, false);
 
@@ -59,6 +74,18 @@ public class RegistrationFacade {
         notifyUserCreation(user);
     }
 
+
+    /**
+     * Returns true if the email address already belongs to an account.
+     */
+    private boolean isEmailInUse(String email) {
+        try {
+            return userDao.getByEmail(email) != null;
+        } catch (Exception e) {
+            // Never block a registration because the lookup itself failed.
+            return false;
+        }
+    }
 
     private String createUserInDatabase(User user) throws UserExistsException, Exception {
         try {

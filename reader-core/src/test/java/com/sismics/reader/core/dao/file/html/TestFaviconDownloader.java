@@ -77,6 +77,7 @@ public class TestFaviconDownloader {
      * 
      */
     @Test
+    @Ignore // hits kickstarter.com live; it no longer exposes a discoverable favicon
     public void faviconDownloaderDoubleFineTest() {
         // Download from page
         FaviconDownloader downloader = new FaviconDownloader();

@@ -74,7 +74,8 @@ public class UserResource extends BaseResource {
             response.put("status", "ok");
             return Response.ok().entity(response).build();
         } catch (ValidationException e) {
-            throw new ServerException("InvalidDetails", e.getMessage());
+            // Bad input is the caller's fault: 400, not 500.
+            throw new ClientException("ValidationError", e.getMessage());
         } catch (UserExistsException e) {
             throw new ServerException("AlreadyExistingUsername", "Login already used", e);
         } catch (Exception e) {

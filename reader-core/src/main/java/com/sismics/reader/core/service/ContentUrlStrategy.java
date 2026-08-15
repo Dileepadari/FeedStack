@@ -21,7 +21,10 @@ public class ContentUrlStrategy implements UrlStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(ContentUrlStrategy.class);
     private static final String API_URL = "https://newsapi.org/v2/everything";
-    private static final String API_KEY = "d8e9a2bcc6394a208e234c1241d43c62";
+    // Never hardcode this. Set NEWS_API_KEY in the environment, or -Dnews.api.key on the JVM.
+    private static final String API_KEY = System.getenv("NEWS_API_KEY") != null
+            ? System.getenv("NEWS_API_KEY")
+            : System.getProperty("news.api.key");
 
     ApiFeedService apiFeedService = ApiFeedService.getInstance();
     ContentInterface feedAdapter = new FeedAdapter(apiFeedService);
