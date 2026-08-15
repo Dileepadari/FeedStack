@@ -151,6 +151,16 @@ public class ArticleDao extends BaseDao<ArticleDto, ArticleCriteria> {
         Query q = em.createQuery("select a from Article a where a.deleteDate is null order by a.id");
         return q.getResultList();
     }
+
+    /**
+     * Returns the list of all articles for a feed.
+     */
+    public List<Article> findByFeed(String feedId) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createQuery("select a from Article a where a.feedId = :feedId and a.deleteDate is null order by a.publicationDate desc")
+                .setParameter("feedId", feedId);
+        return q.getResultList();
+    }
     
     /**
      * Deletes a article.
@@ -168,5 +178,101 @@ public class ArticleDao extends BaseDao<ArticleDto, ArticleCriteria> {
                 .setParameter("deleteDate", deleteDate)
                 .setParameter("articleId", id)
                 .executeUpdate();
+    }
+
+    /**
+     * Increment the star count of an article.
+     * 
+     * @param id Article ID
+     * @return New star count
+     */
+    public int incrementStarCount(String id) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Article article = em.find(Article.class, id);
+        if (article == null) {
+            return 0;
+        }
+        
+        int newStarCount = article.getStarCount() + 1;
+        article.setStarCount(newStarCount);
+        em.merge(article);
+        
+        return newStarCount;
+    }
+
+    /**
+     * Decrement the star count of an article.
+     * 
+     * @param id Article ID
+     * @return New star count
+     */
+    public int decrementStarCount(String id) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Article article = em.find(Article.class, id);
+        if (article == null) {
+            return 0;
+        }
+        
+        int newStarCount = Math.max(0, article.getStarCount() - 1);
+        article.setStarCount(newStarCount);
+        em.merge(article);
+        
+        return newStarCount;
+    }
+
+    /**
+     * Find the most starred articles.
+     * 
+     * @param limit Maximum number of articles to return
+     * @return List of articles, sorted by star count (descending)
+     */
+    public List<ArticleDto> findMostStarred(int limit) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Query q = em.createQuery(
+                "select a from Article a where a.deleteDate is null " +
+                "order by a.starCount desc");
+        q.setMaxResults(limit);
+        
+        @SuppressWarnings("unchecked")
+        List<Article> articles = q.getResultList();
+        
+        // Convert to DTOs
+        List<ArticleDto> articleDtos = new ArrayList<>();
+        for (Article article : articles) {
+            ArticleDto articleDto = new ArticleDto();
+            articleDto.setId(article.getId());
+            articleDto.setTitle(article.getTitle());
+            articleDto.setUrl(article.getUrl());
+            articleDto.setDescription(article.getDescription());
+            articleDto.setCreator(article.getCreator());
+            articleDto.setStarCount(article.getStarCount());
+            articleDtos.add(articleDto);
+        }
+        
+        return articleDtos;
+    }
+
+    /**
+     * Find an article by ID and return as DTO.
+     * 
+     * @param id Article ID
+     * @return Article DTO
+     */
+    public ArticleDto findById(String id) {
+        EntityManager em = ThreadLocalContext.get().getEntityManager();
+        Article article = em.find(Article.class, id);
+        if (article == null) {
+            return null;
+        }
+        
+        ArticleDto articleDto = new ArticleDto();
+        articleDto.setId(article.getId());
+        articleDto.setTitle(article.getTitle());
+        articleDto.setUrl(article.getUrl());
+        articleDto.setDescription(article.getDescription());
+        articleDto.setCreator(article.getCreator());
+        articleDto.setStarCount(article.getStarCount());
+        
+        return articleDto;
     }
 }

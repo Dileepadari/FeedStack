@@ -21,6 +21,9 @@ import com.sismics.reader.core.event.ArticleUpdatedAsyncEvent;
 import com.sismics.reader.core.event.FaviconUpdateRequestedEvent;
 import com.sismics.reader.core.model.context.AppContext;
 import com.sismics.reader.core.model.jpa.*;
+import com.sismics.reader.core.service.UrlStrategy;
+import com.sismics.reader.core.service.RssUrlStrategy;
+import com.sismics.reader.core.service.ContentUrlStrategy;
 import com.sismics.reader.core.util.EntityManagerUtil;
 import com.sismics.reader.core.util.TransactionUtil;
 import com.sismics.reader.core.util.http.ReaderHttpClient;
@@ -57,6 +60,8 @@ public class FeedService extends AbstractScheduledService {
      * Logger.
      */
     private static final Logger log = LoggerFactory.getLogger(FeedService.class);
+
+    private UrlStrategy urlStrategy;
 
     @Override
     protected void startUp() throws Exception {
@@ -133,6 +138,19 @@ public class FeedService extends AbstractScheduledService {
     }
 
     /**
+     * Synchronize a local feed.
+     * 
+     * @param url URL of the feed
+     */
+    public Feed synchronizeLocal(String url) {
+        FeedDao feedDao = new FeedDao();
+        System.out.println("here1.4");
+        System.out.println(url);
+        Feed feed = feedDao.getFeedById(url);
+        return feed;
+    }
+
+    /**
      * Synchronize the feed to local database.
      * 
      * @param url RSS url of a feed or page containing a feed to synchronize
@@ -140,8 +158,17 @@ public class FeedService extends AbstractScheduledService {
     public Feed synchronize(String url) throws Exception {
         long startTime = System.currentTimeMillis();
 
+        // check whether the url starts with local://
+        if (url.startsWith("local://")) {
+            url = url.replace("local://", "");
+            System.out.println("here1.3");
+            return synchronizeLocal(url);
+        }
+
+        UrlStrategy urlStrategy = getUrlStrategy(url);
+
         // Parse the feed
-        RssReader rssReader = parseFeedOrPage(url, true);
+        RssReader rssReader = urlStrategy.getRssFeedReader(url);
         Feed newFeed = rssReader.getFeed();
         List<Article> articleList = rssReader.getArticleList();
 
@@ -476,6 +503,63 @@ public class FeedService extends AbstractScheduledService {
             throw eRss;
         }
     }
+
+    private UrlStrategy getUrlStrategy(String url) {
+        int check = checkUrl(url);
+        if (check == 0) {
+            System.out.println("here1.2");
+            return new ContentUrlStrategy();
+        } else if (check == 1 || check == 2) {
+            System.out.println("here1.1");
+            return new RssUrlStrategy();
+        } else {
+            throw new IllegalArgumentException("URL is not a valid RSS feed or page");
+        }
+    }
+
+    private int checkUrl(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            throw new IllegalArgumentException("URL is null or empty");
+        }
+
+        try {
+            RssReader reader = new RssReader();
+            new ReaderHttpClient() {
+                @Override
+                public Void process(InputStream is) throws Exception {
+                    reader.readRssFeed(is);
+                    return null;
+                }
+            }.open(new URL(url));
+
+            // If parsing succeeds, it's a valid RSS feed
+            return 1; // RSS feed detected
+        } catch (Exception eRss) {
+            boolean recoverable = !(eRss instanceof UnknownHostException || 
+                                    eRss instanceof FileNotFoundException);
+            if (recoverable) {
+                try {
+                    RssExtractor extractor = new RssExtractor(url);
+                    new ReaderHttpClient() {
+                        @Override
+                        public Void process(InputStream is) throws Exception {
+                            extractor.readPage(is);
+                            return null;
+                        }
+                    }.open(new URL(url));
+
+                    List<String> feedList = extractor.getFeedList();
+                    if (feedList != null && !feedList.isEmpty()) {
+                        return 2; // Page contains RSS feed links
+                    }
+                } catch (Exception ePage) {
+                    logParsingError(url, ePage);
+                }
+            }
+        }
+        return 0; // Neither RSS feed nor page with RSS feed links
+    }
+
 
     private void logParsingError(String url, Exception e) {
         if (log.isWarnEnabled()) {

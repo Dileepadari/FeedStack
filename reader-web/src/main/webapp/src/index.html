@@ -1,117 +1,291 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title data-i18n="app">Sismics Reader</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <meta name="viewport" content="initial-scale=1, minimum-scale=1, width=device-width, maximum-scale=1, user-scalable=no" />
-    <link rel="shortcut icon" href="favicon.png" />
-    <!-- ref:css stylesheets/reader.min.css -->
-    <link rel="stylesheet" href="stylesheets/jquery.qtip.css" type="text/css" />
-    <link rel="stylesheet" href="stylesheets/jquery.ui.css" type="text/css" />
-    <link rel="stylesheet" href="stylesheets/loader.css" type="text/css" />
-    <link rel="stylesheet/less" href="stylesheets/main.less" type="text/css" />
-    <!-- endref -->
-    <!-- ref:remove -->
-    <script>
-      less = {
-        env: 'development', // or "development"
-        async: false,       // load imports async
-        fileAsync: false,   // load imports async when in a page under a file protocol
-        poll: 1000,         // when in watch mode, time in ms between polls
-        dumpLineNumbers: 'all' // or "mediaQuery" or "comments"
-      };
-    </script>
-    <!-- endref -->
-    <!-- ref:js reader.min.js -->
-    <script src="javascripts/jquery.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.less.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.ui.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.visible.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.history.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.qtip.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.toastmessage.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.json.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.throttle.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.i18next.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.validate.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.moment.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.cookie.js" type="text/javascript"></script>
-    <script src="javascripts/jquery.numeral.js" type="text/javascript"></script>
-    <script src="javascripts/r.main.js" type="text/javascript"></script>
-    <script src="javascripts/r.user.js" type="text/javascript"></script>
-    <script src="javascripts/r.subscription.js" type="text/javascript"></script>
-    <script src="javascripts/r.article.js" type="text/javascript"></script>
-    <script src="javascripts/r.category.js" type="text/javascript"></script>
-    <script src="javascripts/r.feed.js" type="text/javascript"></script>
-    <script src="javascripts/r.search.js" type="text/javascript"></script>
-    <script src="javascripts/r.settings.js" type="text/javascript"></script>
-    <script src="javascripts/r.about.js" type="text/javascript"></script>
-    <script src="javascripts/r.wizard.js" type="text/javascript"></script>
-    <script src="javascripts/r.theme.js" type="text/javascript"></script>
-    <script src="javascripts/r.util.js" type="text/javascript"></script>
-    <script src="javascripts/r.shortcuts.js" type="text/javascript"></script>
-    <!-- endref -->
-  </head>
-  <body>
-    
+
+<head>
+  <title data-i18n="app">Sismics Reader</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport"
+    content="initial-scale=1, minimum-scale=1, width=device-width, maximum-scale=1, user-scalable=no" />
+  <link rel="shortcut icon" href="favicon.png" />
+  <!-- ref:css stylesheets/reader.min.css -->
+  <link rel="stylesheet" href="stylesheets/jquery.qtip.css" type="text/css" />
+  <link rel="stylesheet" href="stylesheets/jquery.ui.css" type="text/css" />
+  <link rel="stylesheet" href="stylesheets/loader.css" type="text/css" />
+  <link rel="stylesheet/less" href="stylesheets/main.less" type="text/css" />
+  <!-- endref -->
+  <!-- ref:remove -->
+  <script>
+    less = {
+      env: 'development', // or "development"
+      async: false,       // load imports async
+      fileAsync: false,   // load imports async when in a page under a file protocol
+      poll: 1000,         // when in watch mode, time in ms between polls
+      dumpLineNumbers: 'all' // or "mediaQuery" or "comments"
+    };
+  </script>
+  <!-- endref -->
+  <!-- ref:js reader.min.js -->
+  <script src="javascripts/jquery.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.less.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.ui.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.visible.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.history.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.qtip.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.toastmessage.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.json.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.throttle.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.i18next.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.validate.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.moment.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.cookie.js" type="text/javascript"></script>
+  <script src="javascripts/jquery.numeral.js" type="text/javascript"></script>
+  <script src="javascripts/r.main.js" type="text/javascript"></script>
+  <script src="javascripts/r.user.js" type="text/javascript"></script>
+  <script src="javascripts/r.subscription.js" type="text/javascript"></script>
+  <script src="javascripts/r.article.js" type="text/javascript"></script>
+  <script src="javascripts/r.category.js" type="text/javascript"></script>
+  <script src="javascripts/r.feed.js" type="text/javascript"></script>
+  <script src="javascripts/r.search.js" type="text/javascript"></script>
+  <script src="javascripts/r.settings.js" type="text/javascript"></script>
+  <script src="javascripts/r.about.js" type="text/javascript"></script>
+  <script src="javascripts/r.wizard.js" type="text/javascript"></script>
+  <script src="javascripts/r.theme.js" type="text/javascript"></script>
+  <script src="javascripts/r.util.js" type="text/javascript"></script>
+  <script src="javascripts/r.shortcuts.js" type="text/javascript"></script>
+  <script src="javascripts/r.bugsreport.js" type="text/javascript"></script>
+  <script src="javascripts/r.filter.js" type="text/javascript"></script>
+  <script type="text/javascript" src="javascripts/r.trending.js?v=4"></script>
+  <style>
+    /* modal styles  */
+    #modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    #modal-content {
+      position: relative;
+      width: 50%;
+      margin: 10% auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 5px;
+    }
+
+    #modal-header {
+      position: relative;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    #modal-title {
+      margin: 0;
+    }
+
+    #modal-title-form {
+      display: flex;
+    }
+
+    #modal-title-input {
+      width: 70%;
+    }
+
+    #modal-title-submit {
+      margin-left: 20px;
+      padding: 1px 10px;
+      height: max-content;
+    }
+
+    #modal-close-button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    #modal-body {
+      padding: 10px;
+    }
+
+    #modal-body ul, #feed-display-list, #all-feed-display-list{
+      list-style: none;
+      padding: 5px;
+    }
+
+    #modal-body ul li, #feed-display-list li, #all-feed-display-list li{
+      padding: 7px;
+    }
+
+    .myfeeds-modal-list {
+      max-height: 50vw;
+      overflow-y: scroll;
+    }
+
+    #myfeeds-list ul li, #feed-display-list li,#all-feed-display-list li {
+      padding: 7px!important;
+    }
+
+    #modal-body ul li:hover {
+      background: #f9f9f9;
+      cursor: pointer;
+    }
+
+    #myfeeds-list ul li:hover {
+      background: #f9f9f9;
+      cursor: pointer;
+    }
+
+    #modal-footer {
+      padding: 10px;
+      border-top: 1px solid #ccc;
+    }
+
+
+    #feed-display-list li:hover, #all-feed-display-list li:hover {
+      background: #bfbfbf!important;
+      cursor: pointer;
+    }
+    .feed-menu-sub-btn{
+       border: none;
+       margin-left: 10px!important;
+       padding: 5px;
+       background: #9b9797;
+       align-self: flex-end;
+    }
+
+    .all-display-li{
+      display: flex !important;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .feed-menu-sub-btn:hover{
+      background: #7e7a7a;
+      cursor: pointer;
+    }
+  </style>
+  <!-- endref -->
+</head>
+
+<body>
+
+  <!-- Modal for center display -->
+  <div id="modal">
+    <div id="modal-content">
+      <div id="modal-header">
+        <h1 id="modal-title">
+          <form id="modal-title-form">
+            <input type="text" id="modal-title-input" />
+            <input type="submit" value="Create" class="button" id="modal-title-submit" />
+          </form>
+        </h1>
+        <div id="modal-close-button">&#10006;</div>
+      </div>
+      <div id="modal-body">
+        <ul id="myfeeds-list" class="myfeeds-modal-list">
+        </ul>
+      </div>
+      <div id="modal-footer">
+      </div>
+    </div>
+  </div>
+
     <!-- Actionbar -->
     <div id="actionbar">
       <input class="important" id="subscriptions-show-button" type="button" value="Menu" />
       <h1 data-i18n="app">Sismics Reader</h1>
     </div>
-    
+
     <!-- Subscriptions -->
     <div id="subscriptions">
       <div class="button close-button">&#11013;</div>
 
       <div class="input-container">
-        <input class="important" id="subscription-add-button" type="button" value="New subscription" data-i18n="[value]subscription.add.button" />
+        <input class="important" id="subscription-add-button" type="button" value="New subscription"
+          data-i18n="[value]subscription.add.button" />
       </div>
-      
+
       <p class="update"></p>
-      
+
       <p class="jobs qtip-light qtip-shadow"></p>
-      
+
       <h1 data-i18n="subscription.latest">Latest</h1>
       <ul>
-        <li id="unread-feed-button"><a href="#/feed/unread"><span class="name" data-i18n="subscription.unread">Unread</span><span class="unread-count" style="display: none;">&nbsp;(<span class="count">0</span>)</span></a></li>
+        <li id="unread-feed-button"><a href="#/feed/unread"><span class="name"
+              data-i18n="subscription.unread">Unread</span><span class="unread-count"
+              style="display: none;">&nbsp;(<span class="count">0</span>)</span></a></li>
         <li id="all-feed-button"><a href="#/feed/all" data-i18n="subscription.all">All</a></li>
         <li id="starred-feed-button"><a href="#/feed/starred" data-i18n="subscription.starred">Starred</a></li>
+        <li id="articlesummary-feed-button"><a href="#/feed/articlesummary" data-i18n="subscription.articlesummary">Article Summary</a></li>
+        <li id="generate-feed-button"><a href="#/feed/generate" data-i18n="subscription.generate">Daily Report</a></li>
+        <li id="detector-feed-button"><a href="#/feed/detector" data-i18n="subscription.detector">Duplicate Detector</a></li>
+
       </ul>
-    
+
       <h1>
         <span data-i18n="subscription.subscriptions">Subscriptions</span>
         <div class="ajax-loader hidden"></div>
-        <div id="subscription-unread-button" title="Toggle all/unread subscriptions" data-i18n="[title]subscription.toggleunread"></div>
-        <img id="category-add-button" src="images/category_add.png" title="Add a category" data-i18n="[title]category.add.button" />
+        <div id="subscription-unread-button" title="Toggle all/unread subscriptions"
+          data-i18n="[title]subscription.toggleunread"></div>
+        <img id="category-add-button" src="images/category_add.png" title="Add a category"
+          data-i18n="[title]category.add.button" />
       </h1>
       <div id="subscription-list">
         <!-- Here subscriptions -->
       </div>
+
+      <!-- Subscription backdrop -->
+      <div id="subscriptions-backdrop"></div>
+      <h1>
+        <span data-i18n="myfeeds.title">My Feeds</span>
+        <div class="feed-ajax-loader hidden"></div>
+      </h1>
+      <div id="display-myfeeds-list">
+        <ul id="feed-display-list">
+          <!-- Here My feeds -->
+        </ul>
+      </div>
+
+      <!-- All Cuarted Feeds -->
+      <h1>
+        <span data-i18n="curatedfeeds.title">Curated Feeds</span>
+        <div class="feed-ajax-loader hidden"></div>
+      </h1>
+      <div id="display-curatedfeeds-list">
+        <ul id="all-feed-display-list">
+          <!-- Here Curated feeds -->
+        </ul>
+      </div>
     </div>
 
-    <!-- Subscription backdrop -->
-    <div id="subscriptions-backdrop"></div>
-    
+
     <!-- Feed -->
     <div id="feed">
       <div id="toolbar">
         <input class="feed settings search-input hidden" id="search-input" type="text" name="search" />
         <div class="button feed refresh-button hidden"><img src="images/refresh.png" class="icon" />&nbsp;</div>
         <div class="button unread subscription category hidden all-button" data-i18n="toolbar.showall">Show all</div>
-        <div class="button all unread subscription category hidden all-read-button" data-i18n="toolbar.allread">All read</div>
+        <div class="button all unread category hidden all-read-button" data-i18n="toolbar.allread">All read</div>
+        <div class="button feed settings wizard filter-button">Filter</div>
         
         <div class="button feed settings wizard about hidden settings-button"><img src="images/settings.png" class="icon" />&nbsp;</div>
         <div class="button feed hidden narrow-article"><img src="images/wide.png" class="icon hidden" /><img src="images/narrow.png" class="icon hidden" />&nbsp;</div>
         <div class="button feed hidden full-button"><img src="images/full.png" class="icon" />&nbsp;</div>
         <div class="button feed hidden list-button"><img src="images/list.png" class="icon" />&nbsp;</div>
         <div class="button subscription category-button hidden" data-i18n="toolbar.category">Category</div>
-        <div class="settings back-button hidden"><a href="#/feed/unread" data-i18n="[html]toolbar.back">&larr; Back</a></div>
+        <div class="settings back-button hidden"><a href="#/feed/unread" data-i18n="[html]toolbar.back">&larr; Back</a>
+        </div>
       </div>
-      
+
       <div id="feed-container" tabindex="1">
       </div>
-      
+
       <div id="settings-container">
         <div id="settings-tabs">
           <ul>
@@ -122,14 +296,20 @@
           <div id="settings-tab-account">
             <h1 data-i18n="settings.account.edit.title">Account Preferences</h1>
             <form id="settings-account-edit-form">
-              <p><label><span data-i18n="settings.account.edit.email">E-mail</span> <input name="email" type="text" class="edit-email-input" /></label></p>
-              <p><label><span data-i18n="settings.account.edit.locale">Locale</span> <select name="locale" class="edit-locale-input"></select></label></p>
-              <p><label><span data-i18n="settings.account.edit.theme">Theme</span> <select name="theme" class="edit-theme-input"></select></label></p>
-              <p class="password-base-function"><label><span data-i18n="settings.account.edit.password">Password</span> <input name="password" type="password" class="edit-password-input" /></label></p>
-              <p class="password-base-function"><label><span data-i18n="settings.account.edit.passwordconfirm">Password (confirm)</span> <input name="password2" type="password" class="edit-password2-input" /></label></p>
+              <p><label><span data-i18n="settings.account.edit.email">E-mail</span> <input name="email" type="text"
+                    class="edit-email-input" /></label></p>
+              <p><label><span data-i18n="settings.account.edit.locale">Locale</span> <select name="locale"
+                    class="edit-locale-input"></select></label></p>
+              <p><label><span data-i18n="settings.account.edit.theme">Theme</span> <select name="theme"
+                    class="edit-theme-input"></select></label></p>
+              <p class="password-base-function"><label><span data-i18n="settings.account.edit.password">Password</span>
+                  <input name="password" type="password" class="edit-password-input" /></label></p>
+              <p class="password-base-function"><label><span data-i18n="settings.account.edit.passwordconfirm">Password
+                    (confirm)</span> <input name="password2" type="password" class="edit-password2-input" /></label></p>
               <p>
                 <input class="important" type="submit" value="Save" data-i18n="[value]settings.account.edit.submit" />
-                <input class="important edit-cancel-button" type="button" value="Cancel" data-i18n="[value]settings.account.edit.cancel" />
+                <input class="important edit-cancel-button" type="button" value="Cancel"
+                  data-i18n="[value]settings.account.edit.cancel" />
               </p>
             </form>
           </div>
@@ -137,39 +317,52 @@
             <h1 class="import-base-function" data-i18n="settings.import.title">Import</h1>
             <p class="import-base-function" data-i18n="[html]settings.import.explain">Only OPML format is accepted.</p>
             <form class="import-base-function" id="settings-import-form">
-							<p><input type="file" name="file"></p>
-							<p><input class="important" type="submit" value="Import" data-i18n="[value]settings.import.submit" /> <span class="ajax-loader hidden"></span></p>
-						</form>
-						<h1 data-i18n="settings.export.title">Export</h1>
-						<p data-i18n="settings.export.explain">Export your categories and subscriptions.</p>
-						<input type="button" class="important" id="settings-export-button" value="Export" data-i18n="[value]settings.export.submit" />
+              <p><input type="file" name="file"></p>
+              <p><input class="important" type="submit" value="Import" data-i18n="[value]settings.import.submit" />
+                <span class="ajax-loader hidden"></span></p>
+            </form>
+            <h1 data-i18n="settings.export.title">Export</h1>
+            <p data-i18n="settings.export.explain">Export your categories and subscriptions.</p>
+            <input type="button" class="important" id="settings-export-button" value="Export"
+              data-i18n="[value]settings.export.submit" />
           </div>
           <div id="settings-tab-users">
             <h1 data-i18n="settings.users.title">Users Administration</h1>
             <form>
-              <p><label><span data-i18n="settings.users.select">Select a user</span> <select id="settings-users-select"></select></label></p>
+              <p><label><span data-i18n="settings.users.select">Select a user</span> <select
+                    id="settings-users-select"></select></label></p>
             </form>
             <form id="settings-users-edit-form">
               <h2 data-i18n="settings.users.edit.newtitle">New user</h2>
-              <p><label><span data-i18n="settings.account.edit.username">Username</span> <input name="username" type="text" class="edit-username-input" /></label></p>
-              <p><label><span data-i18n="settings.account.edit.email">E-mail</span> <input name="email" type="text" class="edit-email-input" /></label></p>
-              <p><label><span data-i18n="settings.account.edit.locale">Locale</span> <select name="locale" class="edit-locale-input"></select></label></p>
-              <p><label><span data-i18n="settings.account.edit.password">Password</span> <input name="password" type="password" class="edit-password-input" /></label></p>
-              <p><label><span data-i18n="settings.account.edit.passwordconfirm">Password (confirm)</span> <input name="password2" type="password" class="edit-password2-input" /></label></p>
-              <p class="edit-delete-section"><label><span data-i18n="settings.account.edit.delete">Delete user</span> <input class="important edit-delete-button" type="button" value="Delete" data-i18n="[value]settings.users.edit.deletebutton" /></label></p>
-              <p><input class="important" type="submit" value="Submit" data-i18n="[value]settings.users.edit.submit" /></p>
+              <p><label><span data-i18n="settings.account.edit.username">Username</span> <input name="username"
+                    type="text" class="edit-username-input" /></label></p>
+              <p><label><span data-i18n="settings.account.edit.email">E-mail</span> <input name="email" type="text"
+                    class="edit-email-input" /></label></p>
+              <p><label><span data-i18n="settings.account.edit.locale">Locale</span> <select name="locale"
+                    class="edit-locale-input"></select></label></p>
+              <p><label><span data-i18n="settings.account.edit.password">Password</span> <input name="password"
+                    type="password" class="edit-password-input" /></label></p>
+              <p><label><span data-i18n="settings.account.edit.passwordconfirm">Password (confirm)</span> <input
+                    name="password2" type="password" class="edit-password2-input" /></label></p>
+              <p class="edit-delete-section"><label><span data-i18n="settings.account.edit.delete">Delete user</span>
+                  <input class="important edit-delete-button" type="button" value="Delete"
+                    data-i18n="[value]settings.users.edit.deletebutton" /></label></p>
+              <p><input class="important" type="submit" value="Submit" data-i18n="[value]settings.users.edit.submit" />
+              </p>
             </form>
           </div>
         </div>
       </div>
-      
+
       <div id="about-container">
         <div class="admin">
-        
+
           <h1 data-i18n="about.rebuildindex.title">Rebuild search index</h1>
-          <p data-i18n="about.rebuildindex.message">Rebuilding search index may take a while, but you can continue using the application.</p>
-          <input class="important rebuild-index-button" type="button" value="Rebuild" data-i18n="[value]about.rebuildindex.button" />
-          
+          <p data-i18n="about.rebuildindex.message">Rebuilding search index may take a while, but you can continue using
+            the application.</p>
+          <input class="important rebuild-index-button" type="button" value="Rebuild"
+            data-i18n="[value]about.rebuildindex.button" />
+
           <h1>
             <span data-i18n="about.logs.title">Browse logs</span>
             <select id="logs-level-select">
@@ -182,125 +375,266 @@
               <option class="trace" value="TRACE" data-i18n="about.logs.level.trace">Trace</option>
             </select>
             <div class="button" id="logs-refresh-button"><img src="images/refresh.png" class="icon" /></div>
-          
+
           </h1>
           <div id="logs-container">
             <table id="logs-table">
             </table>
           </div>
-          
+
         </div>
-        
+
         <h1 data-i18n="about.license.title">License</h1>
-        <p data-i18n="[html]about.license.content">Reader is released under the terms of the GPL license. See <a href="http://opensource.org/licenses/GPL-2.0" target="_blank">http://opensource.org/licenses/GPL-2.0</a> for more information.</p>
-        
+        <p data-i18n="[html]about.license.content">Reader is released under the terms of the GPL license. See <a
+            href="http://opensource.org/licenses/GPL-2.0" target="_blank">http://opensource.org/licenses/GPL-2.0</a> for
+          more information.</p>
+
         <h1 data-i18n="about.informations.title">More information</h1>
         <ul>
-          <li><strong data-i18n="about.informations.version">Version:</strong> <span id="about-version"></span> <span id="about-version-new"></span></li>
-          <li><strong data-i18n="about.informations.memory">Memory:</strong> <span id="about-used-memory"></span> / <span id="about-total-memory"></span></li>
-          <li><strong data-i18n="about.informations.website">Website:</strong> <a href="http://www.sismics.com/reader" target="_blank">www.sismics.com/reader</a></li>
-          <li><strong>GitHub:</strong> <a href="https://github.com/sismics/reader" target="_blank">github.com/sismics/reader</a></li>
-          <li><strong data-i18n="about.informations.contact">Contact:</strong> <a href="mailto:reader@sismics.com">reader@sismics.com</a></li>
+          <li><strong data-i18n="about.informations.version">Version:</strong> <span id="about-version"></span> <span
+              id="about-version-new"></span></li>
+          <li><strong data-i18n="about.informations.memory">Memory:</strong> <span id="about-used-memory"></span> /
+            <span id="about-total-memory"></span></li>
+          <li><strong data-i18n="about.informations.website">Website:</strong> <a href="http://www.sismics.com/reader"
+              target="_blank">www.sismics.com/reader</a></li>
+          <li><strong>GitHub:</strong> <a href="https://github.com/sismics/reader"
+              target="_blank">github.com/sismics/reader</a></li>
+          <li><strong data-i18n="about.informations.contact">Contact:</strong> <a
+              href="mailto:reader@sismics.com">reader@sismics.com</a></li>
         </ul>
-        
+
       </div>
-      
+
+
+      <div id="bugsreport-container">
+        <div class="user" id="bugsreport-tab-users">
+          <h1 data-i18n="bugsreport.title">Report a bug</h1>
+          <p data-i18n="bugsreport.message">If you encounter a bug, please report
+            it to us. We will do our best to fix it as soon as possible.</p>
+          <form id="bugsreport-form">
+            <label for="bugsreport-message"><strong data-i18n="bugsreport.msglabel"
+                id="desc">Description:</strong></label><br />
+            <textarea id="bugsreport-message" name="message" rows="10" cols="50"></textarea><br />
+            <input type="reset" value="Cancel" data-i18n="[value]bugsreport.cancel" id="cancel" />
+            <input type="submit" value="Report" data-i18n="[value]bugsreport.button" id="submit" />
+          </form>
+          <h1>
+            <span data-i18n="bugsreport.logs.title">Previous Bug Reports</span>
+            <select id="buglogs-level-select">
+              <option value="">All</option>
+              <option value="OPEN">Open</option>
+              <option value="CLOSED">Closed</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="RESOLVED">Resolved</option>
+            </select>
+            <div class="button" id="buglogs-refresh-button"><img src="images/refresh.png" class="icon" /></div>
+
+          </h1>
+          <div id="userbugs-logs-container">
+            <table id="bugsreport-user-table">
+              <thead>
+                <tr class="bug-item">
+                  <th>ID</th>
+                  <th>Description</th>
+                  <th>Timestamp</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Bug reports will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="admin" id="bugsreport-tab-admin">
+
+          <!-- <h1 data-i18n="bugsreport.title">Bug reports</h1>
+          <p data-i18n="bugsreport.message">Here are the bug reports received.</p>
+           -->
+          <h1>
+            <span data-i18n="bugsreport.logs.title">Browse Bug Reports</span>
+            <select id="buglogs-level-select">
+              <option value="">All</option>
+              <option value="OPEN">Open</option>
+              <option value="CLOSED">Closed</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="RESOLVED">Resolved</option>
+            </select>
+            <div class="button" id="buglogs-refresh-button"><img src="images/refresh.png" class="icon" /></div>
+
+          </h1>
+          <div id="logs-container">
+            <table id="bugsreport-table">
+              <thead>
+                <tr class="bug-item">
+                  <th>ID</th>
+                  <th>Email</th>
+                  <th>Description</th>
+                  <th>Timestamp</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Bug reports will be populated here -->
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
       <div id="wizard-container">
         <h1 data-i18n="wizard.title">Sismics Reader installation wizard</h1>
         <p data-i18n="wizard.subtitle">Just a few setup steps before adding your first feed</p>
-      
+
         <ul>
-          <li data-wizard-container="#wizard-step-0-container" onclick="javascript:r.wizard.changePage(0);" data-i18n="wizard.step0title">Change admin password</li>
-          <li data-wizard-container="#wizard-step-1-container" onclick="javascript:r.wizard.changePage(1);" data-i18n="wizard.step1title">Setup network</li>
-          <li data-wizard-container="#wizard-step-2-container" onclick="javascript:r.wizard.changePage(2);" data-i18n="wizard.step2title">Add first user</li>
+          <li data-wizard-container="#wizard-step-0-container" onclick="javascript:r.wizard.changePage(0);"
+            data-i18n="wizard.step0title">Change admin password</li>
+          <li data-wizard-container="#wizard-step-1-container" onclick="javascript:r.wizard.changePage(1);"
+            data-i18n="wizard.step1title">Setup network</li>
+          <li data-wizard-container="#wizard-step-2-container" onclick="javascript:r.wizard.changePage(2);"
+            data-i18n="wizard.step2title">Add first user</li>
         </ul>
-	      
+
         <div class="wizard-container" id="wizard-step-0-container">
-          <p data-i18n="wizard.step0explain">You should change the default admin password, especially if you plan to use your Reader installation on an open network.</p>
-          
+          <p data-i18n="wizard.step0explain">You should change the default admin password, especially if you plan to use
+            your Reader installation on an open network.</p>
+
           <form id="wizard-step-0-form">
-            <p><label><span data-i18n="settings.account.edit.password">Password</span> <input name="password" type="password" class="wizard-password-input" /></label></p>
-            <p><label><span data-i18n="settings.account.edit.passwordconfirm">Password (confirm)</span> <input name="password2" type="password" class="wizard-password2-input" /></label></p>
+            <p><label><span data-i18n="settings.account.edit.password">Password</span> <input name="password"
+                  type="password" class="wizard-password-input" /></label></p>
+            <p><label><span data-i18n="settings.account.edit.passwordconfirm">Password (confirm)</span> <input
+                  name="password2" type="password" class="wizard-password2-input" /></label></p>
           </form>
         </div>
-        
+
         <div class="wizard-container" id="wizard-step-1-container">
           <p data-i18n="wizard.step1explain">Tick "UPnP" if you want Reader to try to open a port on your router.</p>
-          
+
           <form id="wizard-step-1-form">
-            <p><label><span data-i18n="wizard.upnp">UPnP?</span> <input name="upnp" type="checkbox" class="wizard-upnp-input" /></label></p>
+            <p><label><span data-i18n="wizard.upnp">UPnP?</span> <input name="upnp" type="checkbox"
+                  class="wizard-upnp-input" /></label></p>
           </form>
         </div>
-        
+
         <div class="wizard-container" id="wizard-step-2-container">
           <p data-i18n="wizard.step2explain">It's nearly over! Add your first user and start using Sismics Reader.</p>
-        
+
           <form id="wizard-step-2-form">
-            <p><label><span data-i18n="settings.account.edit.username">Username</span> <input name="username" type="text" class="wizard-username-input" /></label></p>
-            <p><label><span data-i18n="settings.account.edit.email">E-mail</span> <input name="email" type="text" class="wizard-email-input" /></label></p>
-            <p><label><span data-i18n="settings.account.edit.password">Password</span> <input name="password" type="password" class="wizard-password-input" /></label></p>
-            <p><label><span data-i18n="settings.account.edit.passwordconfirm">Password (confirm)</span> <input name="password2" type="password" class="wizard-password2-input" /></label></p>
+            <p><label><span data-i18n="settings.account.edit.username">Username</span> <input name="username"
+                  type="text" class="wizard-username-input" /></label></p>
+            <p><label><span data-i18n="settings.account.edit.email">E-mail</span> <input name="email" type="text"
+                  class="wizard-email-input" /></label></p>
+            <p><label><span data-i18n="settings.account.edit.password">Password</span> <input name="password"
+                  type="password" class="wizard-password-input" /></label></p>
+            <p><label><span data-i18n="settings.account.edit.passwordconfirm">Password (confirm)</span> <input
+                  name="password2" type="password" class="wizard-password2-input" /></label></p>
           </form>
         </div>
-        
+
         <div id="wizard-navigation">
-          <input id="wizard-navigation-previous" data-i18n="[value]wizard.previous" class="important" type="button" value="Previous" />
-          <input id="wizard-navigation-next" data-i18n="[value]wizard.next" class="important" type="button" value="Next" />
+          <input id="wizard-navigation-previous" data-i18n="[value]wizard.previous" class="important" type="button"
+            value="Previous" />
+          <input id="wizard-navigation-next" data-i18n="[value]wizard.next" class="important" type="button"
+            value="Next" />
         </div>
       </div>
     </div>
-    
+
     <!-- Application loading -->
     <div id="loader-page">
-      <div class="loader"><div id="bowlG"><div id="bowl_ringG"><div class="ball_holderG"><div class="ballG"></div></div></div></div></div>
+      <div class="loader">
+        <div id="bowlG">
+          <div id="bowl_ringG">
+            <div class="ball_holderG">
+              <div class="ballG"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    
+
     <!-- Login form -->
     <div id="login-page">
-      <form>
-        <input type="text" id="login-username-input" placeholder="Username" data-i18n="[placeholder]login.username" /><br />
-        <input type="password" id="login-password-input" placeholder="Password" data-i18n="[placeholder]login.password" /><br />
-        <label><input type="checkbox" id="login-remember-input" /> <span data-i18n="login.remember">Remember me</span></label><br />
-        <input class="important" type="submit" id="login-submit-button" value="Login" data-i18n="[value]login.submit" />
-        
-        <p id="default-password-info" data-i18n="defaultpassword.info">Reader is not secured. Please log in with username and password "admin", then change password immediately.</p>
+      <form id="login-form">
+        <input type="text" id="login-username-input" placeholder="Username"
+          data-i18n="[placeholder]login.username" /><br />
+        <input type="password" id="login-password-input" placeholder="Password"
+          data-i18n="[placeholder]login.password" /><br />
+        <label><input type="checkbox" id="login-remember-input" /> <span data-i18n="login.remember">Remember
+            me</span></label><br />
+        <input class="important" type="submit" id="login-submit-button" value="Login"
+          data-i18n="[value]login.submit" /><br />
+        <p id="create-account-text" data-i18n="login.createtext">Don't have an Account?</p>
+        <input class="important" type="button" id="signup-button" value="Sign up" data-i18n="[title]login.signup">
+        <p id="default-password-info" data-i18n="defaultpassword.info">Reader is not secured. Please log in with
+          username and password "admin", then change password immediately.</p>
+      </form>
+
+      <!-- User Registration -->
+      <form id="signup-form" style="display: none;">
+        <input type="text" id="signup-username-input" placeholder="Username"
+          data-i18n="[placeholder]signup.username" /><br />
+        <input type="email" id="signup-email-input" placeholder="Email" data-i18n="[placeholder]signup.email" /><br />
+        <input type="password" id="signup-password-input" placeholder="Password"
+          data-i18n="[placeholder]signup.password" /><br />
+        <input type="password" id="signup-password2-input" placeholder="Password (confirm)"
+          data-i18n="[placeholder]signup.passwordconfirm" /><br />
+        <input class="important" type="submit" id="signup-submit-button" value="Sign up"
+          data-i18n="[value]signup.submit" />
+        <input class="important" type="button" id="back-to-login-button" value="Back to login"
+          data-i18n="[value]signup.back" />
       </form>
     </div>
-    
+
+
     <!-- Default admin password warning -->
     <div id="default-password">
-      <span data-i18n="defaultpassword.warning" class="warning">You haven't changed your default admin password. Secure your server by changing the default password now.</span>
-      <span data-i18n="defaultpassword.dismiss" class="dismiss" onclick="javascript:$(this).parent().fadeOut();">Dismiss</span>
+      <span data-i18n="defaultpassword.warning" class="warning">You haven't changed your default admin password. Secure
+        your server by changing the default password now.</span>
+      <span data-i18n="defaultpassword.dismiss" class="dismiss"
+        onclick="javascript:$(this).parent().fadeOut();">Dismiss</span>
     </div>
 
     <!-- Templates -->
     <div id="template" style="display: none;">
-      
+
       <div id="qtip-subscription-add">
-        <span class="help" data-i18n="subscription.add.help">To add a new feed, you can copy/paste the homepage URL of the website you want to follow here. If this does not work, search for this icon to be directed to a direct feed URL.</span>
+        <span class="help" data-i18n="subscription.add.help">To add a new feed, you can copy/paste the homepage URL of
+          the website you want to follow here. If this does not work, search for this icon to be directed to a direct
+          feed URL.</span>
         <img src="images/rss_icon.png">
         <form>
-          <input type="text" id="subscription-url-input" placeholder="Paste a feed or website URL" data-i18n="[placeholder]subscription.add.placeholder" />
-          <input class="important" type="submit" id="subscription-submit-button" value="Add" data-i18n="[value]subscription.add.submit" />
+          <input type="text" id="subscription-url-input" placeholder="Paste a feed or website URL"
+            data-i18n="[placeholder]subscription.add.placeholder" />
+          <input class="important" type="submit" id="subscription-submit-button" value="Add"
+            data-i18n="[value]subscription.add.submit" />
         </form>
       </div>
-      
+
       <div id="qtip-category-add">
         <form>
-          <input type="text" id="category-name-input" placeholder="Name" data-i18n="[placeholder]category.add.placeholder" />
-          <input class="important" type="submit" id="category-submit-button" value="Add" data-i18n="[value]category.add.submit" />
+          <input type="text" id="category-name-input" placeholder="Name"
+            data-i18n="[placeholder]category.add.placeholder" />
+          <input class="important" type="submit" id="category-submit-button" value="Add"
+            data-i18n="[value]category.add.submit" />
         </form>
       </div>
-      
+
       <div class="qtip-subscription-edit qtip-drop-menu">
         <form>
-          <input type="button" value="Edit" class="show-pattern-button" data-show="+ .showable" data-i18n="[value]subscription.edit.button" />
+          <input type="button" value="Edit" class="show-pattern-button" data-show="+ .showable"
+            data-i18n="[value]subscription.edit.button" />
           <div class="showable">
-	          <input type="text" class="subscription-edit-title-input" placeholder="Title" data-i18n="[placeholder]subscription.edit.placeholder" />
-	          <input type="submit" class="subscription-edit-submit-button important" value="OK" data-i18n="[value]subscription.edit.submit" />
+            <input type="text" class="subscription-edit-title-input" placeholder="Title"
+              data-i18n="[placeholder]subscription.edit.placeholder" />
+            <input type="submit" class="subscription-edit-submit-button important" value="OK"
+              data-i18n="[value]subscription.edit.submit" />
           </div>
-          <input type="button" class="subscription-edit-delete-button" value="Delete" data-i18n="[value]subscription.edit.delete" />
-          <input type="button" class="subscription-edit-info-button" value="Delete" data-i18n="[value]subscription.edit.info" />
+          <input type="button" class="subscription-edit-delete-button" value="Delete"
+            data-i18n="[value]subscription.edit.delete" />
+          <input type="button" class="subscription-edit-info-button" value="Delete"
+            data-i18n="[value]subscription.edit.info" />
         </form>
       </div>
 
@@ -344,11 +678,11 @@
         <div class="subscription-edit-info-synctable-container">
           <table class="subscription-edit-info-synctable">
             <thead>
-            <tr>
-              <th data-i18n="feed.info.status"></th>
-              <th data-i18n="feed.info.date"></th>
-              <th data-i18n="feed.info.duration"></th>
-            </tr>
+              <tr>
+                <th data-i18n="feed.info.status"></th>
+                <th data-i18n="feed.info.date"></th>
+                <th data-i18n="feed.info.duration"></th>
+              </tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -359,25 +693,44 @@
         <ul>
         </ul>
       </div>
-      
+
       <div class="qtip-category-edit qtip-drop-menu">
         <form>
-          <input type="button" value="Edit" class="show-pattern-button" data-show="+ .showable" data-i18n="[value]category.edit.button" />
+          <input type="button" value="Edit" class="show-pattern-button" data-show="+ .showable"
+            data-i18n="[value]category.edit.button" />
           <div class="showable">
-            <input type="text" class="category-edit-name-input" placeholder="Name" data-i18n="[placeholder]category.edit.placeholder" />
-            <input type="submit" class="category-edit-submit-button important" value="OK" data-i18n="[value]category.edit.submit" />
+            <input type="text" class="category-edit-name-input" placeholder="Name"
+              data-i18n="[placeholder]category.edit.placeholder" />
+            <input type="submit" class="category-edit-submit-button important" value="OK"
+              data-i18n="[value]category.edit.submit" />
           </div>
-          <input type="button" class="category-edit-delete-button" value="Delete" data-i18n="[value]category.edit.delete" />
+          <input type="button" class="category-edit-delete-button" value="Delete"
+            data-i18n="[value]category.edit.delete" />
         </form>
       </div>
-      
+
       <div id="qtip-settings" class="qtip-drop-menu">
         <ul>
           <li><a href="#/settings/" data-i18n="toolbar.settings">Settings</a></li>
           <li><a href="#/about/" data-i18n="toolbar.about">About</a></li>
-          <li><a href="https://github.com/sismics/reader/issues" target="_blank" data-i18n="toolbar.reportbug">Report a bug</a></li>
+          <li><a href="#/bugsreport/" data-i18n="toolbar.reportbug">Report a bug</a></li>
           <li><a href="#" class="logout" data-i18n="toolbar.logout">Logout</a></li>
         </ul>
+      </div>
+
+      <div id="qtip-filter" class="qtip-drop-menu">
+        <!-- Add this inside the #qtip-filter div in index.html -->
+        <div class="filter-container">
+          <div class="filter-section">
+            <h4>Sources</h4>
+            <div class="sources-list"></div>
+          </div>
+          <div class="filter-section">
+            <h4>Categories</h4>
+            <div class="categories-list"></div>
+          </div>
+          <button class="filter-apply-button">Apply Filters</button>
+        </div>
       </div>
       
       <div class="feed-item">
@@ -385,7 +738,8 @@
           <div class="feed-item-star"></div>
           <div class="feed-item-collapsed-subscription"></div>
           <div class="container">
-            <div class="feed-item-collapsed-subscription"></div> <div class="feed-item-collapsed-title"></div>
+            <div class="feed-item-collapsed-subscription"></div>
+            <div class="feed-item-collapsed-title"></div>
             <div class="feed-item-collapsed-description"></div>
           </div>
           <div class="feed-item-date"></div>
@@ -393,10 +747,10 @@
         </div>
         <div class="header">
           <div class="feed-item-star"></div>
-	        <div class="feed-item-title"></div><br />
-	        <div class="feed-item-subscription"></div>
+          <div class="feed-item-title"></div><br />
+          <div class="feed-item-subscription"></div>
           <div class="feed-item-creator"></div>
-	        <div class="feed-item-date"></div>
+          <div class="feed-item-date"></div>
         </div>
         <div class="content">
           <div class="feed-item-description"></div>
@@ -404,17 +758,21 @@
         <div class="footer">
           <div class="feed-item-star"></div>
           <div class="feed-item-unread"><label><input type="checkbox" /> <span data-i18n="article.markasunread">Mark as unread</span></label></div>
+          <div class="feed-item-duplication"></div>
           <div class="feed-item-comments"></div>
           <div class="feed-item-enclosure"></div>
           <div class="feed-item-share">
-            <a href="http://www.facebook.com/sharer.php?u=${url}&t=${title}" target="_blank"><img src="images/share/facebook.png" /></a>
-            <a href="https://twitter.com/intent/tweet?url=${url}&text=${title}" target="_blank"><img src="images/share/twitter.png" /></a>
+            <a href="http://www.facebook.com/sharer.php?u=${url}&t=${title}" target="_blank"><img
+                src="images/share/facebook.png" /></a>
+            <a href="https://twitter.com/intent/tweet?url=${url}&text=${title}" target="_blank"><img
+                src="images/share/twitter.png" /></a>
             <a href="mailto:?subject=${title}&body=${url}" target="_blank"><img src="images/share/email.png" /></a>
           </div>
+          <div class="button add-myfeeds-btn" data-id="happy">Add to MyFeeds</div>
         </div>
       </div>
-      
     </div>
 
-  </body>
+</body>
+
 </html>

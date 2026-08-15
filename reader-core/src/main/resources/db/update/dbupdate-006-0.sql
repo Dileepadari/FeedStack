@@ -14,3 +14,5 @@ create  index FK_FES_IDUSER_C on T_FEED_SUBSCRIPTION (FES_IDUSER_C);
 create  index FK_CAT_IDPARENT_C on T_CATEGORY (CAT_IDPARENT_C);
 create  index FK_CAT_IDUSER_C on T_CATEGORY (CAT_IDUSER_C);
 update T_CONFIG set CFG_VALUE_C='6' where CFG_ID_C='DB_VERSION';
+alter table T_FEED add column FED_CREATOR_USER_ID_C varchar(36) default null;
+alter table T_ARTICLE add column ART_STARCOUNT_N int default 0 not null;

@@ -16,7 +16,11 @@ var r = {
   wizard: {},
   theme: {},
   shortcuts: {},
-  util: {}
+  util: {},
+  filter: {},
+  bugsreport: {},
+  filter: {},
+  trending: {}
 };
 
 /**
@@ -46,6 +50,16 @@ r.main.initModules = function() {
   r.wizard.init();
   r.theme.init();
   r.shortcuts.init();
+  r.filter.init();
+  r.bugsreport.init();
+  r.filter.init();
+  
+  // Check if trending module is loaded before initializing it
+  if (r.trending && typeof r.trending.init === 'function') {
+    r.trending.init();
+  } else {
+    console.error("Trending module not properly loaded");
+  }
   
   // First page
   if (r.user.hasBaseFunction('ADMIN') && r.user.userInfo.first_connection) {
@@ -65,4 +79,5 @@ r.main.reset = function() {
   r.settings.reset();
   r.about.reset();
   r.wizard.reset();
+  r.bugsreport.reset();
 };

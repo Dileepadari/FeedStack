@@ -31,11 +31,12 @@ node_modules
 dist
 dist-ssr
 
-# Python (LLM pipeline and bonus scripts)
+# Python (LLM pipeline, bonus scripts, summariser and duplicate detection)
 __pycache__/
 *.py[cod]
 .venv/
 venv/
+/reader-web/se_p2_env
 
 # Secrets - never commit these
 .env

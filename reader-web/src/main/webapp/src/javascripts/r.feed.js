@@ -1,3 +1,20 @@
+
+// Replace the currentArticleCounts with subscriptionArticleCounts
+r.feed.subscriptionArticleCounts = {}; // Persistent across feed switches
+
+/**
+ * Reset article counts for a specific subscription or for all
+ */
+r.feed.resetArticleCounts = function(subscriptionId) {
+  if (subscriptionId) {
+    // Reset just one subscription
+    r.feed.subscriptionArticleCounts[subscriptionId] = 0;
+  } else {
+    // Don't reset all counts when switching feeds
+    // Instead, we'll just count new articles for the current feed
+  }
+};
+
 /**
  * Current feed context.
  */
@@ -92,7 +109,35 @@ r.feed.init = function() {
       // Specific toolbar actions for starred
       r.feed.cache.toolbar.find('> .starred').removeClass('hidden');
       
-    } else if (target.substring(0, 13) == 'subscription/') {
+    } else if (target == 'articlesummary'){
+      // Configuring context for /starred
+      r.feed.context.url = r.util.url.articlesummary;
+      r.feed.context.unread = false;
+      r.feed.context.subscriptionId = target.substring(13);
+
+      $('#articlesummary-feed-button').addClass('active');
+      
+      // Specific toolbar actions for articlesummary
+      r.feed.cache.toolbar.find('> .articlesummary').removeClass('hidden');
+    }
+    else if (target == 'generate'){
+      r.feed.context.url = r.util.url.generate;
+      r.feed.context.unread = false;
+      r.feed.context.subscriptionId = target.substring(13);
+
+      $('#generate-feed-button').addClass('active');
+      
+      // Specific toolbar actions for welcome
+      r.feed.cache.toolbar.find('> .generate').removeClass('hidden');
+    }
+    else if(target == 'detector'){
+      r.feed.context.url = r.util.url.detector;
+      r.feed.context.unread = false;
+      $('#detector-feed-button').addClass('active');
+      r.feed.cache.toolbar.find('> .detector').removeClass('hidden');
+    }
+
+    else if (target.substring(0, 13) == 'subscription/') {
       // Configuring context for /subscription/id
       r.feed.context.url = '../api/' + target;
       r.feed.context.subscriptionId = target.substring(13);
@@ -173,6 +218,11 @@ r.feed.init = function() {
   
   // Update feed mode
   r.feed.updateMode(false);
+
+  // Initialize article counts
+  // r.feed.initArticleCounts();
+
+
 };
 
 /**
@@ -235,8 +285,7 @@ r.feed.load = function(next) {
   if (!next) {
     // Loading animation
     r.feed.cache.container.html(r.util.buildLoader());
-    
-    // Updating show all/show new button
+    r.feed.resetArticleCounts(r.feed.context.subscriptionId);    // Updating show all/show new button
     r.feed.context.unread ?  r.feed.cache.toolbar.find('.all-button').html($.t('toolbar.showall'))
         : r.feed.cache.toolbar.find('.all-button').html($.t('toolbar.shownew'));
     
@@ -303,6 +352,9 @@ r.feed.load = function(next) {
         article.subscription.title = r.util.escape(article.subscription.title);
         article.creator = r.util.escape(article.creator);
         
+            // Track article in counts
+            r.feed.countArticle(article);
+            
         // Build article
         var item = r.article.build(article);
         r.feed.context.bumper.before(item);
@@ -323,7 +375,7 @@ r.feed.load = function(next) {
       if (!next) {
         // Scrolling to top
         r.feed.scrollTop(0);
-        
+        r.subscription.update();
         // Focus article list and redraw
         r.feed.cache.container
           .trigger('focus')
@@ -508,4 +560,21 @@ r.feed.markAllRead = function() {
       r.subscription.update();
     }
   });
+};
+
+/**
+ * Count an article for its subscription
+ */
+r.feed.countArticle = function(article) {
+  if (!article || !article.subscription || !article.subscription.id) return;
+  
+  var subscriptionId = article.subscription.id;
+  
+  // Initialize if needed
+  if (r.feed.subscriptionArticleCounts[subscriptionId] === undefined) {
+    r.feed.subscriptionArticleCounts[subscriptionId] = 0;
+  }
+  
+  // Increment count - we'll count all articles that are displayed
+  r.feed.subscriptionArticleCounts[subscriptionId]++;
 };

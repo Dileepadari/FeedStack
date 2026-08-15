@@ -110,7 +110,13 @@ public class Article {
      */
     @Column(name = "ART_DELETEDATE_D")
     private Date deleteDate;
-    
+// BONUS
+    /**
+     * Star count.
+     */
+    @Column(name = "ART_STARCOUNT_N", nullable = false)
+    private Integer starCount = 0;
+
     /**
      * Getter of id.
      *
@@ -397,6 +403,24 @@ public class Article {
      */
     public void setDeleteDate(Date deleteDate) {
         this.deleteDate = deleteDate;
+    }
+
+    /**
+     * Getter of starCount.
+     *
+     * @return starCount
+     */
+    public Integer getStarCount() {
+        return starCount == null ? 0 : starCount;
+    }
+
+    /**
+     * Setter of starCount.
+     *
+     * @param starCount starCount
+     */
+    public void setStarCount(Integer starCount) {
+        this.starCount = starCount;
     }
 
     public Article() {

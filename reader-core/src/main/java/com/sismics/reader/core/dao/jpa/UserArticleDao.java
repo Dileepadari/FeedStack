@@ -78,6 +78,10 @@ public class UserArticleDao extends BaseDao<UserArticleDto, UserArticleCriteria>
             criteriaList.add("fs.FES_IDCATEGORY_C = :categoryId");
             parameterMap.put("categoryId", criteria.getCategoryId());
         }
+        if (criteria.getCategoryIdIn() != null && !criteria.getCategoryIdIn().isEmpty()) {
+            criteriaList.add("fs.FES_IDCATEGORY_C IN (:categoryIdIn)");
+            parameterMap.put("categoryIdIn", criteria.getCategoryIdIn());
+        }
         if (criteria.isUnread()) {
             criteriaList.add("(ua.USA_READDATE_D is null and ua.USA_ID_C is not null)");
         }
@@ -99,6 +103,14 @@ public class UserArticleDao extends BaseDao<UserArticleDto, UserArticleCriteria>
                     ")");
             parameterMap.put("userArticleStarredDateMax", criteria.getUserArticleStarredDateMax());
             parameterMap.put("userArticleIdMax", criteria.getUserArticleIdMax());
+        }
+        if (criteria.getFeedSubscriptionId() != null) {
+            criteriaList.add("fs.FES_ID_C = :feedSubscriptionId");
+            parameterMap.put("feedSubscriptionId", criteria.getFeedSubscriptionId());
+        }
+        if (criteria.getFeedSubscriptionIdIn() != null && !criteria.getFeedSubscriptionIdIn().isEmpty()) {
+            criteriaList.add("fs.FES_ID_C IN (:feedSubscriptionIdIn)");
+            parameterMap.put("feedSubscriptionIdIn", criteria.getFeedSubscriptionIdIn());
         }
 
         SortCriteria sortCriteria;
