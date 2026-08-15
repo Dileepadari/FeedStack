@@ -12,6 +12,10 @@ import static junit.framework.Assert.*;
  * 
  * @author jtremeaux
  */
+// Network integration test: every case fetches a real third-party site, so results depend
+// on those sites staying up and serving a discoverable favicon. Excluded from the default
+// build to keep it deterministic. Run explicitly with -Dtest=TestFaviconDownloader.
+@Ignore
 public class TestFaviconDownloader {
     @Test
     public void faviconDownloaderSlashdotTest() {

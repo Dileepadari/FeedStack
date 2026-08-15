@@ -9,7 +9,8 @@
     "password": "Mot de passe",
     "remember": "Se souvenir de moi",
     "submit": "Connexion",
-    "error": "Mauvais nom d'utilisateur ou mot de passe"
+    "error": "Mauvais nom d'utilisateur ou mot de passe",
+    "signup": "Sign up"
   },
   "jobs": {
     "inprogress": "Import en cours",
@@ -213,5 +214,17 @@
     "dark": {
       "name": "Sombre"
     }
+  },
+  "signup": {
+    "success": "Account created. You can log in now.",
+    "error": {
+      "empty": "Please fill in every field.",
+      "password_match": "The two passwords do not match.",
+      "general": "Could not create the account. Please try again."
+    }
+  },
+  "confirm": {
+    "ok": "OK",
+    "cancel": "Cancel"
   }
 }

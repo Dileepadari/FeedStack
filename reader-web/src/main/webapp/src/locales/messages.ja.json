@@ -9,7 +9,8 @@
     "password": "パスワード",
     "remember": "ログイン状態を維持する",
     "submit": "ログイン",
-    "error": "ユーザー名またはパスワードが違います"
+    "error": "ユーザー名またはパスワードが違います",
+    "signup": "Sign up"
   },
   "defaultpassword": {
     "info": "初めにユーザー名とパスワード欄に\"admin\"を入力してください。次に再度ユーザー名とパスワードの再登録をしてください。\"admin\"のままでは安全ではありません。",
@@ -179,5 +180,17 @@
     "highcontrast": {
       "name": "High contrast"
     }
+  },
+  "signup": {
+    "success": "Account created. You can log in now.",
+    "error": {
+      "empty": "Please fill in every field.",
+      "password_match": "The two passwords do not match.",
+      "general": "Could not create the account. Please try again."
+    }
+  },
+  "confirm": {
+    "ok": "OK",
+    "cancel": "Cancel"
   }
 }

@@ -1,6 +1,7 @@
 package com.sismics.reader.core.dao.file.html;
 
 import com.sismics.reader.core.util.http.ReaderHttpClient;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.InputStream;
@@ -13,6 +14,9 @@ import static junit.framework.Assert.assertTrue;
  * 
  * @author jtremeaux
  */
+// Network integration test: fetches https://www.sismics.com. Excluded from the default
+// build. Run explicitly with -Dtest=TestFaviconExtractor.
+@Ignore
 public class TestFaviconExtractor {
     @Test
     public void faviconExtractorSismicsTest() throws Exception {

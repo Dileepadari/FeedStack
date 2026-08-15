@@ -9,7 +9,8 @@
     "password": "Passwort",
     "remember": "Dauerhaft angemeldet bleiben",
     "submit": "Login",
-    "error": "Falscher Benutzername oder falsches Passwort"
+    "error": "Falscher Benutzername oder falsches Passwort",
+    "signup": "Sign up"
   },
   "jobs": {
     "inprogress": "Import in Arbeit",
@@ -342,5 +343,17 @@
     "zh_HK": "Chinesisch (Hong Kong)",
     "zh_SG": "Chinesisch (Singapur)",
     "zh_TW": "Chinesisch (Taiwan)"
+  },
+  "signup": {
+    "success": "Account created. You can log in now.",
+    "error": {
+      "empty": "Please fill in every field.",
+      "password_match": "The two passwords do not match.",
+      "general": "Could not create the account. Please try again."
+    }
+  },
+  "confirm": {
+    "ok": "OK",
+    "cancel": "Cancel"
   }
 }

@@ -77,7 +77,8 @@ public class UserResource extends BaseResource {
             // Bad input is the caller's fault: 400, not 500.
             throw new ClientException("ValidationError", e.getMessage());
         } catch (UserExistsException e) {
-            throw new ServerException("AlreadyExistingUsername", "Login already used", e);
+            // A taken username is the caller's problem, not a server fault.
+            throw new ClientException("AlreadyExistingUsername", "Login already used");
         } catch (Exception e) {
             throw new ServerException("UnknownError", "Unknown Server Error", e);
         }

@@ -12,5 +12,13 @@
       <param-name>useFileMappedBuffer</param-name>
       <param-value>false</param-value>
     </init-param>
+    <!-- Development only: without this the browser caches the JavaScript, CSS and locale
+         files and keeps serving a stale copy after you edit them, which looks like your
+         change had no effect. Production builds are unaffected: this descriptor is only
+         applied by the jetty:run configuration in reader-web/pom.xml. -->
+    <init-param>
+      <param-name>cacheControl</param-name>
+      <param-value>no-store, no-cache, must-revalidate</param-value>
+    </init-param>
   </servlet>
 </web-app>

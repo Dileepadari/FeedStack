@@ -92,7 +92,9 @@ The default admin password hash is a constant in `SecurityConfig.DEFAULT_ADMIN_P
 
 ## API surface
 
-Everything is under `/api`. All of it requires a valid `auth_token` unless marked otherwise.
+Everything is under `/api`. All of it requires a valid `auth_token` unless marked otherwise. Two endpoints are deliberately public: `PUT /user`, because self service registration needs it, and `GET /theme`, because the login page picks a theme before anyone has logged in.
+
+Client mistakes return `400` with a `{"type", "message"}` body: `ValidationError` names the field that failed, `AlreadyExistingUsername` means the username is taken. `500` is reserved for genuine server faults.
 
 | Resource | Endpoints |
 |---|---|
@@ -243,7 +245,8 @@ It needs three repository secrets to do anything: `GEMINI_API_KEY`, `USERNAME` (
 
 - **Java 8 only.** Jersey 1.x and this Hibernate version fail on newer JDKs. SonarQube, if you run it, wants Java 11, so keep both installed and switch per task.
 - **Tests must not run in parallel forks.** Every REST test binds the Grizzly container to the hardcoded port 9998, so `reader-web/pom.xml` pins `<forkCount>1</forkCount>`. Raising it produces a wall of `BindException: Address already in use`.
-- **Some tests hit live third-party sites.** `TestFaviconDownloader` fetches real domains and several cases are `@Ignore`d because those sites died or stopped exposing a favicon. Treat new failures there as environmental until proven otherwise.
+- **Two test classes are network integration tests.** `TestFaviconDownloader` and `TestFaviconExtractor` fetch real third-party sites, so they pass or fail with those sites rather than with this code. Both are `@Ignore`d at class level to keep the default build deterministic; run them deliberately with `mvn test -Dtest=TestFaviconDownloader`. Everything else in the suite is hermetic.
+- **The dev server sends `no-store`.** `reader-web/src/dev/main/webapp/web-override.xml` sets `cacheControl` on Jetty's default servlet, because otherwise the browser holds stale JavaScript, CSS and locale files and edits appear to do nothing. That descriptor is only applied by `jetty:run`, so production caching is unaffected.
 - **A failed feed fetch must never be recorded as a successful sync.** `FeedService.checkUrl` rethrows connection-level failures, and `getUrlStrategy` rejects URLs that resolve to no feed rather than falling back to `ContentUrlStrategy`, which would answer with unrelated News API results.
 - **Secrets were purged from history.** Two Groq API keys were committed to this project in March 2025, in `reader-web/summarizer.py` and `reader-web/tokens.env`. Both were removed from every commit before this repository was published, and `tokens.env` is gone entirely. `.gitignore` now blocks `.env`, `*.env` and `tokens.env`. The summariser reads `GROQ_API` from `reader-web/tokens.env`, so copy `tokens.env.example` and fill it in locally; do not commit it. A third key, for NewsAPI, was hardcoded in `ContentUrlStrategy` and is now read from the environment. All three should be treated as compromised and rotated.
 - **`.travis.yml` is dead.** It predates the fork and points at Sismics' own Docker Hub account. It is kept for reference, not because it runs.

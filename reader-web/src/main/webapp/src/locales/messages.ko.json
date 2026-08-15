@@ -1,16 +1,17 @@
 {
   "app": "Sismics Reader",
   "error": {
-    "unknown": "Reader를 열수 없습니다, 다시 시도해 주시기 바랍니다", 
+    "unknown": "Reader를 열수 없습니다, 다시 시도해 주시기 바랍니다",
     "feed": "내용을 읽을 수 없습니다. 다시 시도해 주시기 바랍니다"
-  },         
+  },
   "login": {
-    "username": "사용자 이름", 
+    "username": "사용자 이름",
     "password": "비밀번호",
     "remember": "기억하기",
     "submit": "연결",
-    "error": "입력하신 아이디와 비밀번호가 일치하지 않습니다"
-  },          
+    "error": "입력하신 아이디와 비밀번호가 일치하지 않습니다",
+    "signup": "Sign up"
+  },
   "defaultpassword": {
     "info": "보안되지 않은 계정입니다. ID 와 비밀번호에 \"admin\"을 입력하여 로그인 하신 후 비밀번호를 즉시 변경하시기 바랍니다",
     "warning": "비밀번호를 아직 변경하지 않으셨습니다. 지금 비밀번호를 변경하여 계정을 보안하시기 바랍니다",
@@ -22,7 +23,7 @@
     "all": "모두",
     "starred": "즐겨찾기",
     "subscriptions": "카테고리",
-    "empty": "가입 목록이 없습니다", 
+    "empty": "가입 목록이 없습니다",
     "emptyunread": "읽지 않은 가입 목록이 없습니다",
     "showall": "모두 보기",
     "toggleunread": "읽음 / 읽지 않음",
@@ -53,7 +54,7 @@
       "submit": "확인",
       "delete": "삭제",
       "deleteconfirm": "이 목록을 정말 삭제 하시겠습니까?"
-    }                   
+    }
   },
   "toolbar": {
     "showall": "모두보기",
@@ -63,7 +64,7 @@
     "back": "&larr; 돌아가기",
     "settings": "설정",
     "about": "회사소개",
-    "logout": "로그아웃", 
+    "logout": "로그아웃",
     "reportbug": "버그 신고"
   },
   "settings": {
@@ -79,7 +80,7 @@
         "locale": "언어",
         "theme": "테마",
         "password": "비밀번호",
-        "passwordconfirm": "비밀번호 확인", 
+        "passwordconfirm": "비밀번호 확인",
         "submit": "저장",
         "cancel": "취소",
         "success": "Account preferences updated"
@@ -95,7 +96,7 @@
     "export": {
       "title": "내보내기",
       "submit": "내보내기",
-      "explain": "카테고리와 가입목록을 내보내기" 
+      "explain": "카테고리와 가입목록을 내보내기"
     },
     "users": {
       "title": "사용자 설정",
@@ -179,5 +180,17 @@
     "highcontrast": {
       "name": "High contrast"
     }
+  },
+  "signup": {
+    "success": "Account created. You can log in now.",
+    "error": {
+      "empty": "Please fill in every field.",
+      "password_match": "The two passwords do not match.",
+      "general": "Could not create the account. Please try again."
+    }
+  },
+  "confirm": {
+    "ok": "OK",
+    "cancel": "Cancel"
   }
 }

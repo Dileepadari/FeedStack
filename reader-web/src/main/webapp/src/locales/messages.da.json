@@ -9,7 +9,8 @@
     "password": "Adgangskode",
     "remember": "Husk mig",
     "submit": "Send",
-    "error": "Standard brugernavn eller adgangskode"
+    "error": "Standard brugernavn eller adgangskode",
+    "signup": "Sign up"
   },
   "defaultpassword": {
     "info": "Reader er ikke sikker. Venligst log på med \"admin\" som brugernavn og adgangskode og skift derefter adgangskode med det samme.",
@@ -332,5 +333,17 @@
     "zh_HK": "Chinese (Hong Kong)",
     "zh_SG": "Chinese (Singapore)",
     "zh_TW": "Chinese (Taiwan)"
+  },
+  "signup": {
+    "success": "Account created. You can log in now.",
+    "error": {
+      "empty": "Please fill in every field.",
+      "password_match": "The two passwords do not match.",
+      "general": "Could not create the account. Please try again."
+    }
+  },
+  "confirm": {
+    "ok": "OK",
+    "cancel": "Cancel"
   }
 }

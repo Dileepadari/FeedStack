@@ -9,7 +9,8 @@
     "password": "Password",
     "remember": "Ricordami",
     "submit": "Accedi",
-    "error": "Nome utente o password errata"
+    "error": "Nome utente o password errata",
+    "signup": "Sign up"
   },
   "defaultpassword": {
     "info": "Reader non è sicuro. Per favore effettua la connessione con il seguente nome utente e la seguente password \"admin\", poi cambia la password immediatamente.",
@@ -178,5 +179,17 @@
     "highcontrast": {
       "name": "Contrasto elevato"
     }
+  },
+  "signup": {
+    "success": "Account created. You can log in now.",
+    "error": {
+      "empty": "Please fill in every field.",
+      "password_match": "The two passwords do not match.",
+      "general": "Could not create the account. Please try again."
+    }
+  },
+  "confirm": {
+    "ok": "OK",
+    "cancel": "Cancel"
   }
 }

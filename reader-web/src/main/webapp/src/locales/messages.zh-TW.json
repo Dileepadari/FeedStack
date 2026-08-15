@@ -1,4 +1,4 @@
-﻿{
+{
   "app": "Sismics Reader",
   "error": {
     "unknown": "載入遇到未知錯誤，請重試",
@@ -9,7 +9,8 @@
     "password": "密碼",
     "remember": "保存登入信息",
     "submit": "登入",
-    "error": "帳戶或者密碼錯誤"
+    "error": "帳戶或者密碼錯誤",
+    "signup": "Sign up"
   },
   "defaultpassword": {
     "info": "請使用初始帳戶和密碼 \"admin\" 登入，建議登入后即刻修改密碼",
@@ -178,5 +179,17 @@
     "highcontrast": {
       "name": "高對比"
     }
+  },
+  "signup": {
+    "success": "Account created. You can log in now.",
+    "error": {
+      "empty": "Please fill in every field.",
+      "password_match": "The two passwords do not match.",
+      "general": "Could not create the account. Please try again."
+    }
+  },
+  "confirm": {
+    "ok": "OK",
+    "cancel": "Cancel"
   }
 }

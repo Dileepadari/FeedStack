@@ -94,7 +94,7 @@ public class TestUserResource extends BaseJerseyTest {
                 "email", " bob@reader.com ",
                 "password", " 12345678 ",
                 "locale", "ko"));
-        assertStatus(500, response); //FIXME should be 400
+        assertIsBadRequest();
         json = getJsonResult();
         assertEquals("AlreadyExistingUsername", json.getString("type"));
 

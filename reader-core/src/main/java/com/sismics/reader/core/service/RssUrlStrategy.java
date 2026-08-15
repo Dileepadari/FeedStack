@@ -26,8 +26,10 @@ public class RssUrlStrategy implements UrlStrategy {
         try {
             return parseFeedOrPage(url, true);
         } catch (Exception e) {
+            // Returning null here would surface as a NullPointerException in the caller and
+            // lose the real cause. Fail loudly so the synchronization is recorded as failed.
             log.error("Error while parsing feed: " + url, e);
-            return null;
+            throw new RuntimeException("Error while parsing feed: " + url, e);
         }
     }
 
