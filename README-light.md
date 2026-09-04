@@ -1,3 +1,5 @@
+<!-- Generated from README.md by scripts/build-light-readme.mjs. Do not edit by hand. -->
+
 <div align="center">
 
 <picture>
@@ -21,7 +23,7 @@
 
 **[Developer documentation](./DEVDOC.md)** · [Features](#features) · [Running it](#running-it)
 
-<p><b>Dark mode</b> · <a href="./README-light.md">View this page in light mode</a></p>
+<p><b>Light mode</b> · <a href="./README.md">View this page in dark mode</a></p>
 
 </div>
 
@@ -64,34 +66,34 @@ duplicate detector for the same story arriving through three different feeds.
 ## Screenshots
 
 Every image is a real 1440x900 viewport render against a live instance with three
-subscriptions. This page shows **dark mode**; the same gallery in light mode is at **[README-light.md](./README-light.md)**.
+subscriptions. This page shows **light mode**; the same gallery in dark mode is at **[README.md](./README.md)**.
 
 <table>
   <tr>
     <td width="33%" valign="top">
-      <img src="./docs/screenshots/dark/01-reader.png" alt="The reader with unread articles from three feeds" loading="lazy">
+      <img src="./docs/screenshots/light/01-reader.png" alt="The reader with unread articles from three feeds" loading="lazy">
       <p align="center"><b>Reader</b><br><sub>Unread articles, with per-feed counts in the sidebar.</sub></p>
     </td>
     <td width="33%" valign="top">
-      <img src="./docs/screenshots/dark/05-duplicate-detector.png" alt="The duplicate detector view" loading="lazy">
+      <img src="./docs/screenshots/light/05-duplicate-detector.png" alt="The duplicate detector view" loading="lazy">
       <p align="center"><b>Duplicate detector</b><br><sub>The same story arriving through more than one feed.</sub></p>
     </td>
     <td width="33%" valign="top">
-      <img src="./docs/screenshots/dark/02-settings.png" alt="Account preferences with locale and theme" loading="lazy">
+      <img src="./docs/screenshots/light/02-settings.png" alt="Account preferences with locale and theme" loading="lazy">
       <p align="center"><b>Account</b><br><sub>Locale and theme are per user, stored server side.</sub></p>
     </td>
   </tr>
   <tr>
     <td width="33%" valign="top">
-      <img src="./docs/screenshots/dark/03-users.png" alt="The users administration tab" loading="lazy">
+      <img src="./docs/screenshots/light/03-users.png" alt="The users administration tab" loading="lazy">
       <p align="center"><b>Users</b><br><sub>Admin-only, behind the ADMIN base function.</sub></p>
     </td>
     <td width="33%" valign="top">
-      <img src="./docs/screenshots/dark/04-import-export.png" alt="Import from OPML or Google Takeout, and export" loading="lazy">
+      <img src="./docs/screenshots/light/04-import-export.png" alt="Import from OPML or Google Takeout, and export" loading="lazy">
       <p align="center"><b>Import and export</b><br><sub>OPML or a Google Takeout ZIP, in and out.</sub></p>
     </td>
     <td width="33%" valign="top">
-      <img src="./docs/screenshots/dark/01-reader.png" alt="The reader with per-feed unread counts" loading="lazy">
+      <img src="./docs/screenshots/light/01-reader.png" alt="The reader with per-feed unread counts" loading="lazy">
       <p align="center"><b>Themes</b><br><sub>Three ship: default, dark and high contrast, per user.</sub></p>
     </td>
   </tr>

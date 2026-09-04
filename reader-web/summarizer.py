@@ -1,51 +1,46 @@
-import sys
-import subprocess
+"""
+Article summariser, invoked by SummarizationStrategy in the web app.
+
+    python3 summarizer.py "<text>" <weight> <prompt_type>
+
+Prints the summary on stdout. Any failure prints a short reason on stderr and
+exits non-zero; nothing this writes is shown to a reader, so it does not need
+to be user-facing prose.
+
+This used to create a virtualenv, run `pip install -r requirements.txt` and, if
+that failed, `sudo apt install python3.10-venv`, all on the first request that
+asked for a summary. That is not a thing a web request should do: it fetches and
+installs code from the network at request time, and the sudo path meant a
+request could install system packages. Dependencies are the operator's job now.
+Install them once:
+
+    pip install -r requirements.txt
+"""
+
 import os
-
-venv_dir = 'se_p2_env'
-venv_python = os.path.join(venv_dir, 'Scripts', 'python.exe') if os.name == 'nt' else os.path.join(venv_dir, 'bin', 'python')
-
-def try_install_with_fallback(package_command):
-    """
-    Attempt to run installation using venv_python -m pip, 
-    fallback to pip and pip3 if it fails.
-    """
-    try:
-        subprocess.run([venv_python, '-m', 'pip'] + package_command, check=True)
-    except subprocess.CalledProcessError:
-        try:
-            subprocess.run(['pip'] + package_command, check=True)
-        except subprocess.CalledProcessError:
-            subprocess.run(['pip3'] + package_command, check=True)
+import sys
 
 try:
     from groq import Groq
     from dotenv import load_dotenv
-except ImportError:
-    # Create virtual environment if not present
-    if not os.path.exists(venv_dir):
-        try:
-            subprocess.run([sys.executable, '-m', 'venv', venv_dir], check=True)
-        except subprocess.CalledProcessError:
-
-            subprocess.run(['sudo', 'apt', 'install', '-y', 'python3.10-venv'], check=True)
-            subprocess.run([sys.executable, '-m', 'venv', venv_dir], check=True)
-
-
-    # Upgrade pip (try/fallback)
-    try_install_with_fallback(['install', '--upgrade', 'pip'])
-
-    # Install dependencies (try/fallback)
-    try_install_with_fallback(['install', '-r', 'requirements.txt'])
-
-    # Try importing again
-    from groq import Groq
-    from dotenv import load_dotenv
-
+except ImportError as exc:
+    sys.stderr.write(
+        "summarizer.py: missing dependency ({}). "
+        "Run: pip install -r requirements.txt\n".format(exc.name)
+    )
+    raise SystemExit(2)
 
 # Initialize Groq Client
 load_dotenv('tokens.env')
 groq_api_key = os.getenv('GROQ_API')
+
+if not groq_api_key:
+    sys.stderr.write(
+        "summarizer.py: GROQ_API is not set. "
+        "Copy tokens.env.example to tokens.env and fill it in.\n"
+    )
+    raise SystemExit(3)
+
 client = Groq(api_key=groq_api_key)
 
 def summarize_text(text,weight,prompt_type=1):
@@ -88,8 +83,10 @@ def summarize_text(text,weight,prompt_type=1):
         )
         return response.choices[0].message.content
     except Exception as e:
-        print(f"Error: {str(e)}", file=sys.stderr)
-        return f"Failed to summarize: {str(e)}"
+        # stderr and a non-zero exit, never stdout: whatever lands on stdout is
+        # treated by the caller as the summary itself.
+        sys.stderr.write("summarizer.py: {}\n".format(e))
+        raise SystemExit(4)
 
 
 if __name__ == "__main__":
