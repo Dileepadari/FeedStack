@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The project pins maven.compiler.source and target to 1.8. Temurin 8 is
+      # the closest thing to what it was written against, so the build is
+      # checked on the version it actually claims to support rather than on
+      # whatever the runner happens to ship.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "8"
+          cache: maven
+
+      # Only reader-core, reader-web-common and reader-web are in the default
+      # reactor. The agent and the distribution modules sit behind the `prod`
+      # profile and are not built here.
+      - name: Build
+        run: mvn -B clean install -DskipTests
+
+      # The tests spin up Grizzly and use a temporary data directory, so they do
+      # not touch a real reader.home.
+      - name: Test
+        run: mvn -B test
+
+      - name: Upload surefire reports
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: surefire-reports
+          path: '**/target/surefire-reports/**'
+          retention-days: 7
