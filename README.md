@@ -192,6 +192,34 @@ The coursework write-ups live in `docs/`:
       </a>
       <br><sub>Fork author and maintainer</sub>
     </td>
+    <td align="center">
+      <a href="https://github.com/Keshavakishorananda">
+        <img src="https://avatars.githubusercontent.com/u/120898587?v=4" width="90" alt="" loading="lazy" style="border-radius:50%">
+        <br><sub><b>Keshava kishora nanda Veerapuneni</b></sub>
+      </a>
+      <br><sub>Contributor</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/nagarevanth">
+        <img src="https://avatars.githubusercontent.com/u/117801798?v=4" width="90" alt="" loading="lazy" style="border-radius:50%">
+        <br><sub><b>Revanth Reddy</b></sub>
+      </a>
+      <br><sub>Contributor</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/ritvikmns">
+        <img src="https://avatars.githubusercontent.com/u/127508053?v=4" width="90" alt="" loading="lazy" style="border-radius:50%">
+        <br><sub><b>Modumudi Naga Sai Ritvik</b></sub>
+      </a>
+      <br><sub>Contributor</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/ShailenderGoyal">
+        <img src="https://avatars.githubusercontent.com/u/114686807?v=4" width="90" alt="" loading="lazy" style="border-radius:50%">
+        <br><sub><b>Shailender Goyal</b></sub>
+      </a>
+      <br><sub>Contributor</sub>
+    </td>
   </tr>
 </table>
 
